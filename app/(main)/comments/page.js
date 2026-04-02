@@ -37,14 +37,31 @@ export default function CommentsPage() {
   }, []);
 
   const predictComments = async (commentList) => {
+    const settings = typeof window !== 'undefined' ? JSON.parse(localStorage.getItem('userSettings') || '{}') : {};
+    const tHold = (settings.thresholdHold || 70) / 100;
+    const tReject = (settings.thresholdReject || 90) / 100;
+    
     for (const comment of commentList) {
       if (predictions[comment.id]) continue;
       try {
         const res = await axios.post('/api/predict', { text: comment.textDisplay });
+        const prediction = { label: res.data.label, confidence: res.data.confidence };
+        
         setPredictions(prev => ({
           ...prev,
-          [comment.id]: { label: res.data.label, confidence: res.data.confidence },
+          [comment.id]: prediction,
         }));
+
+        // Auto-Moderation Logic (Dynamic Thresholds)
+        if (prediction.label?.toLowerCase() === 'spam') {
+          if (settings.autoHapus && prediction.confidence > tReject) {
+            console.log(`Auto-Rejecting comment ${comment.id} (conf: ${prediction.confidence}, threshold: ${tReject})`);
+            handleModerate(comment.id, 'reject', prediction);
+          } else if (settings.autoTahan && prediction.confidence > tHold) {
+            console.log(`Auto-Holding comment ${comment.id} (conf: ${prediction.confidence}, threshold: ${tHold})`);
+            handleModerate(comment.id, 'hold', prediction);
+          }
+        }
       } catch (err) {
         console.error('Gagal memprediksi komentar', comment.id);
       }
@@ -77,7 +94,7 @@ export default function CommentsPage() {
     return () => clearInterval(intervalId);
   }, [isPolling, session, fetchComments]);
 
-  const handleModerate = async (commentId, action) => {
+  const handleModerate = async (commentId, action, providedPrediction = null) => {
     setProcessingComment(commentId);
     try {
       const statusMap = { hold: 'heldForReview', publish: 'published', reject: 'rejected' };
@@ -87,6 +104,7 @@ export default function CommentsPage() {
       // Save to moderation history in localStorage
       const comment = comments.find(c => c.id === commentId);
       if (comment) {
+        const prediction = providedPrediction || predictions[comment.id];
         const history = JSON.parse(localStorage.getItem('moderationHistory') || '[]');
         history.unshift({
           commentId,
@@ -95,6 +113,8 @@ export default function CommentsPage() {
           author: comment.authorDisplayName || '',
           videoTitle: videoTitle,
           timestamp: new Date().toISOString(),
+          aiLabel: prediction?.label || 'Normal',
+          aiConfidence: prediction?.confidence || 0
         });
         localStorage.setItem('moderationHistory', JSON.stringify(history.slice(0, 200)));
       }
@@ -119,7 +139,16 @@ export default function CommentsPage() {
       rejected: { label: 'Ditolak', cls: 'bg-red-100 text-red-700' },
     };
     const s = map[status] || map.published;
-    return <span className={`text-[11px] font-medium px-2 py-0.5 rounded-full ${s.cls}`}>{s.label}</span>;
+    const desc = {
+      published: 'Komentar aman & tampil di publik',
+      heldForReview: 'Komentar ditahan untuk ditinjau',
+      rejected: 'Komentar ditolak/disembunyikan'
+    };
+    return (
+      <span className={`text-[11px] font-medium px-2 py-0.5 rounded-full ${s.cls}`} title={desc[status] || desc.published}>
+        {s.label}
+      </span>
+    );
   };
 
   if (loading) {
@@ -215,7 +244,7 @@ export default function CommentsPage() {
                   <th className="px-5 py-3 text-left text-[11px] font-semibold text-gray-500 uppercase tracking-wider">Pengguna</th>
                   <th className="px-5 py-3 text-left text-[11px] font-semibold text-gray-500 uppercase tracking-wider">Komentar</th>
                   <th className="px-5 py-3 text-left text-[11px] font-semibold text-gray-500 uppercase tracking-wider">Analisis AI</th>
-                  <th className="px-5 py-3 text-left text-[11px] font-semibold text-gray-500 uppercase tracking-wider">Status</th>
+                  <th className="px-5 py-3 text-left text-[11px] font-semibold text-gray-500 uppercase tracking-wider">Status Moderasi</th>
                   <th className="px-5 py-3 text-right text-[11px] font-semibold text-gray-500 uppercase tracking-wider">Tindakan</th>
                 </tr>
               </thead>

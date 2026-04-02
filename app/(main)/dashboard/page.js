@@ -4,6 +4,11 @@ import { useSession } from 'next-auth/react';
 import { useState, useEffect } from 'react';
 import { youtubeService } from '@/services/youtubeService';
 import Link from 'next/link';
+import { 
+  PieChart, Pie, Cell, Tooltip, ResponsiveContainer, 
+  BarChart, Bar, XAxis, YAxis, CartesianGrid, Legend,
+  Sector
+} from 'recharts';
 
 export default function DashboardPage() {
   const { data: session } = useSession();
@@ -55,6 +60,24 @@ export default function DashboardPage() {
   const totalRejected = history.filter(h => h.action === 'rejected').length;
   const totalHeld = history.filter(h => h.action === 'heldForReview').length;
 
+  // Chart Data
+  const normalCount = history.filter(h => h.aiLabel === 'Normal').length;
+  const spamCount = history.filter(h => h.aiLabel === 'Spam').length;
+  
+  const contentData = [
+    { name: 'Normal', value: normalCount || 0 },
+    { name: 'Spam/Judol', value: spamCount || 0 },
+  ];
+
+  const actionData = [
+    { name: 'Aman', jumlah: totalPublished },
+    { name: 'Ditahan', jumlah: totalHeld },
+    { name: 'Ditolak', jumlah: totalRejected },
+  ];
+
+  const COLORS = ['#10B981', '#EF4444'];
+  const ACTION_COLORS = ['#3B82F6', '#F59E0B', '#EF4444'];
+
   if (loading) {
     return (
       <div className="flex justify-center items-center h-64">
@@ -64,7 +87,7 @@ export default function DashboardPage() {
   }
 
   return (
-    <div className="animate-fade-in-up space-y-6">
+    <div className="animate-fade-in-up space-y-6 pb-10">
       {/* Page header */}
       <div>
         <h1 className="text-xl font-semibold text-gray-900">Ringkasan Moderasi</h1>
@@ -86,7 +109,7 @@ export default function DashboardPage() {
 
         <div className="bg-white rounded-xl border border-gray-200 p-5 hover:shadow-sm transition-shadow">
           <div className="flex items-center justify-between mb-3">
-            <p className="text-xs font-medium text-gray-500">Diterbitkan</p>
+            <p className="text-xs font-medium text-gray-500">Aman (Diterbitkan)</p>
             <svg className="w-5 h-5 text-green-500" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
             </svg>
@@ -108,13 +131,107 @@ export default function DashboardPage() {
 
         <div className="bg-white rounded-xl border border-gray-200 p-5 hover:shadow-sm transition-shadow">
           <div className="flex items-center justify-between mb-3">
-            <p className="text-xs font-medium text-gray-500">Ditolak</p>
+            <p className="text-xs font-medium text-gray-500">Spam (Ditolak)</p>
             <svg className="w-5 h-5 text-red-500" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" d="M9.75 9.75l4.5 4.5m0-4.5l-4.5 4.5M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
             </svg>
           </div>
           <p className="text-2xl font-bold text-gray-900">{totalRejected}</p>
           <p className="text-[11px] text-gray-400 mt-1">komentar spam</p>
+        </div>
+      </div>
+
+      {/* Visual Analysis Section */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+        <div className="bg-white rounded-xl border border-gray-200 p-6">
+          <div className="flex items-center justify-between mb-6">
+            <div>
+              <h2 className="text-sm font-semibold text-gray-900">Analisis Sentimen Konten</h2>
+              <p className="text-xs text-gray-400">Distribusi komentar Normal vs Spam</p>
+            </div>
+            <div className="flex items-center gap-2">
+              <div className="flex items-center gap-1">
+                <div className="w-2 h-2 rounded-full bg-emerald-500"></div>
+                <span className="text-[10px] text-gray-500">Normal</span>
+              </div>
+              <div className="flex items-center gap-1">
+                <div className="w-2 h-2 rounded-full bg-red-500"></div>
+                <span className="text-[10px] text-gray-500">Spam</span>
+              </div>
+            </div>
+          </div>
+          <div className="h-[240px] w-full">
+            {history.length > 0 ? (
+              <ResponsiveContainer width="100%" height="100%">
+                <PieChart>
+                  <Pie
+                    data={contentData}
+                    cx="50%"
+                    cy="50%"
+                    innerRadius={60}
+                    outerRadius={80}
+                    paddingAngle={5}
+                    dataKey="value"
+                  >
+                    {contentData.map((entry, index) => (
+                      <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                    ))}
+                  </Pie>
+                  <Tooltip 
+                    contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)' }}
+                  />
+                  <text x="50%" y="50%" textAnchor="middle" dominantBaseline="middle" className="fill-gray-900 font-bold text-lg">
+                    {Math.round((spamCount / (normalCount + spamCount || 1)) * 100)}%
+                  </text>
+                  <text x="50%" y="60%" textAnchor="middle" dominantBaseline="middle" className="fill-gray-400 text-[10px]">
+                    Spam
+                  </text>
+                </PieChart>
+              </ResponsiveContainer>
+            ) : (
+              <div className="flex flex-col items-center justify-center h-full text-gray-300">
+                <p className="text-xs">Belum ada data analisis</p>
+              </div>
+            )}
+          </div>
+        </div>
+
+        <div className="bg-white rounded-xl border border-gray-200 p-6">
+          <h2 className="text-sm font-semibold text-gray-900 mb-1">Aktivitas Moderasi</h2>
+          <p className="text-xs text-gray-400 mb-6">Kumulatif aksi yang telah dilakukan</p>
+          <div className="h-[240px] w-full">
+            {history.length > 0 ? (
+              <ResponsiveContainer width="100%" height="100%">
+                <BarChart data={actionData}>
+                  <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#F3F4F6" />
+                  <XAxis 
+                    dataKey="name" 
+                    axisLine={false} 
+                    tickLine={false} 
+                    tick={{ fontSize: 10, fill: '#9CA3AF' }}
+                  />
+                  <YAxis 
+                    axisLine={false} 
+                    tickLine={false} 
+                    tick={{ fontSize: 10, fill: '#9CA3AF' }}
+                  />
+                  <Tooltip 
+                    cursor={{ fill: '#F9FAFB' }}
+                    contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)' }}
+                  />
+                  <Bar dataKey="jumlah" radius={[4, 4, 0, 0]}>
+                    {actionData.map((entry, index) => (
+                      <Cell key={`cell-${index}`} fill={ACTION_COLORS[index % ACTION_COLORS.length]} />
+                    ))}
+                  </Bar>
+                </BarChart>
+              </ResponsiveContainer>
+            ) : (
+              <div className="flex flex-col items-center justify-center h-full text-gray-300">
+                <p className="text-xs">Belum ada data aktivitas</p>
+              </div>
+            )}
+          </div>
         </div>
       </div>
 

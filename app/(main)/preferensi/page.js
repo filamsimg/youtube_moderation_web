@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { signOut } from 'next-auth/react';
 
 export default function PreferensiPage() {
@@ -9,6 +9,36 @@ export default function PreferensiPage() {
   const [kepadatan, setKepadatan] = useState('standar');
   const [notifKomentar, setNotifKomentar] = useState(true);
   const [autoTahan, setAutoTahan] = useState(true);
+  const [autoHapus, setAutoHapus] = useState(false);
+  const [thresholdHold, setThresholdHold] = useState(70);
+  const [thresholdReject, setThresholdReject] = useState(90);
+  const [saveStatus, setSaveStatus] = useState(null);
+
+  useEffect(() => {
+    const saved = localStorage.getItem('userSettings');
+    if (saved) {
+      const parsed = JSON.parse(saved);
+      if (parsed.bahasa) setBahasa(parsed.bahasa);
+      if (parsed.tema) setTema(parsed.tema);
+      if (parsed.kepadatan) setKepadatan(parsed.kepadatan);
+      if (parsed.notifKomentar !== undefined) setNotifKomentar(parsed.notifKomentar);
+      if (parsed.autoTahan !== undefined) setAutoTahan(parsed.autoTahan);
+      if (parsed.autoHapus !== undefined) setAutoHapus(parsed.autoHapus);
+      if (parsed.thresholdHold !== undefined) setThresholdHold(parsed.thresholdHold);
+      if (parsed.thresholdReject !== undefined) setThresholdReject(parsed.thresholdReject);
+    }
+  }, []);
+
+  const handleSave = () => {
+    const settings = { 
+      bahasa, tema, kepadatan, notifKomentar, 
+      autoTahan, autoHapus, 
+      thresholdHold, thresholdReject 
+    };
+    localStorage.setItem('userSettings', JSON.stringify(settings));
+    setSaveStatus('success');
+    setTimeout(() => setSaveStatus(null), 3000);
+  };
 
   const Toggle = ({ checked, onChange }) => (
     <button
@@ -17,6 +47,27 @@ export default function PreferensiPage() {
     >
       <span className={`absolute top-0.5 w-4 h-4 bg-white rounded-full shadow transition-transform ${checked ? 'left-[22px]' : 'left-0.5'}`} />
     </button>
+  );
+
+  const Slider = ({ label, value, onChange, min = 50, max = 100, unit = '%' }) => (
+    <div className="py-3">
+      <div className="flex justify-between items-center mb-2">
+        <p className="text-sm font-medium text-gray-700">{label}</p>
+        <span className="text-xs font-bold text-indigo-600 bg-indigo-50 px-2 py-0.5 rounded-full">{value}{unit}</span>
+      </div>
+      <input
+        type="range"
+        min={min}
+        max={max}
+        value={value}
+        onChange={(e) => onChange(parseInt(e.target.value))}
+        className="w-full h-1.5 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-indigo-600"
+      />
+      <div className="flex justify-between mt-1">
+        <span className="text-[10px] text-gray-400">Sensitif (Rendah)</span>
+        <span className="text-[10px] text-gray-400">Selektif (Tinggi)</span>
+      </div>
+    </div>
   );
 
   const SelectField = ({ label, desc, value, onChange, options }) => (
@@ -77,8 +128,8 @@ export default function PreferensiPage() {
             </svg>
             <span className="text-sm font-semibold text-green-700">Izin Aktif</span>
           </div>
-          <p className="text-xs text-green-600 mt-1">Koneksi dengan YouTube berhasil. Izin akan kedaluwarsa dalam 89 hari.</p>
-          <p className="text-[10px] text-green-500 mt-0.5">Terakhir diperbarui: 6 November 2025, 14:30</p>
+          <p className="text-xs text-green-600 mt-1">Koneksi dengan YouTube berhasil. Semua fitur moderasi proaktif aktif.</p>
+          <p className="text-[10px] text-green-500 mt-0.5">Terakhir diperbarui: {new Date().toLocaleDateString('id-ID')} {new Date().toLocaleTimeString('id-ID')}</p>
         </div>
 
         <button
@@ -135,20 +186,54 @@ export default function PreferensiPage() {
         </div>
         <p className="text-xs text-gray-400 mb-4">Kelola pemberitahuan dan fitur otomatis</p>
 
-        <div className="space-y-4">
-          <div className="flex items-center justify-between py-2">
+        <div className="space-y-6">
+          {/* Notification settings */}
+          <div className="flex items-center justify-between py-2 border-b border-gray-50">
             <div>
               <p className="text-sm font-medium text-gray-700">Notifikasi Komentar Baru</p>
               <p className="text-[11px] text-gray-400">Terima pemberitahuan saat ada komentar baru yang perlu ditinjau</p>
             </div>
             <Toggle checked={notifKomentar} onChange={setNotifKomentar} />
           </div>
-          <div className="flex items-center justify-between py-2">
-            <div>
-              <p className="text-sm font-medium text-gray-700">Tahan Otomatis Komentar Mencurigakan</p>
-              <p className="text-[11px] text-gray-400">Otomatis menahan komentar dengan pola mencurigakan untuk ditinjau</p>
+          
+          {/* Auto Moderation Toggle - Hold */}
+          <div className="space-y-4 pt-2">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm font-medium text-gray-700">Karantina Otomatis (Mencurigakan)</p>
+                <p className="text-[11px] text-gray-400">Tahan komentar jika skor AI melebihi ambang batas karantina.</p>
+              </div>
+              <Toggle checked={autoTahan} onChange={setAutoTahan} />
             </div>
-            <Toggle checked={autoTahan} onChange={setAutoTahan} />
+            {autoTahan && (
+              <Slider 
+                label="Ambang Batas Karantina" 
+                value={thresholdHold} 
+                onChange={setThresholdHold}
+                min={50}
+                max={95}
+              />
+            )}
+          </div>
+
+          {/* Auto Moderation Toggle - Reject */}
+          <div className="space-y-4 pt-2 border-t border-gray-50">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm font-medium text-gray-700">Hapus Otomatis (Sangat Yakin)</p>
+                <p className="text-[11px] text-gray-400">Langsung Reject komentar jika skor AI melebihi ambang batas hapus.</p>
+              </div>
+              <Toggle checked={autoHapus} onChange={setAutoHapus} />
+            </div>
+            {autoHapus && (
+              <Slider 
+                label="Ambang Batas Hapus (Reject)" 
+                value={thresholdReject} 
+                onChange={setThresholdReject}
+                min={70}
+                max={99}
+              />
+            )}
           </div>
         </div>
       </div>
@@ -183,10 +268,16 @@ export default function PreferensiPage() {
 
       {/* Action buttons */}
       <div className="flex items-center justify-end gap-3 pb-4">
+        {saveStatus === 'success' && (
+          <span className="text-xs text-green-600 font-medium animate-fade-in">Tersimpan ke sistem!</span>
+        )}
         <button className="px-4 py-2.5 border border-gray-200 rounded-lg text-sm text-gray-600 hover:bg-gray-50 transition-all">
           Reset ke Default
         </button>
-        <button className="flex items-center gap-2 px-4 py-2.5 bg-gray-900 text-white rounded-lg text-sm font-medium hover:bg-gray-800 transition-all active:scale-95">
+        <button 
+          onClick={handleSave}
+          className="flex items-center gap-2 px-4 py-2.5 bg-gray-900 text-white rounded-lg text-sm font-medium hover:bg-gray-800 transition-all active:scale-95"
+        >
           <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor">
             <path strokeLinecap="round" strokeLinejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
           </svg>
