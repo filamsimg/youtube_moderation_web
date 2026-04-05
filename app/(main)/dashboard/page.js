@@ -15,6 +15,7 @@ export default function DashboardPage() {
   const [channelInfo, setChannelInfo] = useState(null);
   const [videos, setVideos] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
   useEffect(() => {
     if (session?.accessToken) {
@@ -27,6 +28,7 @@ export default function DashboardPage() {
   const loadData = async (token) => {
     try {
       setLoading(true);
+      setError(null);
       // Fetch channel
       const channelData = await youtubeService.getUserChannel(token);
       const channel = channelData.items?.[0];
@@ -41,10 +43,12 @@ export default function DashboardPage() {
       }
     } catch (err) {
       console.error('Gagal memuat data dashboard:', err);
+      setError(err.message || 'Terjadi kesalahan saat memuat data');
     } finally {
       setLoading(false);
     }
   };
+
 
   // Get moderation history from localStorage
   const getHistory = () => {
@@ -93,6 +97,22 @@ export default function DashboardPage() {
         <h1 className="text-xl font-semibold text-gray-900">Ringkasan Moderasi</h1>
         <p className="text-sm text-gray-400 mt-0.5">Pantau aktivitas komentar dan metrik moderasi Anda</p>
       </div>
+
+      {error && (
+        <div className="bg-red-50 border border-red-100 rounded-xl p-4 flex items-start gap-3">
+          <svg className="w-5 h-5 text-red-500 mt-0.5" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
+            <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126zM12 15.75h.007v.008H12v-.008z" />
+          </svg>
+          <div>
+            <p className="text-sm font-semibold text-red-800">Gagal Memuat Data YouTube</p>
+            <p className="text-xs text-red-600 mt-0.5">{error}</p>
+            <p className="text-[10px] text-red-400 mt-1 italic">
+              Tips: Periksa koneksi internet atau apakah kuota API YouTube harian Anda telah habis.
+            </p>
+          </div>
+        </div>
+      )}
+
 
       {/* Stats cards */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">

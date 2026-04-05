@@ -30,16 +30,22 @@ export default function CommentsPage() {
       setComments(normalizedComments);
       await predictComments(normalizedComments);
     } catch (err) {
-      if (!isSilent) setError(err.message || 'Gagal memuat komentar');
+      const errorMsg = typeof err === 'object' ? err.message : err;
+      if (!isSilent) setError(errorMsg || 'Gagal memuat komentar');
     } finally {
       if (!isSilent) setLoading(false);
     }
+
   }, []);
 
   const predictComments = async (commentList) => {
     const settings = typeof window !== 'undefined' ? JSON.parse(localStorage.getItem('userSettings') || '{}') : {};
     const tHold = (settings.thresholdHold || 70) / 100;
     const tReject = (settings.thresholdReject || 90) / 100;
+    const useBatch = settings.batchModeration !== false;
+
+    const pendingHold = [];
+    const pendingReject = [];
     
     for (const comment of commentList) {
       if (predictions[comment.id]) continue;
@@ -56,14 +62,41 @@ export default function CommentsPage() {
         if (prediction.label?.toLowerCase() === 'spam') {
           if (settings.autoHapus && prediction.confidence > tReject) {
             console.log(`Auto-Rejecting comment ${comment.id} (conf: ${prediction.confidence}, threshold: ${tReject})`);
-            handleModerate(comment.id, 'reject', prediction);
+            if (useBatch) {
+              pendingReject.push(comment.id);
+            } else {
+              handleModerate(comment.id, 'reject', prediction);
+            }
           } else if (settings.autoTahan && prediction.confidence > tHold) {
             console.log(`Auto-Holding comment ${comment.id} (conf: ${prediction.confidence}, threshold: ${tHold})`);
-            handleModerate(comment.id, 'hold', prediction);
+            if (useBatch) {
+              pendingHold.push(comment.id);
+            } else {
+              handleModerate(comment.id, 'hold', prediction);
+            }
           }
         }
       } catch (err) {
         console.error('Gagal memprediksi komentar', comment.id);
+      }
+    }
+
+    // Process Batches
+    if (useBatch) {
+      if (pendingHold.length > 0) {
+        console.log(`Processing batch-hold for ${pendingHold.length} comments`);
+        try {
+          await youtubeService.moderateCommentsBatch(pendingHold, 'heldForReview', session.accessToken);
+          setComments(prev => prev.map(c => pendingHold.includes(c.id) ? { ...c, status: 'heldForReview' } : c));
+          // Note: History update omitted for brevity in batch, or could be added per item
+        } catch (err) { console.error('Batch hold failed', err); }
+      }
+      if (pendingReject.length > 0) {
+        console.log(`Processing batch-reject for ${pendingReject.length} comments`);
+        try {
+          await youtubeService.moderateCommentsBatch(pendingReject, 'rejected', session.accessToken);
+          setComments(prev => prev.map(c => pendingReject.includes(c.id) ? { ...c, status: 'rejected' } : c));
+        } catch (err) { console.error('Batch reject failed', err); }
       }
     }
   };
@@ -86,13 +119,18 @@ export default function CommentsPage() {
   useEffect(() => {
     let intervalId;
     if (isPolling && session?.accessToken) {
+      const settings = JSON.parse(localStorage.getItem('userSettings') || '{}');
+      const interval = (settings.pollingInterval || 120) * 1000;
+      
       const videoId = localStorage.getItem('selectedVideoId');
+      console.log(`Polling started with interval: ${interval}ms`);
       intervalId = setInterval(() => {
         fetchComments(videoId, session.accessToken, true);
-      }, 30000);
+      }, interval);
     }
     return () => clearInterval(intervalId);
   }, [isPolling, session, fetchComments]);
+
 
   const handleModerate = async (commentId, action, providedPrediction = null) => {
     setProcessingComment(commentId);

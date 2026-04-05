@@ -12,6 +12,8 @@ export default function PreferensiPage() {
   const [autoHapus, setAutoHapus] = useState(false);
   const [thresholdHold, setThresholdHold] = useState(70);
   const [thresholdReject, setThresholdReject] = useState(90);
+  const [pollingInterval, setPollingInterval] = useState(120);
+  const [batchModeration, setBatchModeration] = useState(true);
   const [saveStatus, setSaveStatus] = useState(null);
 
   useEffect(() => {
@@ -26,6 +28,8 @@ export default function PreferensiPage() {
       if (parsed.autoHapus !== undefined) setAutoHapus(parsed.autoHapus);
       if (parsed.thresholdHold !== undefined) setThresholdHold(parsed.thresholdHold);
       if (parsed.thresholdReject !== undefined) setThresholdReject(parsed.thresholdReject);
+      if (parsed.pollingInterval !== undefined) setPollingInterval(parsed.pollingInterval);
+      if (parsed.batchModeration !== undefined) setBatchModeration(parsed.batchModeration);
     }
   }, []);
 
@@ -33,12 +37,14 @@ export default function PreferensiPage() {
     const settings = { 
       bahasa, tema, kepadatan, notifKomentar, 
       autoTahan, autoHapus, 
-      thresholdHold, thresholdReject 
+      thresholdHold, thresholdReject,
+      pollingInterval, batchModeration
     };
     localStorage.setItem('userSettings', JSON.stringify(settings));
     setSaveStatus('success');
     setTimeout(() => setSaveStatus(null), 3000);
   };
+
 
   const Toggle = ({ checked, onChange }) => (
     <button
@@ -184,8 +190,6 @@ export default function PreferensiPage() {
           </svg>
           <h2 className="text-sm font-semibold text-gray-900">Notifikasi & Otomasi</h2>
         </div>
-        <p className="text-xs text-gray-400 mb-4">Kelola pemberitahuan dan fitur otomatis</p>
-
         <div className="space-y-6">
           {/* Notification settings */}
           <div className="flex items-center justify-between py-2 border-b border-gray-50">
@@ -237,6 +241,66 @@ export default function PreferensiPage() {
           </div>
         </div>
       </div>
+
+      {/* Pengaturan Kuota & Polling */}
+      <div className="bg-white rounded-xl border border-gray-200 p-6">
+        <div className="flex items-center gap-2 mb-1">
+          <svg className="w-5 h-5 text-amber-500" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
+            <path strokeLinecap="round" strokeLinejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 11-18 0 9 9 0 0118 0z" />
+          </svg>
+          <h2 className="text-sm font-semibold text-gray-900">Pengaturan Kuota & Polling</h2>
+        </div>
+        <p className="text-xs text-gray-400 mb-4">Optimalkan penggunaan kuota YouTube API harian Anda (10k unit/hari)</p>
+
+        <div className="space-y-6">
+          <SelectField
+            label="Interval Polling Komentar"
+            desc="Semakin lama intervalnya, semakin hemat kuota Anda. Direkomendasikan 2-5 menit."
+            value={pollingInterval}
+            onChange={(val) => setPollingInterval(parseInt(val))}
+            options={[
+              { value: 30, label: '30 Detik (Boros Kuota)' },
+              { value: 60, label: '1 Menit' },
+              { value: 120, label: '2 Menit (Rekomendasi)' },
+              { value: 300, label: '5 Menit (Sangat Hemat)' },
+              { value: 600, label: '10 Menit' },
+            ]}
+          />
+
+          <div className="flex items-center justify-between py-2 border-t border-gray-50">
+            <div>
+              <p className="text-sm font-medium text-gray-700">Moderasi Massal (Batching)</p>
+              <p className="text-[11px] text-gray-400">Kirim banyak perintah moderasi dalam 1 request. Menghemat 50x hingga 100x kuota.</p>
+            </div>
+            <Toggle checked={batchModeration} onChange={setBatchModeration} />
+          </div>
+        </div>
+
+        {/* Quota Info Box */}
+        <div className="mt-6 bg-blue-50 border border-blue-100 rounded-lg p-4">
+          <div className="flex items-center gap-2 mb-2">
+            <svg className="w-4 h-4 text-blue-600" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" d="M11.25 11.25l.041-.02a.75.75 0 011.063.852l-.708 2.836a.75.75 0 001.063.853l.041-.021M21 12a9 9 0 11-18 0 9 9 0 0118 0zm-9-3.75h.008v.008H12V8.25z" />
+            </svg>
+            <span className="text-xs font-semibold text-blue-700">Panduan Biaya Kuota</span>
+          </div>
+          <div className="grid grid-cols-2 gap-4">
+            <div className="space-y-1">
+              <p className="text-[10px] text-blue-700 font-medium uppercase">Ambil Data (List)</p>
+              <p className="text-xs text-blue-600">1 Unit per request</p>
+            </div>
+            <div className="space-y-1">
+              <p className="text-[10px] text-blue-700 font-medium uppercase">Moderasi (Moderate)</p>
+              <p className="text-xs text-blue-600">50 Unit per request (ID tunggal maupun massal)</p>
+            </div>
+          </div>
+          <p className="text-[10px] text-blue-500 mt-3 italic">
+            *Optimasi Antigravity: Kami mengganti fitur Search (100 unit) dengan PlaylistItems (1 unit) untuk efisiensi maksimal.
+          </p>
+        </div>
+
+      </div>
+
 
       {/* Pusat Bantuan */}
       <div className="bg-white rounded-xl border border-gray-200 p-6">
