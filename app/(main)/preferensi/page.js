@@ -294,9 +294,6 @@ export default function PreferensiPage() {
               <p className="text-xs text-blue-600">50 Unit per request (ID tunggal maupun massal)</p>
             </div>
           </div>
-          <p className="text-[10px] text-blue-500 mt-3 italic">
-            *Optimasi Antigravity: Kami mengganti fitur Search (100 unit) dengan PlaylistItems (1 unit) untuk efisiensi maksimal.
-          </p>
         </div>
 
       </div>

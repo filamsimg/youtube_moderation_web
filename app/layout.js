@@ -1,8 +1,6 @@
 import { Inter } from "next/font/google";
 import "./globals.css";
 import SessionProvider from "@/components/SessionProvider";
-import { getServerSession } from "next-auth";
-import { authOptions } from "@/lib/auth";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -11,13 +9,11 @@ export const metadata = {
   description: "AI-powered YouTube comment moderation using IndoBERT",
 };
 
-export default async function RootLayout({ children }) {
-  const session = await getServerSession(authOptions);
-
+export default function RootLayout({ children }) {
   return (
     <html lang="en">
       <body className={`${inter.className} bg-gray-50 text-slate-900 antialiased`}>
-        <SessionProvider session={session}>
+        <SessionProvider>
           {children}
         </SessionProvider>
       </body>

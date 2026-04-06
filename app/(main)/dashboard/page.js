@@ -2,6 +2,7 @@
 
 import { useSession } from 'next-auth/react';
 import { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 import { youtubeService } from '@/services/youtubeService';
 import Link from 'next/link';
 import { 
@@ -12,6 +13,7 @@ import {
 
 export default function DashboardPage() {
   const { data: session } = useSession();
+  const router = useRouter();
   const [channelInfo, setChannelInfo] = useState(null);
   const [videos, setVideos] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -304,7 +306,7 @@ export default function DashboardPage() {
                   onClick={() => {
                     localStorage.setItem('selectedVideoId', video.id.videoId);
                     localStorage.setItem('selectedVideoTitle', video.snippet.title);
-                    window.location.href = '/comments';
+                    router.push('/comments');
                   }}
                   className="flex items-center gap-3 p-3 rounded-lg hover:bg-gray-50 transition-colors cursor-pointer"
                 >

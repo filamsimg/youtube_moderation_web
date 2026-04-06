@@ -1,14 +1,31 @@
+'use client';
+
 import Sidebar from '@/components/Sidebar';
-import { getServerSession } from 'next-auth';
-import { authOptions } from '@/lib/auth';
-import { redirect } from 'next/navigation';
+import { useSession } from 'next-auth/react';
+import { useRouter } from 'next/navigation';
+import { useEffect } from 'react';
 
-export default async function MainLayout({ children }) {
-  const session = await getServerSession(authOptions);
+export default function MainLayout({ children }) {
+  const { data: session, status } = useSession();
+  const router = useRouter();
 
-  if (!session) {
-    redirect('/login');
+  useEffect(() => {
+    if (status === 'unauthenticated') {
+      router.replace('/login');
+    }
+  }, [status, router]);
+
+  // Show loading spinner while checking auth
+  if (status === 'loading') {
+    return (
+      <div className="flex min-h-screen items-center justify-center bg-gray-50">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-indigo-600"></div>
+      </div>
+    );
   }
+
+  // Don't render protected content if not authenticated
+  if (!session) return null;
 
   return (
     <div className="flex min-h-screen bg-gray-50">
