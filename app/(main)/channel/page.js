@@ -31,7 +31,7 @@ export default function ChannelPage() {
 
   const handleSelectChannel = (channelId) => {
     localStorage.setItem('selectedChannelId', channelId);
-    router.push('/video');
+    router.push('/comments');
   };
 
   if (loading) {
