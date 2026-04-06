@@ -3,10 +3,27 @@
 import { usePathname } from 'next/navigation';
 import Link from 'next/link';
 import { useSession, signOut } from 'next-auth/react';
+import { useState, useEffect } from 'react';
 
 export default function Sidebar() {
   const pathname = usePathname();
   const { data: session } = useSession();
+  const [isOpen, setIsOpen] = useState(false);
+
+  // Close sidebar on route change (mobile)
+  useEffect(() => {
+    setIsOpen(false);
+  }, [pathname]);
+
+  // Prevent body scroll when sidebar is open on mobile
+  useEffect(() => {
+    if (isOpen) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = '';
+    }
+    return () => { document.body.style.overflow = ''; };
+  }, [isOpen]);
 
   const navLinks = [
     {
@@ -49,11 +66,11 @@ export default function Sidebar() {
     },
   ];
 
-  return (
-    <aside className="flex flex-col w-[220px] min-h-screen bg-white border-r border-gray-200 sticky top-0">
+  const SidebarContent = () => (
+    <aside className="flex flex-col w-[220px] h-full bg-white border-r border-gray-200">
       {/* Logo */}
       <div className="px-5 py-5 flex items-center gap-3">
-        <div className="w-8 h-8 bg-indigo-600 rounded-lg flex items-center justify-center">
+        <div className="w-8 h-8 bg-indigo-600 rounded-lg flex items-center justify-center flex-shrink-0">
           <svg className="w-4 h-4 text-white" viewBox="0 0 24 24" fill="currentColor">
             <path d="M23.498 6.186a2.994 2.994 0 0 0-2.112-2.12C19.544 3.5 12 3.5 12 3.5s-7.544 0-9.386.566A2.994 2.994 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a2.994 2.994 0 0 0 2.112 2.12C4.456 20.5 12 20.5 12 20.5s7.544 0 9.386-.566a2.994 2.994 0 0 0 2.112-2.12C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/>
           </svg>
@@ -92,18 +109,22 @@ export default function Sidebar() {
         })}
       </nav>
 
-      {/* Connection status + dark mode + logout */}
+      {/* Bottom */}
       <div className="px-5 pb-5 space-y-4">
         <div className="flex items-center gap-2">
           <span className="w-2 h-2 bg-green-500 rounded-full"></span>
           <span className="text-xs text-green-600 font-medium">Terhubung</span>
         </div>
-        <div className="flex items-center justify-between">
-          <span className="text-xs text-gray-500">Mode Gelap</span>
-          <button className="relative w-9 h-5 bg-gray-200 rounded-full transition-colors hover:bg-gray-300 focus:outline-none">
-            <span className="absolute left-0.5 top-0.5 w-4 h-4 bg-white rounded-full shadow transition-transform"></span>
-          </button>
-        </div>
+        {session?.user && (
+          <div className="flex items-center gap-2 py-2">
+            <img
+              src={session.user.image || 'https://ui-avatars.com/api/?name=User&background=6366f1&color=fff&size=32'}
+              alt="avatar"
+              className="w-7 h-7 rounded-full border border-indigo-100 flex-shrink-0"
+            />
+            <p className="text-[11px] text-gray-500 truncate">{session.user.name}</p>
+          </div>
+        )}
         <button
           onClick={() => signOut({ callbackUrl: '/login' })}
           className="flex items-center gap-2 w-full px-3 py-2 text-[13px] font-medium text-red-600 hover:bg-red-50 rounded-lg transition-all duration-150 group"
@@ -115,5 +136,56 @@ export default function Sidebar() {
         </button>
       </div>
     </aside>
+  );
+
+  return (
+    <>
+      {/* Desktop Sidebar - always visible */}
+      <div className="hidden lg:flex lg:flex-col lg:w-[220px] lg:min-h-screen lg:sticky lg:top-0">
+        <SidebarContent />
+      </div>
+
+      {/* Mobile Hamburger Button - rendered by layout's header via context/prop,
+          but we expose it as a floating button for simplicity */}
+      <button
+        onClick={() => setIsOpen(true)}
+        className="lg:hidden fixed top-3.5 left-4 z-40 p-2 rounded-lg bg-white border border-gray-200 shadow-sm hover:bg-gray-50 transition-colors"
+        aria-label="Buka menu"
+      >
+        <svg className="w-5 h-5 text-gray-600" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor">
+          <path strokeLinecap="round" strokeLinejoin="round" d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5" />
+        </svg>
+      </button>
+
+      {/* Mobile Drawer Overlay */}
+      {isOpen && (
+        <div
+          className="lg:hidden fixed inset-0 z-50 flex"
+          onClick={() => setIsOpen(false)}
+        >
+          {/* Backdrop */}
+          <div className="fixed inset-0 bg-black/40 backdrop-blur-sm" />
+
+          {/* Drawer */}
+          <div
+            className="relative z-50 flex flex-col h-full shadow-2xl"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="flex items-center justify-end px-4 pt-4 pb-2 bg-white border-b border-gray-100">
+              <button
+                onClick={() => setIsOpen(false)}
+                className="p-1.5 rounded-lg hover:bg-gray-100 transition-colors"
+                aria-label="Tutup menu"
+              >
+                <svg className="w-5 h-5 text-gray-500" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
+            </div>
+            <SidebarContent />
+          </div>
+        </div>
+      )}
+    </>
   );
 }

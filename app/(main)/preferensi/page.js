@@ -110,10 +110,10 @@ export default function PreferensiPage() {
   );
 
   return (
-    <div className="animate-fade-in-up max-w-3xl space-y-6">
+    <div className="animate-fade-in-up max-w-3xl w-full space-y-5 lg:space-y-6">
       {/* Header */}
       <div>
-        <h1 className="text-xl font-semibold text-gray-900">Preferensi & Pengaturan</h1>
+        <h1 className="text-lg lg:text-xl font-semibold text-gray-900">Preferensi & Pengaturan</h1>
         <p className="text-sm text-gray-400 mt-0.5">Sesuaikan pengalaman moderasi Anda</p>
       </div>
 

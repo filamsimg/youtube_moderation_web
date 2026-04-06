@@ -15,21 +15,14 @@ export default function VideoPage() {
 
   useEffect(() => {
     const channelId = localStorage.getItem('selectedChannelId');
-    if (!channelId) {
-      router.push('/channel');
-      return;
-    }
-
-    if (session?.accessToken) {
-      loadVideos(channelId, session.accessToken);
-    }
+    if (!channelId) { router.push('/channel'); return; }
+    if (session?.accessToken) loadVideos(channelId, session.accessToken);
   }, [session, router]);
 
   const loadVideos = async (channelId, token) => {
     try {
       setLoading(true);
       const data = await youtubeService.getVideosByChannel(channelId, token);
-      // search list returns items where id object has videoId
       const videoItems = data.items.filter(item => item.id && item.id.videoId);
       setVideos(videoItems);
     } catch (err) {
@@ -55,11 +48,11 @@ export default function VideoPage() {
 
   if (error) {
     return (
-      <div className="bg-red-50 p-6 rounded-2xl flex items-start space-x-4 border border-red-100">
-        <AlertCircle className="w-6 h-6 text-red-600 flex-shrink-0 mt-0.5" />
+      <div className="bg-red-50 p-5 rounded-xl flex items-start gap-3 border border-red-100">
+        <AlertCircle className="w-5 h-5 text-red-600 flex-shrink-0 mt-0.5" />
         <div>
-          <h3 className="text-red-800 font-medium text-lg mb-1">Error fetching videos</h3>
-          <p className="text-red-600">{error}</p>
+          <h3 className="text-sm font-semibold text-red-800">Gagal memuat video</h3>
+          <p className="text-xs text-red-600 mt-0.5">{error}</p>
         </div>
       </div>
     );
@@ -67,41 +60,42 @@ export default function VideoPage() {
 
   if (videos.length === 0) {
     return (
-      <div className="text-center p-12 bg-white rounded-2xl shadow-sm border border-gray-200">
-        <Video className="mx-auto h-12 w-12 text-gray-400 mb-4" />
-        <h3 className="text-lg font-medium text-gray-900">No Videos Found</h3>
-        <p className="mt-1 text-gray-500">This channel has no uploaded videos.</p>
-        <button 
+      <div className="text-center p-10 bg-white rounded-xl border border-gray-200">
+        <Video className="mx-auto h-10 w-10 text-gray-300 mb-3" />
+        <h3 className="text-sm font-semibold text-gray-900">Tidak Ada Video</h3>
+        <p className="mt-1 text-xs text-gray-400">Kanal ini tidak memiliki video yang diunggah.</p>
+        <button
           onClick={() => router.push('/channel')}
-          className="mt-6 px-4 py-2 border border-indigo-600 text-indigo-600 hover:bg-indigo-50 rounded-lg transition-colors font-medium"
+          className="mt-5 px-4 py-2 border border-indigo-600 text-indigo-600 hover:bg-indigo-50 rounded-lg transition-colors text-sm font-medium"
         >
-          Select another channel
+          Pilih Kanal Lain
         </button>
       </div>
     );
   }
 
   return (
-    <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500 ease-out">
-      <div className="flex items-center justify-between">
+    <div className="animate-fade-in-up space-y-5">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
         <div>
-          <h1 className="text-3xl font-bold tracking-tight text-gray-900">Select Video</h1>
-          <p className="mt-1 text-gray-500">Choose a video below to moderate its comments.</p>
+          <h1 className="text-lg lg:text-xl font-bold text-gray-900">Pilih Video</h1>
+          <p className="text-sm text-gray-400 mt-0.5">Pilih video untuk memoderasi komentarnya.</p>
         </div>
         <button
           onClick={() => router.push('/channel')}
-          className="text-sm text-indigo-600 hover:underline font-medium"
+          className="text-sm text-indigo-600 hover:underline font-medium self-start sm:self-auto"
         >
-          &larr; Back to Channels
+          ← Ganti Kanal
         </button>
       </div>
 
-      <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+      {/* Responsive grid: 1 col mobile, 2 sm, 3 lg, 4 xl */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
         {videos.map((item) => (
           <div
             key={item.id.videoId}
             onClick={() => handleSelectVideo(item.id.videoId, item.snippet.title)}
-            className="group flex flex-col overflow-hidden rounded-2xl shadow-sm bg-white border border-gray-200 hover:shadow-xl hover:-translate-y-1 transition-all cursor-pointer"
+            className="group flex flex-col overflow-hidden rounded-xl shadow-sm bg-white border border-gray-200 hover:shadow-md hover:-translate-y-0.5 transition-all cursor-pointer"
           >
             <div className="relative aspect-video bg-gray-100 overflow-hidden">
               <img
@@ -109,15 +103,15 @@ export default function VideoPage() {
                 alt={item.snippet.title}
                 className="object-cover w-full h-full transform group-hover:scale-105 transition-transform duration-500"
               />
-              <div className="absolute inset-0 bg-black/20 group-hover:bg-transparent transition-colors duration-300"></div>
+              <div className="absolute inset-0 bg-black/20 group-hover:bg-black/0 transition-colors duration-300"></div>
               <PlayCircle className="absolute bottom-3 right-3 w-8 h-8 text-white drop-shadow-md opacity-0 group-hover:opacity-100 transition-opacity" />
             </div>
             <div className="p-4 flex-1 flex flex-col">
               <h3 className="text-sm font-semibold text-gray-900 line-clamp-2 leading-snug group-hover:text-indigo-600 transition-colors">
                 {item.snippet.title}
               </h3>
-              <p className="text-xs text-gray-500 mt-2 mt-auto">
-                {new Date(item.snippet.publishedAt).toLocaleDateString()}
+              <p className="text-xs text-gray-400 mt-2">
+                {new Date(item.snippet.publishedAt).toLocaleDateString('id-ID')}
               </p>
             </div>
           </div>

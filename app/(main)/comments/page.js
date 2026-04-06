@@ -16,7 +16,7 @@ export default function CommentsPage() {
   const [predictions, setPredictions] = useState({});
   const [isPolling, setIsPolling] = useState(false);
   const [processingComment, setProcessingComment] = useState(null);
-  const [filter, setFilter] = useState('semua'); // semua, spam, normal
+  const [filter, setFilter] = useState('semua');
 
   const fetchComments = useCallback(async (videoId, token, isSilent = false) => {
     try {
@@ -35,7 +35,6 @@ export default function CommentsPage() {
     } finally {
       if (!isSilent) setLoading(false);
     }
-
   }, []);
 
   const predictComments = async (commentList) => {
@@ -58,22 +57,13 @@ export default function CommentsPage() {
           [comment.id]: prediction,
         }));
 
-        // Auto-Moderation Logic (Dynamic Thresholds)
         if (prediction.label?.toLowerCase() === 'spam') {
           if (settings.autoHapus && prediction.confidence > tReject) {
-            console.log(`Auto-Rejecting comment ${comment.id} (conf: ${prediction.confidence}, threshold: ${tReject})`);
-            if (useBatch) {
-              pendingReject.push(comment.id);
-            } else {
-              handleModerate(comment.id, 'reject', prediction);
-            }
+            if (useBatch) pendingReject.push(comment.id);
+            else handleModerate(comment.id, 'reject', prediction);
           } else if (settings.autoTahan && prediction.confidence > tHold) {
-            console.log(`Auto-Holding comment ${comment.id} (conf: ${prediction.confidence}, threshold: ${tHold})`);
-            if (useBatch) {
-              pendingHold.push(comment.id);
-            } else {
-              handleModerate(comment.id, 'hold', prediction);
-            }
+            if (useBatch) pendingHold.push(comment.id);
+            else handleModerate(comment.id, 'hold', prediction);
           }
         }
       } catch (err) {
@@ -81,18 +71,14 @@ export default function CommentsPage() {
       }
     }
 
-    // Process Batches
     if (useBatch) {
       if (pendingHold.length > 0) {
-        console.log(`Processing batch-hold for ${pendingHold.length} comments`);
         try {
           await youtubeService.moderateCommentsBatch(pendingHold, 'heldForReview', session.accessToken);
           setComments(prev => prev.map(c => pendingHold.includes(c.id) ? { ...c, status: 'heldForReview' } : c));
-          // Note: History update omitted for brevity in batch, or could be added per item
         } catch (err) { console.error('Batch hold failed', err); }
       }
       if (pendingReject.length > 0) {
-        console.log(`Processing batch-reject for ${pendingReject.length} comments`);
         try {
           await youtubeService.moderateCommentsBatch(pendingReject, 'rejected', session.accessToken);
           setComments(prev => prev.map(c => pendingReject.includes(c.id) ? { ...c, status: 'rejected' } : c));
@@ -104,16 +90,9 @@ export default function CommentsPage() {
   useEffect(() => {
     const videoId = localStorage.getItem('selectedVideoId');
     const vTitle = localStorage.getItem('selectedVideoTitle');
-
-    if (!videoId) {
-      router.push('/video');
-      return;
-    }
-
+    if (!videoId) { router.push('/video'); return; }
     setVideoTitle(vTitle || 'Video tidak diketahui');
-    if (session?.accessToken) {
-      fetchComments(videoId, session.accessToken);
-    }
+    if (session?.accessToken) fetchComments(videoId, session.accessToken);
   }, [session, router, fetchComments]);
 
   useEffect(() => {
@@ -121,16 +100,11 @@ export default function CommentsPage() {
     if (isPolling && session?.accessToken) {
       const settings = JSON.parse(localStorage.getItem('userSettings') || '{}');
       const interval = (settings.pollingInterval || 120) * 1000;
-      
       const videoId = localStorage.getItem('selectedVideoId');
-      console.log(`Polling started with interval: ${interval}ms`);
-      intervalId = setInterval(() => {
-        fetchComments(videoId, session.accessToken, true);
-      }, interval);
+      intervalId = setInterval(() => fetchComments(videoId, session.accessToken, true), interval);
     }
     return () => clearInterval(intervalId);
   }, [isPolling, session, fetchComments]);
-
 
   const handleModerate = async (commentId, action, providedPrediction = null) => {
     setProcessingComment(commentId);
@@ -139,7 +113,6 @@ export default function CommentsPage() {
       await youtubeService.moderateComment(commentId, statusMap[action], session.accessToken);
       setComments(prev => prev.map(c => c.id === commentId ? { ...c, status: statusMap[action] } : c));
 
-      // Save to moderation history in localStorage
       const comment = comments.find(c => c.id === commentId);
       if (comment) {
         const prediction = providedPrediction || predictions[comment.id];
@@ -177,13 +150,8 @@ export default function CommentsPage() {
       rejected: { label: 'Ditolak', cls: 'bg-red-100 text-red-700' },
     };
     const s = map[status] || map.published;
-    const desc = {
-      published: 'Komentar aman & tampil di publik',
-      heldForReview: 'Komentar ditahan untuk ditinjau',
-      rejected: 'Komentar ditolak/disembunyikan'
-    };
     return (
-      <span className={`text-[11px] font-medium px-2 py-0.5 rounded-full ${s.cls}`} title={desc[status] || desc.published}>
+      <span className={`text-[11px] font-medium px-2 py-0.5 rounded-full ${s.cls}`}>
         {s.label}
       </span>
     );
@@ -199,7 +167,7 @@ export default function CommentsPage() {
 
   if (error) {
     return (
-      <div className="bg-red-50 p-6 rounded-xl flex items-start gap-3 border border-red-100">
+      <div className="bg-red-50 p-5 rounded-xl flex items-start gap-3 border border-red-100">
         <svg className="w-5 h-5 text-red-500 flex-shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
           <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126zM12 15.75h.007v.008H12v-.008z" />
         </svg>
@@ -212,20 +180,19 @@ export default function CommentsPage() {
   }
 
   return (
-    <div className="animate-fade-in-up space-y-5">
+    <div className="animate-fade-in-up space-y-4">
       {/* Header */}
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
         <div>
-          <h1 className="text-xl font-semibold text-gray-900">Antrian Moderasi</h1>
-          <p className="text-sm text-gray-400 mt-0.5">
+          <h1 className="text-lg lg:text-xl font-semibold text-gray-900">Antrian Moderasi</h1>
+          <p className="text-xs text-gray-400 mt-0.5 truncate max-w-[260px] sm:max-w-none">
             Video: <span className="font-medium text-gray-600">{videoTitle}</span>
           </p>
         </div>
-        <div className="flex items-center gap-3">
-          {/* Polling toggle */}
+        <div className="flex items-center gap-2 flex-shrink-0">
           <button
             onClick={() => setIsPolling(!isPolling)}
-            className={`flex items-center gap-2 px-3 py-2 rounded-lg text-xs font-medium border transition-all ${
+            className={`flex items-center gap-1.5 px-3 py-2 rounded-lg text-xs font-medium border transition-all ${
               isPolling
                 ? 'bg-green-50 border-green-200 text-green-700'
                 : 'bg-white border-gray-200 text-gray-600 hover:bg-gray-50'
@@ -234,7 +201,8 @@ export default function CommentsPage() {
             <svg className={`w-3.5 h-3.5 ${isPolling ? 'animate-spin text-green-500' : 'text-gray-400'}`} fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0l3.181 3.183a8.25 8.25 0 0013.803-3.7M4.031 9.865a8.25 8.25 0 0113.803-3.7l3.181 3.182" />
             </svg>
-            {isPolling ? 'Polling Aktif (30d)' : 'Mulai Polling'}
+            <span className="hidden sm:inline">{isPolling ? 'Polling Aktif' : 'Mulai Polling'}</span>
+            <span className="sm:hidden">{isPolling ? 'On' : 'Poll'}</span>
           </button>
           <button
             onClick={() => {
@@ -249,12 +217,12 @@ export default function CommentsPage() {
       </div>
 
       {/* Filters */}
-      <div className="flex items-center gap-2">
+      <div className="flex items-center gap-2 overflow-x-auto pb-1">
         {['semua', 'spam', 'normal'].map((f) => (
           <button
             key={f}
             onClick={() => setFilter(f)}
-            className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-all capitalize ${
+            className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-all capitalize whitespace-nowrap ${
               filter === f
                 ? 'bg-gray-900 text-white'
                 : 'bg-white border border-gray-200 text-gray-600 hover:bg-gray-50'
@@ -265,7 +233,7 @@ export default function CommentsPage() {
         ))}
       </div>
 
-      {/* Table */}
+      {/* Empty state */}
       {filteredComments.length === 0 ? (
         <div className="text-center py-16 bg-white rounded-xl border border-gray-200">
           <svg className="w-12 h-12 text-gray-300 mx-auto mb-3" fill="none" viewBox="0 0 24 24" strokeWidth={1} stroke="currentColor">
@@ -274,99 +242,138 @@ export default function CommentsPage() {
           <p className="text-sm text-gray-500">Tidak ada komentar ditemukan</p>
         </div>
       ) : (
-        <div className="bg-white rounded-xl border border-gray-200 overflow-hidden">
-          <div className="overflow-x-auto">
-            <table className="w-full">
-              <thead>
-                <tr className="border-b border-gray-100">
-                  <th className="px-5 py-3 text-left text-[11px] font-semibold text-gray-500 uppercase tracking-wider">Pengguna</th>
-                  <th className="px-5 py-3 text-left text-[11px] font-semibold text-gray-500 uppercase tracking-wider">Komentar</th>
-                  <th className="px-5 py-3 text-left text-[11px] font-semibold text-gray-500 uppercase tracking-wider">Analisis AI</th>
-                  <th className="px-5 py-3 text-left text-[11px] font-semibold text-gray-500 uppercase tracking-wider">Status Moderasi</th>
-                  <th className="px-5 py-3 text-right text-[11px] font-semibold text-gray-500 uppercase tracking-wider">Tindakan</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-gray-100">
-                {filteredComments.map((comment) => {
-                  const prediction = predictions[comment.id];
-                  const isSpam = prediction?.label?.toLowerCase() === 'spam';
-                  const isProcessing = processingComment === comment.id;
+        <>
+          {/* Desktop Table */}
+          <div className="hidden md:block bg-white rounded-xl border border-gray-200 overflow-hidden">
+            <div className="overflow-x-auto">
+              <table className="w-full">
+                <thead>
+                  <tr className="border-b border-gray-100">
+                    <th className="px-5 py-3 text-left text-[11px] font-semibold text-gray-500 uppercase tracking-wider">Pengguna</th>
+                    <th className="px-5 py-3 text-left text-[11px] font-semibold text-gray-500 uppercase tracking-wider">Komentar</th>
+                    <th className="px-5 py-3 text-left text-[11px] font-semibold text-gray-500 uppercase tracking-wider">Analisis AI</th>
+                    <th className="px-5 py-3 text-left text-[11px] font-semibold text-gray-500 uppercase tracking-wider">Status</th>
+                    <th className="px-5 py-3 text-right text-[11px] font-semibold text-gray-500 uppercase tracking-wider">Tindakan</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-gray-100">
+                  {filteredComments.map((comment) => {
+                    const prediction = predictions[comment.id];
+                    const isSpam = prediction?.label?.toLowerCase() === 'spam';
+                    const isProcessing = processingComment === comment.id;
 
-                  return (
-                    <tr key={comment.id} className="hover:bg-gray-50/50 transition-colors group">
-                      <td className="px-5 py-3.5">
-                        <div className="flex items-center gap-3">
-                          <img className="w-8 h-8 rounded-full" src={comment.authorProfileImageUrl} alt="" />
-                          <div>
-                            <p className="text-xs font-medium text-gray-800">{comment.authorDisplayName}</p>
-                            <p className="text-[10px] text-gray-400">{new Date(comment.publishedAt).toLocaleDateString('id-ID')}</p>
+                    return (
+                      <tr key={comment.id} className="hover:bg-gray-50/50 transition-colors group">
+                        <td className="px-5 py-3.5">
+                          <div className="flex items-center gap-3">
+                            <img className="w-8 h-8 rounded-full flex-shrink-0" src={comment.authorProfileImageUrl} alt="" />
+                            <div>
+                              <p className="text-xs font-medium text-gray-800">{comment.authorDisplayName}</p>
+                              <p className="text-[10px] text-gray-400">{new Date(comment.publishedAt).toLocaleDateString('id-ID')}</p>
+                            </div>
                           </div>
-                        </div>
-                      </td>
-                      <td className="px-5 py-3.5 max-w-xs">
-                        <p className="text-xs text-gray-700 line-clamp-2" dangerouslySetInnerHTML={{ __html: comment.textDisplay }} />
-                      </td>
-                      <td className="px-5 py-3.5">
-                        {!prediction ? (
-                          <div className="flex items-center gap-1.5">
-                            <div className="animate-spin rounded-full h-3 w-3 border-b-2 border-indigo-500"></div>
-                            <span className="text-[10px] text-gray-400">Menganalisis...</span>
+                        </td>
+                        <td className="px-5 py-3.5 max-w-xs">
+                          <p className="text-xs text-gray-700 line-clamp-2" dangerouslySetInnerHTML={{ __html: comment.textDisplay }} />
+                        </td>
+                        <td className="px-5 py-3.5">
+                          {!prediction ? (
+                            <div className="flex items-center gap-1.5">
+                              <div className="animate-spin rounded-full h-3 w-3 border-b-2 border-indigo-500"></div>
+                              <span className="text-[10px] text-gray-400">Menganalisis...</span>
+                            </div>
+                          ) : (
+                            <div>
+                              <span className={`text-[11px] font-semibold px-2 py-0.5 rounded-full ${isSpam ? 'bg-red-100 text-red-700' : 'bg-green-100 text-green-700'}`}>
+                                {isSpam ? '🚨 Spam' : '✅ Normal'}
+                              </span>
+                              <p className="text-[10px] text-gray-400 mt-1">Conf: {Math.round(prediction.confidence * 100)}%</p>
+                            </div>
+                          )}
+                        </td>
+                        <td className="px-5 py-3.5">{getStatusBadge(comment.status)}</td>
+                        <td className="px-5 py-3.5 text-right">
+                          <div className="flex items-center justify-end gap-1 opacity-40 group-hover:opacity-100 transition-opacity">
+                            <button disabled={isProcessing} onClick={() => handleModerate(comment.id, 'publish')} title="Terbitkan" className="p-1.5 rounded-md text-green-600 hover:bg-green-50 disabled:opacity-30">
+                              <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+                            </button>
+                            <button disabled={isProcessing} onClick={() => handleModerate(comment.id, 'hold')} title="Tahan" className="p-1.5 rounded-md text-amber-600 hover:bg-amber-50 disabled:opacity-30">
+                              <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+                            </button>
+                            <button disabled={isProcessing} onClick={() => handleModerate(comment.id, 'reject')} title="Tolak" className="p-1.5 rounded-md text-red-600 hover:bg-red-50 disabled:opacity-30">
+                              <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" d="M9.75 9.75l4.5 4.5m0-4.5l-4.5 4.5M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+                            </button>
                           </div>
-                        ) : (
-                          <div>
-                            <span className={`text-[11px] font-semibold px-2 py-0.5 rounded-full ${
-                              isSpam ? 'bg-red-100 text-red-700' : 'bg-green-100 text-green-700'
-                            }`}>
-                              {isSpam ? '🚨 Spam' : '✅ Normal'}
-                            </span>
-                            <p className="text-[10px] text-gray-400 mt-1">Conf: {Math.round(prediction.confidence * 100)}%</p>
-                          </div>
-                        )}
-                      </td>
-                      <td className="px-5 py-3.5">
-                        {getStatusBadge(comment.status)}
-                      </td>
-                      <td className="px-5 py-3.5 text-right">
-                        <div className="flex items-center justify-end gap-1 opacity-40 group-hover:opacity-100 transition-opacity">
-                          <button
-                            disabled={isProcessing}
-                            onClick={() => handleModerate(comment.id, 'publish')}
-                            title="Terbitkan"
-                            className="p-1.5 rounded-md text-green-600 hover:bg-green-50 disabled:opacity-30"
-                          >
-                            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor">
-                              <path strokeLinecap="round" strokeLinejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                            </svg>
-                          </button>
-                          <button
-                            disabled={isProcessing}
-                            onClick={() => handleModerate(comment.id, 'hold')}
-                            title="Tahan"
-                            className="p-1.5 rounded-md text-amber-600 hover:bg-amber-50 disabled:opacity-30"
-                          >
-                            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor">
-                              <path strokeLinecap="round" strokeLinejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 11-18 0 9 9 0 0118 0z" />
-                            </svg>
-                          </button>
-                          <button
-                            disabled={isProcessing}
-                            onClick={() => handleModerate(comment.id, 'reject')}
-                            title="Tolak"
-                            className="p-1.5 rounded-md text-red-600 hover:bg-red-50 disabled:opacity-30"
-                          >
-                            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor">
-                              <path strokeLinecap="round" strokeLinejoin="round" d="M9.75 9.75l4.5 4.5m0-4.5l-4.5 4.5M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                            </svg>
-                          </button>
-                        </div>
-                      </td>
-                    </tr>
-                  );
-                })}
-              </tbody>
-            </table>
+                        </td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+            </div>
           </div>
-        </div>
+
+          {/* Mobile Cards */}
+          <div className="md:hidden space-y-3">
+            {filteredComments.map((comment) => {
+              const prediction = predictions[comment.id];
+              const isSpam = prediction?.label?.toLowerCase() === 'spam';
+              const isProcessing = processingComment === comment.id;
+
+              return (
+                <div key={comment.id} className="bg-white rounded-xl border border-gray-200 p-4 space-y-3">
+                  {/* User + date */}
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      <img className="w-8 h-8 rounded-full flex-shrink-0" src={comment.authorProfileImageUrl} alt="" />
+                      <div>
+                        <p className="text-xs font-medium text-gray-800">{comment.authorDisplayName}</p>
+                        <p className="text-[10px] text-gray-400">{new Date(comment.publishedAt).toLocaleDateString('id-ID')}</p>
+                      </div>
+                    </div>
+                    {getStatusBadge(comment.status)}
+                  </div>
+
+                  {/* Comment text */}
+                  <p className="text-xs text-gray-700 line-clamp-3" dangerouslySetInnerHTML={{ __html: comment.textDisplay }} />
+
+                  {/* AI + Actions */}
+                  <div className="flex items-center justify-between pt-1 border-t border-gray-50">
+                    {/* AI label */}
+                    <div>
+                      {!prediction ? (
+                        <div className="flex items-center gap-1.5">
+                          <div className="animate-spin rounded-full h-3 w-3 border-b-2 border-indigo-500"></div>
+                          <span className="text-[10px] text-gray-400">Menganalisis...</span>
+                        </div>
+                      ) : (
+                        <div className="flex items-center gap-2">
+                          <span className={`text-[11px] font-semibold px-2 py-0.5 rounded-full ${isSpam ? 'bg-red-100 text-red-700' : 'bg-green-100 text-green-700'}`}>
+                            {isSpam ? '🚨 Spam' : '✅ Normal'}
+                          </span>
+                          <span className="text-[10px] text-gray-400">{Math.round(prediction.confidence * 100)}%</span>
+                        </div>
+                      )}
+                    </div>
+
+                    {/* Action buttons */}
+                    <div className="flex items-center gap-1">
+                      <button disabled={isProcessing} onClick={() => handleModerate(comment.id, 'publish')} title="Terbitkan" className="p-2 rounded-lg text-green-600 hover:bg-green-50 disabled:opacity-30 active:scale-95 transition-all">
+                        <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+                      </button>
+                      <button disabled={isProcessing} onClick={() => handleModerate(comment.id, 'hold')} title="Tahan" className="p-2 rounded-lg text-amber-600 hover:bg-amber-50 disabled:opacity-30 active:scale-95 transition-all">
+                        <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+                      </button>
+                      <button disabled={isProcessing} onClick={() => handleModerate(comment.id, 'reject')} title="Tolak" className="p-2 rounded-lg text-red-600 hover:bg-red-50 disabled:opacity-30 active:scale-95 transition-all">
+                        <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" d="M9.75 9.75l4.5 4.5m0-4.5l-4.5 4.5M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </>
       )}
     </div>
   );

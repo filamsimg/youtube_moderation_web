@@ -15,7 +15,6 @@ export default function MainLayout({ children }) {
     }
   }, [status, router]);
 
-  // Show loading spinner while checking auth
   if (status === 'loading') {
     return (
       <div className="flex min-h-screen items-center justify-center bg-gray-50">
@@ -24,7 +23,6 @@ export default function MainLayout({ children }) {
     );
   }
 
-  // Don't render protected content if not authenticated
   if (!session) return null;
 
   return (
@@ -32,26 +30,30 @@ export default function MainLayout({ children }) {
       <Sidebar />
       <div className="flex-1 flex flex-col min-w-0">
         {/* Top header bar */}
-        <header className="h-14 bg-white border-b border-gray-200 flex items-center justify-between px-6 sticky top-0 z-10">
+        <header className="h-14 bg-white border-b border-gray-200 flex items-center justify-between px-4 lg:px-6 sticky top-0 z-30">
+          {/* Left: hamburger placeholder on mobile, icon on desktop */}
           <div className="flex items-center gap-2">
-            <svg className="w-4 h-4 text-gray-400" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
+            {/* Spacer for hamburger button on mobile */}
+            <div className="w-9 h-9 lg:hidden" />
+            <svg className="hidden lg:block w-4 h-4 text-gray-400" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" d="M3.75 6A2.25 2.25 0 016 3.75h2.25A2.25 2.25 0 0110.5 6v2.25a2.25 2.25 0 01-2.25 2.25H6a2.25 2.25 0 01-2.25-2.25V6zM3.75 15.75A2.25 2.25 0 016 13.5h2.25a2.25 2.25 0 012.25 2.25V18a2.25 2.25 0 01-2.25 2.25H6A2.25 2.25 0 013.75 18v-2.25zM13.5 6a2.25 2.25 0 012.25-2.25H18A2.25 2.25 0 0120.25 6v2.25A2.25 2.25 0 0118 10.5h-2.25a2.25 2.25 0 01-2.25-2.25V6zM13.5 15.75a2.25 2.25 0 012.25-2.25H18a2.25 2.25 0 012.25 2.25V18A2.25 2.25 0 0118 20.25h-2.25A2.25 2.25 0 0113.5 18v-2.25z" />
             </svg>
           </div>
-          <div className="flex items-center gap-3">
-            <div className="text-right">
+          {/* Right: user info */}
+          <div className="flex items-center gap-2 lg:gap-3">
+            <div className="text-right hidden sm:block">
               <p className="text-xs font-medium text-gray-700">{session?.user?.name || 'Kanal YouTube Saya'}</p>
               <p className="text-[10px] text-gray-400">@channel_saya</p>
             </div>
             <img
               src={session?.user?.image || 'https://ui-avatars.com/api/?name=User&background=6366f1&color=fff&size=32'}
               alt="avatar"
-              className="w-8 h-8 rounded-full border-2 border-indigo-100"
+              className="w-8 h-8 rounded-full border-2 border-indigo-100 flex-shrink-0"
             />
           </div>
         </header>
         {/* Page content */}
-        <main className="flex-1 p-6 overflow-y-auto">
+        <main className="flex-1 p-4 lg:p-6 overflow-y-auto">
           {children}
         </main>
       </div>
