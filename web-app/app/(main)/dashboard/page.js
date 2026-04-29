@@ -1,6 +1,6 @@
 'use client';
 
-import { useSession } from 'next-auth/react';
+import { useSession, signOut } from 'next-auth/react';
 import { useState, useEffect } from 'react';
 import { youtubeService } from '@/services/youtubeService';
 import Link from 'next/link';
@@ -20,6 +20,16 @@ export default function DashboardPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [history, setHistory] = useState([]);
+
+  // Helper untuk menangani sesi habis
+  const handleApiError = (err) => {
+    if (err.isExpired) {
+      alert("Sesi Google Anda telah berakhir. Silakan Login kembali.");
+      signOut({ callbackUrl: '/login' });
+      return true;
+    }
+    return false;
+  };
 
   useEffect(() => {
     if (session?.accessToken) {
@@ -59,6 +69,7 @@ export default function DashboardPage() {
         }
       }
     } catch (err) {
+      if (handleApiError(err)) return;
       console.error('Gagal memuat data dashboard:', err);
       setError(err.message || 'Terjadi kesalahan saat memuat data');
     } finally {

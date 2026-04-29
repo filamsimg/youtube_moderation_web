@@ -4,12 +4,23 @@ import { useState, useEffect, useCallback, useRef } from 'react';
 import { useSession } from 'next-auth/react';
 import { youtubeService } from '@/services/youtubeService';
 import { useRouter } from 'next/navigation';
+import { signOut } from 'next-auth/react';
 import axios from 'axios';
 import { historyService } from '@/services/historyService';
 
 export default function CommentsPage() {
   const { data: session } = useSession();
   const router = useRouter();
+
+  // Helper untuk menangani sesi habis
+  const handleApiError = (err) => {
+    if (err.isExpired) {
+      alert("Sesi Google Anda telah berakhir demi keamanan. Silakan Login kembali.");
+      signOut({ callbackUrl: '/login' });
+      return true;
+    }
+    return false;
+  };
 
   // ── Video state ──────────────────────────────────────────────
   const [videos, setVideos] = useState([]);
@@ -83,7 +94,9 @@ export default function CommentsPage() {
       const videoItems = (data.items || []).filter(item => item.id?.videoId);
       setVideos(videoItems);
     } catch (err) {
-      console.error('Gagal memuat video:', err);
+      if (handleApiError(err)) return;
+      console.error('Error load videos:', err);
+      setVideosError(err.message);
     } finally {
       setVideosLoading(false);
     }

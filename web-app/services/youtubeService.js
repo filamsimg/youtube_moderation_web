@@ -9,10 +9,11 @@ const extractError = (err) => {
     return {
       message: firstDetail?.message || googleError.message || err.message,
       reason: firstDetail?.reason || 'unknown',
-      status: err.response.status
+      status: err.response.status,
+      isExpired: err.response.status === 401 // Deteksi sesi habis
     };
   }
-  return { message: err.message, reason: 'network_error', status: 500 };
+  return { message: err.message, reason: 'network_error', status: 500, isExpired: false };
 };
 
 export const youtubeService = {
