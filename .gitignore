@@ -1,37 +1,27 @@
-# See https://help.github.com/articles/ignoring-files/ for more about ignoring files.
+# Node.js
+web-app/node_modules/
+web-app/.next/
+web-app/out/
+web-app/build/
 
-# dependencies
-/node_modules
-/.pnp
-.pnp.js
-.yarn/install-state.gz
+# Python
+model-api/venv/
+model-api/__pycache__/
+model-api/*.pyc
+model-api/.pytest_cache/
 
-# testing
-/coverage
+# Environment Variables (IMPORTANT: Keep secrets out of GitHub)
+web-app/.env
+web-app/.env.local
+model-api/.env
 
-# next.js
-/.next/
-/out/
+# AI Models (Raksasa - Upload to Hugging Face instead)
+model_judol_indobertweet/
+*.bin
+*.pt
+*.safetensors
+*.h5
 
-# production
-/build
-
-# misc
+# OS Files
 .DS_Store
-*.pem
-
-# debug
-npm-debug.log*
-yarn-debug.log*
-yarn-error.log*
-
-# local env files
-.env
-.env*.local
-
-# vercel
-.vercel
-
-# typescript
-*.tsbuildinfo
-next-env.d.ts
+Thumbs.db

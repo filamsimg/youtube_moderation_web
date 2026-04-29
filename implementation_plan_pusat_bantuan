@@ -1,0 +1,21 @@
+# Walkthrough: Pengisian Konten Pusat Bantuan
+
+Saya telah memperbarui bagian **Pusat Bantuan** di halaman Preferensi agar lebih informatif dan interaktif.
+
+## Perubahan yang Dilakukan
+
+### 1. Komponen Akordion Interaktif
+- **Fungsionalitas**: Sekarang setiap item di Pusat Bantuan bisa diklik untuk membuka/menutup isinya.
+- **Animasi**: Menambahkan transisi rotasi pada ikon panah dan efek *fade-in* saat konten muncul.
+
+### 2. Pengisian Konten Edukatif
+- **Pedoman Moderasi**: Berisi definisi operasional Spam Judol dan kapan harus melakukan *Reject* atau *Hold*.
+- **Contoh Area Abu-abu**: Memberikan contoh nyata teks yang sering digunakan pelaku spam untuk mengelabui filter AI (seperti penggunaan titik di antara huruf).
+- **Kebijakan Privasi**: Menjelaskan penggunaan OAuth2 dan jaminan keamanan data.
+- **Tips Efisiensi**: Panduan praktis menghemat kuota API YouTube dan penggunaan fitur *Batching*.
+
+## Cara Verifikasi
+1. Buka menu **Preferensi** di aplikasi.
+2. Gulir ke bawah hingga menemukan bagian **Pusat Bantuan**.
+3. Klik pada salah satu judul (misal: "Contoh Komentar Area Abu-abu").
+4. Pastikan teks penjelasan muncul di bawahnya dengan rapi.
