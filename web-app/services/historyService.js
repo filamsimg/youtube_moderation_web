@@ -21,7 +21,7 @@ export const historyService = {
     if (!email) return null;
     const { data, error } = await supabase
       .from('moderation_history')
-      .insert([{
+      .upsert({
         user_email: email,
         channel_id: item.channelId,
         comment_id: item.commentId,
@@ -33,7 +33,7 @@ export const historyService = {
         ai_confidence: item.aiConfidence,
         sentiment: item.sentiment,
         sentiment_score: item.sentimentScore
-      }]);
+      }, { onConflict: 'comment_id' }); // Cegah duplikat berdasarkan ID Komentar
     
     if (error) {
       console.error('Error saving action:', error);
@@ -60,7 +60,7 @@ export const historyService = {
 
     const { data, error } = await supabase
       .from('moderation_history')
-      .insert(records);
+      .upsert(records, { onConflict: 'comment_id' });
     
     if (error) {
       console.error('Error saving batch actions:', error);
