@@ -10,6 +10,7 @@ import {
   BarChart, Bar, XAxis, YAxis, CartesianGrid,
   Sector
 } from 'recharts';
+import { historyService } from '@/services/historyService';
 
 export default function DashboardPage() {
   const { data: session } = useSession();
@@ -18,6 +19,7 @@ export default function DashboardPage() {
   const [videos, setVideos] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [history, setHistory] = useState([]);
 
   useEffect(() => {
     if (session?.accessToken) {
@@ -40,6 +42,21 @@ export default function DashboardPage() {
         const videoData = await youtubeService.getVideosByChannel(channel.id, token);
         const videoItems = (videoData.items || []).filter(item => item.id?.videoId).slice(0, 5);
         setVideos(videoItems);
+        
+        // Fetch history from Supabase
+        if (session?.user?.email) {
+          const dbHistory = await historyService.getHistory(session.user.email);
+          const mapped = dbHistory.map(item => ({
+            ...item,
+            commentText: item.comment_text,
+            videoTitle: item.video_title,
+            aiLabel: item.ai_label,
+            aiConfidence: item.ai_confidence,
+            sentimentScore: item.sentiment_score,
+            timestamp: item.created_at
+          }));
+          setHistory(mapped);
+        }
       }
     } catch (err) {
       console.error('Gagal memuat data dashboard:', err);
@@ -48,16 +65,6 @@ export default function DashboardPage() {
       setLoading(false);
     }
   };
-
-  const getHistory = () => {
-    try {
-      return JSON.parse(localStorage.getItem('moderationHistory') || '[]');
-    } catch {
-      return [];
-    }
-  };
-
-  const history = typeof window !== 'undefined' ? getHistory() : [];
   const totalPublished = history.filter(h => h.action === 'published').length;
   const totalRejected = history.filter(h => h.action === 'rejected').length;
   const totalHeld = history.filter(h => h.action === 'heldForReview').length;
@@ -78,6 +85,17 @@ export default function DashboardPage() {
 
   const COLORS = ['#10B981', '#EF4444'];
   const ACTION_COLORS = ['#3B82F6', '#F59E0B', '#EF4444'];
+  const SENTIMENT_COLORS = ['#10B981', '#EF4444', '#9CA3AF'];
+
+  const positiveCount = history.filter(h => h.sentiment === 'positive').length;
+  const negativeCount = history.filter(h => h.sentiment === 'negative').length;
+  const neutralCount = history.filter(h => h.sentiment === 'neutral').length;
+
+  const sentimentData = [
+    { name: 'Positif', value: positiveCount },
+    { name: 'Negatif', value: negativeCount },
+    { name: 'Netral', value: neutralCount },
+  ];
 
   if (loading) {
     return (
@@ -220,6 +238,75 @@ export default function DashboardPage() {
             ) : (
               <div className="flex flex-col items-center justify-center h-full text-gray-300">
                 <p className="text-xs">Belum ada data aktivitas</p>
+              </div>
+            )}
+          </div>
+        </div>
+      </div>
+
+      {/* Sentiment Analysis Row */}
+      <div className="bg-white rounded-xl border border-gray-200 p-5 lg:p-6">
+        <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6">
+          <div className="lg:w-1/3">
+            <h2 className="text-base font-bold text-gray-900 mb-1">Kualitas Komunitas</h2>
+            <p className="text-xs text-gray-500 mb-4">Analisis emosi penonton dari komentar yang bukan spam.</p>
+            
+            <div className="grid grid-cols-1 gap-3">
+              <div className="flex items-center justify-between p-3 bg-emerald-50 rounded-lg">
+                <div className="flex items-center gap-2">
+                  <span className="text-lg">😊</span>
+                  <span className="text-xs font-medium text-emerald-700">Positif</span>
+                </div>
+                <span className="text-sm font-bold text-emerald-700">{positiveCount}</span>
+              </div>
+              <div className="flex items-center justify-between p-3 bg-rose-50 rounded-lg">
+                <div className="flex items-center gap-2">
+                  <span className="text-lg">😠</span>
+                  <span className="text-xs font-medium text-rose-700">Negatif</span>
+                </div>
+                <span className="text-sm font-bold text-rose-700">{negativeCount}</span>
+              </div>
+              <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                <div className="flex items-center gap-2">
+                  <span className="text-lg">😐</span>
+                  <span className="text-xs font-medium text-gray-600">Netral</span>
+                </div>
+                <span className="text-sm font-bold text-gray-700">{neutralCount}</span>
+              </div>
+            </div>
+          </div>
+
+          <div className="flex-1 h-[250px] lg:h-[300px] w-full">
+            {history.some(h => h.sentiment) ? (
+              <ResponsiveContainer width="100%" height="100%">
+                <PieChart>
+                  <Pie 
+                    data={sentimentData.filter(d => d.value > 0)} 
+                    cx="50%" 
+                    cy="50%" 
+                    innerRadius={60} 
+                    outerRadius={90} 
+                    paddingAngle={8} 
+                    dataKey="value"
+                  >
+                    {sentimentData.filter(d => d.value > 0).map((entry, index) => (
+                      <Cell key={`cell-${index}`} fill={SENTIMENT_COLORS[sentimentData.findIndex(s => s.name === entry.name)]} />
+                    ))}
+                  </Pie>
+                  <Tooltip contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 10px 15px -3px rgb(0 0 0 / 0.1)' }} />
+                  <text x="50%" y="48%" textAnchor="middle" dominantBaseline="middle" className="fill-gray-900 font-bold text-2xl">
+                    {Math.round((positiveCount / (positiveCount + negativeCount + neutralCount || 1)) * 100)}%
+                  </text>
+                  <text x="50%" y="58%" textAnchor="middle" dominantBaseline="middle" className="fill-emerald-500 font-medium text-xs">
+                    Sentimen Positif
+                  </text>
+                </PieChart>
+              </ResponsiveContainer>
+            ) : (
+              <div className="flex flex-col items-center justify-center h-full text-gray-300 border-2 border-dashed border-gray-100 rounded-2xl">
+                <span className="text-2xl mb-2">📊</span>
+                <p className="text-xs">Belum ada data sentimen untuk dianalisis</p>
+                <p className="text-[10px] mt-1 text-gray-400">Moderasi komentar normal untuk melihat hasil</p>
               </div>
             )}
           </div>

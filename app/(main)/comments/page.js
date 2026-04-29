@@ -5,6 +5,7 @@ import { useSession } from 'next-auth/react';
 import { youtubeService } from '@/services/youtubeService';
 import { useRouter } from 'next/navigation';
 import axios from 'axios';
+import { historyService } from '@/services/historyService';
 
 export default function CommentsPage() {
   const { data: session } = useSession();
@@ -133,16 +134,54 @@ export default function CommentsPage() {
 
     const tok = sessionRef.current?.accessToken;
     if (useBatch && tok) {
+      const email = sessionRef.current?.user?.email;
+      const vidTitle = selectedVideo?.title || '';
+      const chanId = localStorage.getItem('selectedChannelId');
+
       if (pendingHold.length > 0) {
         try {
           await youtubeService.moderateCommentsBatch(pendingHold, 'heldForReview', tok);
           setComments(prev => prev.map(c => pendingHold.includes(c.id) ? { ...c, status: 'heldForReview' } : c));
+          
+          // Save batch to Supabase
+          const batchItems = commentList
+            .filter(c => pendingHold.includes(c.id))
+            .map(c => ({
+              channelId: chanId,
+              commentId: c.id,
+              action: 'heldForReview',
+              commentText: c.textDisplay?.replace(/<[^>]*>/g, '') || '',
+              author: c.authorDisplayName || '',
+              videoTitle: vidTitle,
+              aiLabel: predictions[c.id]?.label || 'Spam',
+              aiConfidence: predictions[c.id]?.confidence || 0.9,
+              sentiment: predictions[c.id]?.sentiment || null,
+              sentimentScore: predictions[c.id]?.sentiment_score || null
+            }));
+          if (email) historyService.saveBatchActions(email, batchItems);
         } catch { /* ignore */ }
       }
       if (pendingReject.length > 0) {
         try {
           await youtubeService.moderateCommentsBatch(pendingReject, 'rejected', tok);
           setComments(prev => prev.map(c => pendingReject.includes(c.id) ? { ...c, status: 'rejected' } : c));
+          
+          // Save batch to Supabase
+          const batchItems = commentList
+            .filter(c => pendingReject.includes(c.id))
+            .map(c => ({
+              channelId: chanId,
+              commentId: c.id,
+              action: 'rejected',
+              commentText: c.textDisplay?.replace(/<[^>]*>/g, '') || '',
+              author: c.authorDisplayName || '',
+              videoTitle: vidTitle,
+              aiLabel: predictions[c.id]?.label || 'Spam',
+              aiConfidence: predictions[c.id]?.confidence || 0.95,
+              sentiment: predictions[c.id]?.sentiment || null,
+              sentimentScore: predictions[c.id]?.sentiment_score || null
+            }));
+          if (email) historyService.saveBatchActions(email, batchItems);
         } catch { /* ignore */ }
       }
     }
@@ -160,18 +199,22 @@ export default function CommentsPage() {
       const comment = list.find(c => c.id === commentId);
       if (comment) {
         const prediction = providedPrediction || predictions[comment.id];
-        const history = JSON.parse(localStorage.getItem('moderationHistory') || '[]');
-        history.unshift({
-          commentId,
-          action: statusMap[action],
-          commentText: comment.textDisplay?.replace(/<[^>]*>/g, '') || '',
-          author: comment.authorDisplayName || '',
-          videoTitle: selectedVideo?.title || '',
-          timestamp: new Date().toISOString(),
-          aiLabel: prediction?.label || 'Normal',
-          aiConfidence: prediction?.confidence || 0,
-        });
-        localStorage.setItem('moderationHistory', JSON.stringify(history.slice(0, 200)));
+        const email = sessionRef.current?.user?.email;
+        
+        if (email) {
+          await historyService.saveAction(email, {
+            channelId: localStorage.getItem('selectedChannelId'),
+            commentId,
+            action: statusMap[action],
+            commentText: comment.textDisplay?.replace(/<[^>]*>/g, '') || '',
+            author: comment.authorDisplayName || '',
+            videoTitle: selectedVideo?.title || '',
+            aiLabel: prediction?.label || 'Normal',
+            aiConfidence: prediction?.confidence || 0,
+            sentiment: prediction?.sentiment || null,
+            sentimentScore: prediction?.sentiment_score || null,
+          });
+        }
       }
     } catch (err) {
       console.error('Moderasi gagal:', err);

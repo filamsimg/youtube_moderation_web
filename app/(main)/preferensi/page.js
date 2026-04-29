@@ -1,9 +1,12 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { useSession } from 'next-auth/react';
+import { settingsService } from '@/services/settingsService';
 import { signOut } from 'next-auth/react';
 
 export default function PreferensiPage() {
+  const { data: session } = useSession();
   const [bahasa, setBahasa] = useState('id');
   const [tema, setTema] = useState('terang');
   const [kepadatan, setKepadatan] = useState('standar');
@@ -17,29 +20,58 @@ export default function PreferensiPage() {
   const [saveStatus, setSaveStatus] = useState(null);
 
   useEffect(() => {
-    const saved = localStorage.getItem('userSettings');
-    if (saved) {
-      const parsed = JSON.parse(saved);
-      if (parsed.bahasa) setBahasa(parsed.bahasa);
-      if (parsed.tema) setTema(parsed.tema);
-      if (parsed.kepadatan) setKepadatan(parsed.kepadatan);
-      if (parsed.notifKomentar !== undefined) setNotifKomentar(parsed.notifKomentar);
-      if (parsed.autoTahan !== undefined) setAutoTahan(parsed.autoTahan);
-      if (parsed.autoHapus !== undefined) setAutoHapus(parsed.autoHapus);
-      if (parsed.thresholdHold !== undefined) setThresholdHold(parsed.thresholdHold);
-      if (parsed.thresholdReject !== undefined) setThresholdReject(parsed.thresholdReject);
-      if (parsed.pollingInterval !== undefined) setPollingInterval(parsed.pollingInterval);
-      if (parsed.batchModeration !== undefined) setBatchModeration(parsed.batchModeration);
+    if (session?.user?.email) {
+      loadSettings();
+    } else {
+      const saved = localStorage.getItem('userSettings');
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        applySettings(parsed);
+      }
     }
-  }, []);
+  }, [session]);
 
-  const handleSave = () => {
+  const loadSettings = async () => {
+    const data = await settingsService.getSettings(session.user.email);
+    if (data) {
+      const mapped = {
+        autoTahan: data.auto_tahan,
+        autoHapus: data.auto_hapus,
+        thresholdHold: data.threshold_hold,
+        thresholdReject: data.threshold_reject,
+        pollingInterval: data.polling_interval,
+        batchModeration: data.batch_moderation,
+      };
+      applySettings(mapped);
+      localStorage.setItem('userSettings', JSON.stringify(mapped));
+    }
+  };
+
+  const applySettings = (s) => {
+    if (s.bahasa) setBahasa(s.bahasa);
+    if (s.tema) setTema(s.tema);
+    if (s.kepadatan) setKepadatan(s.kepadatan);
+    if (s.notifKomentar !== undefined) setNotifKomentar(s.notifKomentar);
+    if (s.autoTahan !== undefined) setAutoTahan(s.autoTahan);
+    if (s.autoHapus !== undefined) setAutoHapus(s.autoHapus);
+    if (s.thresholdHold !== undefined) setThresholdHold(s.thresholdHold);
+    if (s.thresholdReject !== undefined) setThresholdReject(s.thresholdReject);
+    if (s.pollingInterval !== undefined) setPollingInterval(s.pollingInterval);
+    if (s.batchModeration !== undefined) setBatchModeration(s.batchModeration);
+  };
+
+  const handleSave = async () => {
     const settings = { 
       bahasa, tema, kepadatan, notifKomentar, 
       autoTahan, autoHapus, 
       thresholdHold, thresholdReject,
       pollingInterval, batchModeration
     };
+    
+    if (session?.user?.email) {
+      await settingsService.saveSettings(session.user.email, settings);
+    }
+    
     localStorage.setItem('userSettings', JSON.stringify(settings));
     setSaveStatus('success');
     setTimeout(() => setSaveStatus(null), 3000);
@@ -97,17 +129,32 @@ export default function PreferensiPage() {
     </div>
   );
 
-  const AccordionItem = ({ icon, label }) => (
-    <div className="flex items-center justify-between py-3 border-b border-gray-100 last:border-0 cursor-pointer hover:bg-gray-50 -mx-1 px-1 rounded transition-colors">
-      <div className="flex items-center gap-2">
-        {icon}
-        <span className="text-sm text-gray-700">{label}</span>
+  const AccordionItem = ({ icon, label, children }) => {
+    const [isOpen, setIsOpen] = useState(false);
+    return (
+      <div className="border-b border-gray-100 last:border-0">
+        <div 
+          onClick={() => setIsOpen(!isOpen)}
+          className="flex items-center justify-between py-3 cursor-pointer hover:bg-gray-50 -mx-1 px-1 rounded transition-colors"
+        >
+          <div className="flex items-center gap-2">
+            {icon}
+            <span className="text-sm text-gray-700">{label}</span>
+          </div>
+          <svg className={`w-4 h-4 text-gray-400 transition-transform ${isOpen ? 'rotate-180' : ''}`} fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor">
+            <path strokeLinecap="round" strokeLinejoin="round" d="M19.5 8.25l-7.5 7.5-7.5-7.5" />
+          </svg>
+        </div>
+        {isOpen && (
+          <div className="pb-4 px-7 animate-fade-in">
+            <div className="text-xs text-gray-600 leading-relaxed space-y-2">
+              {children}
+            </div>
+          </div>
+        )}
       </div>
-      <svg className="w-4 h-4 text-gray-400" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor">
-        <path strokeLinecap="round" strokeLinejoin="round" d="M19.5 8.25l-7.5 7.5-7.5-7.5" />
-      </svg>
-    </div>
-  );
+    );
+  };
 
   return (
     <div className="animate-fade-in-up max-w-3xl w-full space-y-5 lg:space-y-6">
@@ -312,19 +359,45 @@ export default function PreferensiPage() {
         <AccordionItem
           icon={<svg className="w-4 h-4 text-gray-400" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" d="M12 6.042A8.967 8.967 0 006 3.75c-1.052 0-2.062.18-3 .512v14.25A8.987 8.987 0 016 18c2.305 0 4.408.867 6 2.292m0-14.25a8.966 8.966 0 016-2.292c1.052 0 2.062.18 3 .512v14.25A8.987 8.987 0 0018 18a8.967 8.967 0 00-6 2.292m0-14.25v14.25" /></svg>}
           label="Pedoman Moderasi"
-        />
+        >
+          <p>Moderasi proaktif bertujuan untuk menjaga ekosistem kanal Anda tetap bersih dari promosi ilegal. Fokus utama aplikasi ini adalah mendeteksi pola teks yang berkaitan dengan <b>Judi Online</b>.</p>
+          <ul className="list-disc ml-4 space-y-1">
+            <li><strong>Reject:</strong> Gunakan untuk komentar yang mengandung link langsung ke situs judi atau kata kunci kasar.</li>
+            <li><strong>Hold:</strong> Gunakan untuk komentar yang mencurigakan (misal: memberikan nomor WA atau kode referral) agar bisa ditinjau manual.</li>
+          </ul>
+        </AccordionItem>
         <AccordionItem
           icon={<svg className="w-4 h-4 text-gray-400" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126zM12 15.75h.007v.008H12v-.008z" /></svg>}
           label="Contoh Komentar Area Abu-abu"
-        />
+        >
+          <p>Beberapa komentar mungkin tidak terdeteksi 100% oleh AI karena menggunakan teknik kamuflase:</p>
+          <ul className="list-disc ml-4 space-y-1 font-mono text-[10px]">
+            <li>"M.A.I.N di sini dijamin JP" (Penggunaan titik antar huruf)</li>
+            <li>"Info slot gacor klik bit.ly/xxxx" (Ginggahan link pendek)</li>
+            <li>"Video bagus gan, izin share info receh http://..." (Komentar campur)</li>
+          </ul>
+        </AccordionItem>
         <AccordionItem
           icon={<svg className="w-4 h-4 text-gray-400" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" d="M9 12.75L11.25 15 15 9.75m-3-7.036A11.959 11.959 0 013.598 6 11.99 11.99 0 003 9.749c0 5.592 3.824 10.29 9 11.623 5.176-1.332 9-6.03 9-11.622 0-1.31-.21-2.571-.598-3.751h-.152c-3.196 0-6.1-1.248-8.25-3.285z" /></svg>}
           label="Kebijakan Privasi & Keamanan"
-        />
+        >
+          <p>Aplikasi ini sangat menghargai privasi data Anda:</p>
+          <ul className="list-disc ml-4 space-y-1">
+            <li>Kami menggunakan OAuth2 resmi Google untuk akses kanal.</li>
+            <li>Data komentar Anda diproses secara real-time oleh model AI lokal dan tidak disimpan secara permanen di server pihak ketiga.</li>
+            <li>Token akses Anda disimpan secara aman dalam sesi terenkripsi.</li>
+          </ul>
+        </AccordionItem>
         <AccordionItem
           icon={<svg className="w-4 h-4 text-gray-400" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" d="M8.625 12a.375.375 0 11-.75 0 .375.375 0 01.75 0zm0 0H8.25m4.125 0a.375.375 0 11-.75 0 .375.375 0 01.75 0zm0 0H12m4.125 0a.375.375 0 11-.75 0 .375.375 0 01.75 0zm0 0h-.375M21 12c0 4.556-4.03 8.25-9 8.25a9.764 9.764 0 01-2.555-.337A5.972 5.972 0 015.41 20.97a5.969 5.969 0 01-.474-.065 4.48 4.48 0 00.978-2.025c.09-.457-.133-.901-.467-1.226C3.93 16.178 3 14.189 3 12c0-4.556 4.03-8.25 9-8.25s9 3.694 9 8.25z" /></svg>}
           label="Tips Moderasi Efisien"
-        />
+        >
+          <ul className="list-decimal ml-4 space-y-1">
+            <li><strong>Optimasi Kuota:</strong> Gunakan interval polling 2-5 menit agar kuota harian API YouTube Anda tidak cepat habis.</li>
+            <li><strong>Batching:</strong> Aktifkan "Moderasi Massal" di pengaturan untuk memproses banyak komentar dalam satu kali klik.</li>
+            <li><strong>Auto-Moderasi:</strong> Mulailah dengan Ambang Batas tinggi (90%+) untuk Hapus Otomatis demi menghindari kesalahan deteksi.</li>
+          </ul>
+        </AccordionItem>
       </div>
 
       {/* Action buttons */}

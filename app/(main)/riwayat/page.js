@@ -1,31 +1,38 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { useSession } from 'next-auth/react';
+import { historyService } from '@/services/historyService';
 
 export default function RiwayatPage() {
+  const { data: session } = useSession();
   const [searchQuery, setSearchQuery] = useState('');
   const [filterAction, setFilterAction] = useState('semua');
   const [activities, setActivities] = useState([]);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    try {
-      const stored = JSON.parse(localStorage.getItem('moderationHistory') || '[]');
-      setActivities(stored);
-    } catch {
-      setActivities([]);
+    if (session?.user?.email) {
+      loadHistory();
     }
+  }, [session]);
 
-    const handleStorage = () => {
-      try {
-        const stored = JSON.parse(localStorage.getItem('moderationHistory') || '[]');
-        setActivities(stored);
-      } catch {
-        setActivities([]);
-      }
-    };
-    window.addEventListener('storage', handleStorage);
-    return () => window.removeEventListener('storage', handleStorage);
-  }, []);
+  const loadHistory = async () => {
+    setLoading(true);
+    const data = await historyService.getHistory(session.user.email);
+    // Map database fields to UI fields if necessary
+    const mapped = data.map(item => ({
+      ...item,
+      commentText: item.comment_text, // Map snake_case to camelCase for UI compatibility
+      videoTitle: item.video_title,
+      aiLabel: item.ai_label,
+      aiConfidence: item.ai_confidence,
+      sentimentScore: item.sentiment_score,
+      timestamp: item.created_at
+    }));
+    setActivities(mapped);
+    setLoading(false);
+  };
 
   const getActionLabel = (action) => {
     const map = { published: 'Diterbitkan', rejected: 'Ditolak', heldForReview: 'Ditahan' };
@@ -109,8 +116,13 @@ export default function RiwayatPage() {
         <p className="text-xs text-gray-400">{filtered.length} aktivitas ditemukan</p>
       </div>
 
-      {/* Empty State */}
-      {filtered.length === 0 ? (
+      {/* List / Loading / Empty */}
+      {loading ? (
+        <div className="flex flex-col items-center justify-center py-20 bg-white rounded-xl border border-gray-200">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-indigo-600 mb-3"></div>
+          <p className="text-xs text-gray-400">Sinkronisasi data database...</p>
+        </div>
+      ) : filtered.length === 0 ? (
         <div className="text-center py-16 bg-white rounded-xl border border-gray-200">
           <svg className="w-12 h-12 text-gray-300 mx-auto mb-3" fill="none" viewBox="0 0 24 24" strokeWidth={1} stroke="currentColor">
             <path strokeLinecap="round" strokeLinejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 11-18 0 9 9 0 0118 0z" />
@@ -129,6 +141,7 @@ export default function RiwayatPage() {
                     <th className="px-5 py-3 text-left text-[11px] font-semibold text-gray-500 uppercase tracking-wider">Waktu</th>
                     <th className="px-5 py-3 text-left text-[11px] font-semibold text-gray-500 uppercase tracking-wider">Tindakan</th>
                     <th className="px-5 py-3 text-left text-[11px] font-semibold text-gray-500 uppercase tracking-wider">Komentar</th>
+                    <th className="px-5 py-3 text-left text-[11px] font-semibold text-gray-500 uppercase tracking-wider">Hasil AI</th>
                     <th className="px-5 py-3 text-left text-[11px] font-semibold text-gray-500 uppercase tracking-wider">Pengguna</th>
                     <th className="px-5 py-3 text-left text-[11px] font-semibold text-gray-500 uppercase tracking-wider">Video</th>
                   </tr>
@@ -140,7 +153,18 @@ export default function RiwayatPage() {
                         {new Date(item.timestamp).toLocaleString('id-ID')}
                       </td>
                       <td className="px-5 py-3">{getActionBadge(item.action)}</td>
-                      <td className="px-5 py-3 text-xs text-gray-700 max-w-[250px] truncate">{item.commentText || '-'}</td>
+                      <td className="px-5 py-3">
+                        <div className="flex flex-col gap-1">
+                          <span className={`text-[10px] font-semibold px-2 py-0.5 rounded-full w-fit ${item.aiLabel?.toLowerCase() === 'spam' ? 'bg-red-100 text-red-700' : 'bg-green-100 text-green-700'}`}>
+                            {item.aiLabel === 'Spam' ? '🚨 Spam' : '✅ Normal'}
+                          </span>
+                          {item.aiLabel !== 'Spam' && item.sentiment && (
+                            <span className={`text-[10px] font-semibold px-2 py-0.5 rounded-full w-fit ${item.sentiment === 'positive' ? 'bg-emerald-100 text-emerald-700' : item.sentiment === 'negative' ? 'bg-rose-100 text-rose-700' : 'bg-gray-100 text-gray-700'}`}>
+                              {item.sentiment === 'positive' ? '😊 Positif' : item.sentiment === 'negative' ? '😠 Negatif' : '😐 Netral'}
+                            </span>
+                          )}
+                        </div>
+                      </td>
                       <td className="px-5 py-3 text-xs text-gray-600">{item.author || '-'}</td>
                       <td className="px-5 py-3 text-xs text-gray-600 max-w-[150px] truncate">{item.videoTitle || '-'}</td>
                     </tr>
@@ -159,6 +183,16 @@ export default function RiwayatPage() {
                   <span className="text-[10px] text-gray-400">{new Date(item.timestamp).toLocaleString('id-ID')}</span>
                 </div>
                 <p className="text-xs text-gray-700 line-clamp-2">{item.commentText || '-'}</p>
+                <div className="flex items-center gap-2">
+                   <span className={`text-[10px] font-semibold px-2 py-0.5 rounded-full ${item.aiLabel?.toLowerCase() === 'spam' ? 'bg-red-100 text-red-700' : 'bg-green-100 text-green-700'}`}>
+                      {item.aiLabel === 'Spam' ? '🚨 Spam' : '✅ Normal'}
+                   </span>
+                   {item.aiLabel !== 'Spam' && item.sentiment && (
+                      <span className={`text-[10px] font-semibold px-2 py-0.5 rounded-full ${item.sentiment === 'positive' ? 'bg-emerald-100 text-emerald-700' : item.sentiment === 'negative' ? 'bg-rose-100 text-rose-700' : 'bg-gray-100 text-gray-700'}`}>
+                        {item.sentiment === 'positive' ? '😊 Positif' : item.sentiment === 'negative' ? '😠 Negatif' : '😐 Netral'}
+                      </span>
+                   )}
+                </div>
                 <div className="flex items-center justify-between pt-1 border-t border-gray-50">
                   <span className="text-[11px] text-gray-500 font-medium">{item.author || '-'}</span>
                   <span className="text-[10px] text-gray-400 truncate max-w-[140px]">{item.videoTitle || '-'}</span>
