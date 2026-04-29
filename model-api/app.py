@@ -4,6 +4,16 @@ from transformers import AutoTokenizer, AutoModelForSequenceClassification, pipe
 import torch
 import torch.nn.functional as F
 import os
+import random
+import numpy as np
+
+# Set seed untuk hasil yang konsisten (Deterministik)
+SEED = 42
+random.seed(SEED)
+np.random.seed(SEED)
+torch.manual_seed(SEED)
+if torch.cuda.is_available():
+    torch.cuda.manual_seed_all(SEED)
 
 app = Flask(__name__)
 CORS(app)
@@ -51,13 +61,21 @@ def predict():
         
         # Sentiment Analysis
         sentiment_result = sentiment_analyzer(text)[0]
-        sentiment_label = sentiment_result['label']
+        raw_sentiment = sentiment_result['label'].upper() # Pastikan uppercase untuk perbandingan
         
-        # Mapping untuk model mdhugol/indonesia-bert-sentiment-classification
-        # LABEL_0: positive, LABEL_1: neutral, LABEL_2: negative
-        if sentiment_label == 'LABEL_0': sentiment_label = 'positive'
-        elif sentiment_label == 'LABEL_1': sentiment_label = 'neutral'
-        elif sentiment_label == 'LABEL_2': sentiment_label = 'negative'
+        # Mapping lebih robust
+        sentiment_label = 'neutral' # Default
+        if raw_sentiment in ['LABEL_0', 'POSITIVE']: 
+            sentiment_label = 'positive'
+        elif raw_sentiment in ['LABEL_1', 'NEUTRAL']: 
+            sentiment_label = 'neutral'
+        elif raw_sentiment in ['LABEL_2', 'NEGATIVE']: 
+            sentiment_label = 'negative'
+        else:
+            # Jika model sudah memberikan label teks sendiri
+            sentiment_label = raw_sentiment.lower()
+
+        print(f"Text: {text[:30]}... | Raw Sentiment: {raw_sentiment} -> Final: {sentiment_label}")
         
         return jsonify({
             "label": label_name,
