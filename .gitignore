@@ -1,26 +1,34 @@
 # Node.js
-web-app/node_modules/
-web-app/.next/
-web-app/out/
-web-app/build/
+**/node_modules/
+**/.next/
+**/out/
+**/build/
 
 # Python
-model-api/venv/
-model-api/__pycache__/
-model-api/*.pyc
-model-api/.pytest_cache/
+**/venv/
+**/__pycache__/
+**/*.pyc
+**/.pytest_cache/
 
-# Environment Variables (IMPORTANT: Keep secrets out of GitHub)
-web-app/.env
-web-app/.env.local
-model-api/.env
+# Environment Variables
+**/.env
+**/.env.local
 
-# AI Models (Raksasa - Upload to Hugging Face instead)
+# AI Models (Raksasa)
 model_judol_indobertweet/
+**/model_judol_indobertweet/
 *.bin
 *.pt
 *.safetensors
 *.h5
+
+# Files Skripsi & Temp (JANGAN MASUK GITHUB)
+*.pdf
+*.docx
+help.txt
+implementation_plan_*
+walkthrough_*
+task.md
 
 # OS Files
 .DS_Store
