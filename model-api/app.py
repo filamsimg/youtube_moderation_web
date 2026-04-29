@@ -8,11 +8,10 @@ import os
 app = Flask(__name__)
 CORS(app)
 
-# Load Model & Tokenizer
-# Path relatif ke folder model_judol_bert
-MODEL_PATH = os.path.join(os.path.dirname(__file__), "..", "model_judol_indobertweet")
+# Load Model & Tokenizer dari Hugging Face Hub
+MODEL_PATH = "filamss/bert-judol-indonesia"
 
-print(f"Loading model from: {MODEL_PATH}")
+print(f"Loading model from Hugging Face: {MODEL_PATH}")
 tokenizer = AutoTokenizer.from_pretrained(MODEL_PATH)
 model = AutoModelForSequenceClassification.from_pretrained(MODEL_PATH)
 model.eval()
