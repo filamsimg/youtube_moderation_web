@@ -78,7 +78,31 @@ export default function RiwayatPage() {
           Ekspor
         </button>
       </div>
-
+{/* Summary stats */}
+      {activities.length > 0 && (
+        <div className="bg-white rounded-xl border border-gray-200 p-5">
+          <div className="flex items-center gap-2 mb-3">
+            <svg className="w-5 h-5 text-indigo-400" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" d="M3.75 3v11.25A2.25 2.25 0 006 16.5h2.25M3.75 3h-1.5m1.5 0h16.5m0 0h1.5m-1.5 0v11.25A2.25 2.25 0 0118 16.5h-2.25m-7.5 0h7.5m-7.5 0l-1 3m8.5-3l1 3m0 0l.5 1.5m-.5-1.5h-9.5m0 0l-.5 1.5" />
+            </svg>
+            <p className="text-xs font-semibold text-gray-700">Statistik Riwayat</p>
+          </div>
+          <div className="grid grid-cols-3 gap-3 text-center">
+            <div className="bg-green-50 rounded-lg p-3">
+              <p className="text-lg font-bold text-green-600">{totalDiterbitkan}</p>
+              <p className="text-[10px] text-green-500 mt-0.5">Diterbitkan</p>
+            </div>
+            <div className="bg-amber-50 rounded-lg p-3">
+              <p className="text-lg font-bold text-amber-600">{totalDitahan}</p>
+              <p className="text-[10px] text-amber-500 mt-0.5">Ditahan</p>
+            </div>
+            <div className="bg-red-50 rounded-lg p-3">
+              <p className="text-lg font-bold text-red-600">{totalDitolak}</p>
+              <p className="text-[10px] text-red-500 mt-0.5">Ditolak</p>
+            </div>
+          </div>
+        </div>
+      )}
       {/* Search + Filters */}
       <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2">
         <div className="flex-1 relative">
@@ -132,6 +156,7 @@ export default function RiwayatPage() {
         </div>
       ) : (
         <>
+        
           {/* Desktop Table */}
           <div className="hidden md:block bg-white rounded-xl border border-gray-200 overflow-hidden">
             <div className="overflow-x-auto">
@@ -149,10 +174,22 @@ export default function RiwayatPage() {
                 <tbody className="divide-y divide-gray-50">
                   {filtered.map((item, i) => (
                     <tr key={i} className="hover:bg-gray-50/50 transition-colors">
+                      {/* 1. Waktu */}
                       <td className="px-5 py-3 text-[11px] text-gray-500 whitespace-nowrap">
                         {new Date(item.timestamp).toLocaleString('id-ID')}
                       </td>
+                      
+                      {/* 2. Tindakan */}
                       <td className="px-5 py-3">{getActionBadge(item.action)}</td>
+                      
+                      {/* 3. Komentar */}
+                      <td className="px-5 py-3">
+                        <p className="text-xs text-gray-700 line-clamp-2 max-w-[250px]" title={item.commentText}>
+                          {item.commentText || '-'}
+                        </p>
+                      </td>
+
+                      {/* 4. Hasil AI */}
                       <td className="px-5 py-3">
                         <div className="flex flex-col gap-1">
                           <span className={`text-[10px] font-semibold px-2 py-0.5 rounded-full w-fit ${item.aiLabel?.toLowerCase() === 'spam' ? 'bg-red-100 text-red-700' : 'bg-green-100 text-green-700'}`}>
@@ -165,8 +202,14 @@ export default function RiwayatPage() {
                           )}
                         </div>
                       </td>
-                      <td className="px-5 py-3 text-xs text-gray-600">{item.author || '-'}</td>
-                      <td className="px-5 py-3 text-xs text-gray-600 max-w-[150px] truncate">{item.videoTitle || '-'}</td>
+
+                      {/* 5. Pengguna (Penulis) */}
+                      <td className="px-5 py-3 text-xs text-gray-600 whitespace-nowrap font-medium">{item.author || '-'}</td>
+                      
+                      {/* 6. Video */}
+                      <td className="px-5 py-3 text-xs text-gray-600 max-w-[180px] truncate" title={item.videoTitle}>
+                        {item.videoTitle || '-'}
+                      </td>
                     </tr>
                   ))}
                 </tbody>
@@ -203,31 +246,7 @@ export default function RiwayatPage() {
         </>
       )}
 
-      {/* Summary stats */}
-      {activities.length > 0 && (
-        <div className="bg-white rounded-xl border border-gray-200 p-5">
-          <div className="flex items-center gap-2 mb-3">
-            <svg className="w-5 h-5 text-indigo-400" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" d="M3.75 3v11.25A2.25 2.25 0 006 16.5h2.25M3.75 3h-1.5m1.5 0h16.5m0 0h1.5m-1.5 0v11.25A2.25 2.25 0 0118 16.5h-2.25m-7.5 0h7.5m-7.5 0l-1 3m8.5-3l1 3m0 0l.5 1.5m-.5-1.5h-9.5m0 0l-.5 1.5" />
-            </svg>
-            <p className="text-xs font-semibold text-gray-700">Statistik Riwayat</p>
-          </div>
-          <div className="grid grid-cols-3 gap-3 text-center">
-            <div className="bg-green-50 rounded-lg p-3">
-              <p className="text-lg font-bold text-green-600">{totalDiterbitkan}</p>
-              <p className="text-[10px] text-green-500 mt-0.5">Diterbitkan</p>
-            </div>
-            <div className="bg-amber-50 rounded-lg p-3">
-              <p className="text-lg font-bold text-amber-600">{totalDitahan}</p>
-              <p className="text-[10px] text-amber-500 mt-0.5">Ditahan</p>
-            </div>
-            <div className="bg-red-50 rounded-lg p-3">
-              <p className="text-lg font-bold text-red-600">{totalDitolak}</p>
-              <p className="text-[10px] text-red-500 mt-0.5">Ditolak</p>
-            </div>
-          </div>
-        </div>
-      )}
+      
     </div>
   );
 }

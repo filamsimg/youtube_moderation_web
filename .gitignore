@@ -33,3 +33,7 @@ task.md
 # OS Files
 .DS_Store
 Thumbs.db
+
+# Plans (Private)
+implementation_auto_hold.txt
+AUTO_HOLD_PLAN.md
