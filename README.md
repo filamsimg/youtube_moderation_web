@@ -1,36 +1,36 @@
 # YouTube Moderation Web App (MKJD) - Moderasi Judol v1
 
-Aplikasi Web Fullstack untuk moderasi komentar YouTube secara **Proaktif** menggunakan AI (**IndoBERTweet**). Proyek ini dirancang untuk mendeteksi dan menindak komentar judi online secara real-time, mendukung penelitian skripsi mengenai integrasi NLP dengan YouTube Data API v3.
+Aplikasi Web Fullstack untuk moderasi komentar YouTube secara Proaktif menggunakan AI (IndoBERTweet dan Sentiment Analysis). Proyek ini dirancang untuk mendeteksi dan menindak komentar judi online secara real-time, serta menganalisis kualitas emosi komunitas di kanal YouTube.
 
-## 🚀 Fitur Utama
+## Fitur Utama
 
-- **Proactive AI Moderation**: Sistem tidak hanya mendeteksi, tapi langsung menindak komentar (Reject/Hold) secara otomatis berdasarkan hasil analisis AI.
-- **Dynamic AI Thresholds**: Slider sensitivitas yang memungkinkan Admin mengatur ambang batas kepercayaan (*confidence score*) untuk aksi **Auto-Reject** (>90%) dan **Auto-Karantina** (>70%).
+- **Proactive AI Moderation**: Sistem melakukan tindakan otomatis (Reject/Hold) pada komentar spam berdasarkan hasil analisis IndoBERTweet.
+- **Sentiment Analysis Integration**: Menganalisis emosi penonton (Positif, Negatif, Netral) pada komentar normal untuk memantau kesehatan komunitas.
+- **Supabase Cloud Database**: Integrasi database cloud untuk penyimpanan riwayat moderasi dan pengaturan pengguna yang persisten dan terisolasi antar akun.
+- **Dynamic AI Thresholds**: Pengaturan ambang batas kepercayaan (confidence score) yang dapat disesuaikan untuk aksi otomatis.
 - **Advanced Dashboard Analytics**:
-  - **Pie Chart**: Visualisasi distribusi konten (Normal vs Spam).
-  - **Bar Chart**: Ringkasan akumulasi tindakan moderasi (Aman, Ditahan, Ditolak).
-  - Menggunakan library **Recharts** untuk visualisasi yang interaktif.
-- **Google OAuth Integration**: Login aman menggunakan akun Google dengan izin akses YouTube.
-- **YouTube Data API v3**: Sinkronisasi komentar video secara real-time.
-- **Moderation History & Logs**: Pencatatan detail setiap aksi AI termasuk label prediksi dan skor kepercayaan untuk keperluan audit/penelitian.
-- **Modern UI/UX**: Desain premium dan responsif menggunakan Next.js dan Tailwind CSS.
+  - **Konten Distribution**: Visualisasi distribusi Normal vs Spam.
+  - **Aktivitas Moderasi**: Ringkasan akumulasi tindakan yang telah dilakukan.
+  - **Kualitas Komunitas**: Donut chart untuk distribusi sentimen penonton.
+- **Google OAuth Integration**: Login aman menggunakan akun Google dengan izin akses YouTube Data API v3.
+- **Modern UI/UX**: Antarmuka dashboard yang responsif, minimalis, dan premium.
 
-## 🛠️ Stack Teknologi
+## Stack Teknologi
 
-- **Frontend**: [Next.js 14](https://nextjs.org/) (App Router), [Tailwind CSS](https://tailwindcss.com/)
-- **Visualisasi**: [Recharts](https://recharts.org/)
-- **Backend API**: Next.js Route Handlers
-- **Authentication**: [NextAuth.js](https://next-auth.js.org/)
-- **AI Model Interface**: Flask/Python Proxy (IndoBERTweet)
-- **Icons**: SVG kustom & Lucide Icons
+- **Frontend**: Next.js 14 (App Router), Tailwind CSS
+- **Database**: Supabase (PostgreSQL)
+- **Visualisasi**: Recharts
+- **Authentication**: NextAuth.js (Google Provider)
+- **AI Backend**: Flask (Python) + Transformers (IndoBERTweet & Sentiment Model)
 
-## 📋 Prasyarat
+## Prasyarat
 
 - Node.js 18.x atau lebih baru
+- Akun Supabase (untuk database)
 - Google Cloud Console Project (YouTube Data API v3 enabled)
-- Model API server yang berjalan di port 5000 (IndoBERTweet)
+- Model API server yang berjalan di port 5000
 
-## ⚙️ Konfigurasi Environment
+## Konfigurasi Environment
 
 Buat file `.env` di root direktori `web-app/` dan tambahkan variabel berikut:
 
@@ -40,9 +40,12 @@ GOOGLE_CLIENT_SECRET=your_google_client_secret
 NEXTAUTH_URL=http://localhost:3000
 NEXTAUTH_SECRET=your_nextauth_secret
 MODEL_API_BASE=http://127.0.0.1:5000
+
+NEXT_PUBLIC_SUPABASE_URL=your_supabase_url
+NEXT_PUBLIC_SUPABASE_ANON_KEY=your_supabase_anon_key
 ```
 
-## 🏃 Cara Menjalankan
+## Cara Menjalankan
 
 1. Instal dependensi:
    ```bash
@@ -57,14 +60,14 @@ MODEL_API_BASE=http://127.0.0.1:5000
 3. Akses aplikasi:
    Buka [http://localhost:3000](http://localhost:3000) di browser Anda.
 
-## 📁 Struktur Proyek (Web App)
+## Struktur Proyek
 
-- `app/`: Routing dan halaman (App Router)
-- `components/`: Komponen UI dan Visualisasi (Charts)
-- `services/`: Logika integrasi API YouTube & AI Predict
-- `lib/`: Utilitas dan konfigurasi (Auth, DB, dll)
-- `public/`: Aset statis
+- `app/`: Routing dan halaman utama aplikasi.
+- `components/`: Komponen UI reusable dan visualisasi chart.
+- `services/`: Logika integrasi API (YouTube, Supabase, AI API).
+- `lib/`: Konfigurasi klien Supabase dan utilitas lainnya.
+- `public/`: Aset statis aplikasi.
 
 ---
-**Status Proyek**: Implementasi Sesuai Proposal REVISI - Integrasi IndoBERTweet & Moderasi Proaktif.
+**Status Proyek**: Final Integration - Supabase & Sentiment Analysis.
 *Dibuat untuk keperluan Skripsi - Moderasi Konten YouTube v1.*
