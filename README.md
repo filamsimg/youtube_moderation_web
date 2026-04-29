@@ -1,4 +1,4 @@
-# YouTube Moderation Web App (MKJD) - Moderasi Judol v1
+# YouTube Moderation Web App - Moderasi Konten Judol 
 
 Aplikasi Web Fullstack untuk moderasi komentar YouTube secara Proaktif menggunakan AI (IndoBERTweet dan Sentiment Analysis). Proyek ini dirancang untuk mendeteksi dan menindak komentar judi online secara real-time, serta menganalisis kualitas emosi komunitas di kanal YouTube.
 
