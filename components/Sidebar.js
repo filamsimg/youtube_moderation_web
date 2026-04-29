@@ -67,7 +67,7 @@ export default function Sidebar() {
   ];
 
   const SidebarContent = () => (
-    <aside className="flex flex-col w-[220px] h-full bg-white border-r border-gray-200">
+    <aside className="flex flex-col w-[220px] h-full bg-white border-r border-gray-200 overflow-y-auto overflow-x-hidden custom-scrollbar">
       {/* Logo */}
       <div className="px-5 py-5 flex items-center gap-3">
         <div className="w-8 h-8 bg-indigo-600 rounded-lg flex items-center justify-center flex-shrink-0">
@@ -100,9 +100,7 @@ export default function Sidebar() {
               </span>
               <span>{link.name}</span>
               {link.badge && (
-                <span className="ml-auto bg-indigo-600 text-white text-[10px] font-bold px-1.5 py-0.5 rounded-full min-w-[20px] text-center badge-pulse">
-                  12
-                </span>
+                <span className="ml-auto w-2 h-2 rounded-full bg-indigo-500 animate-pulse"></span>
               )}
             </Link>
           );
@@ -141,7 +139,7 @@ export default function Sidebar() {
   return (
     <>
       {/* Desktop Sidebar - always visible */}
-      <div className="hidden lg:flex lg:flex-col lg:w-[220px] lg:min-h-screen lg:sticky lg:top-0">
+      <div className="hidden lg:flex lg:flex-col lg:w-[220px] lg:h-screen lg:sticky lg:top-0">
         <SidebarContent />
       </div>
 

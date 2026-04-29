@@ -16,6 +16,8 @@ export const modelService = {
       return { 
         label: Math.random() > 0.8 ? 'spam' : 'normal', 
         confidence: (Math.random() * (0.99 - 0.70) + 0.70).toFixed(2),
+        sentiment: ['positive', 'negative', 'neutral'][Math.floor(Math.random() * 3)],
+        sentiment_score: (Math.random() * (0.99 - 0.70) + 0.70).toFixed(2),
         isMock: true
       };
     }

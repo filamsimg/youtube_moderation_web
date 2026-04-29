@@ -118,7 +118,7 @@ export default function CommentsPage() {
     for (const comment of commentList) {
       try {
         const res = await axios.post('/api/predict', { text: comment.textDisplay });
-        const prediction = { label: res.data.label, confidence: res.data.confidence };
+        const prediction = { label: res.data.label, confidence: res.data.confidence, sentiment: res.data.sentiment, sentiment_score: res.data.sentiment_score };
         setPredictions(prev => ({ ...prev, [comment.id]: prediction }));
 
         if (prediction.label?.toLowerCase() === 'spam') {
@@ -415,7 +415,12 @@ export default function CommentsPage() {
                                 <span className={`text-[11px] font-semibold px-2 py-0.5 rounded-full ${isSpam ? 'bg-red-100 text-red-700' : 'bg-green-100 text-green-700'}`}>
                                   {isSpam ? '🚨 Spam' : '✅ Normal'}
                                 </span>
-                                <p className="text-[10px] text-gray-400 mt-0.5">{Math.round(prediction.confidence * 100)}%</p>
+                                {!isSpam && prediction.sentiment && (
+                                  <span className={`ml-1 text-[11px] font-semibold px-2 py-0.5 rounded-full ${prediction.sentiment === 'positive' ? 'bg-emerald-100 text-emerald-700' : prediction.sentiment === 'negative' ? 'bg-rose-100 text-rose-700' : 'bg-gray-100 text-gray-700'}`}>
+                                    {prediction.sentiment === 'positive' ? '😊 Positif' : prediction.sentiment === 'negative' ? '😠 Negatif' : '😐 Netral'}
+                                  </span>
+                                )}
+                                <p className="text-[10px] text-gray-400 mt-1">{Math.round(prediction.confidence * 100)}% {prediction.sentiment_score && !isSpam && ` • Sentimen: ${Math.round(prediction.sentiment_score * 100)}%`}</p>
                               </div>
                             )}
                           </td>
@@ -464,11 +469,21 @@ export default function CommentsPage() {
                           {!prediction ? (
                             <div className="flex items-center gap-1"><div className="animate-spin rounded-full h-3 w-3 border-b-2 border-indigo-400"></div><span className="text-[10px] text-gray-400">Menganalisis...</span></div>
                           ) : (
-                            <div className="flex items-center gap-1.5">
-                              <span className={`text-[11px] font-semibold px-2 py-0.5 rounded-full ${isSpam ? 'bg-red-100 text-red-700' : 'bg-green-100 text-green-700'}`}>
-                                {isSpam ? '🚨 Spam' : '✅ Normal'}
-                              </span>
-                              <span className="text-[10px] text-gray-400">{Math.round(prediction.confidence * 100)}%</span>
+                            <div className="flex flex-col gap-1">
+                              <div className="flex items-center gap-1.5">
+                                <span className={`text-[11px] font-semibold px-2 py-0.5 rounded-full ${isSpam ? 'bg-red-100 text-red-700' : 'bg-green-100 text-green-700'}`}>
+                                  {isSpam ? '🚨 Spam' : '✅ Normal'}
+                                </span>
+                                <span className="text-[10px] text-gray-400">{Math.round(prediction.confidence * 100)}%</span>
+                              </div>
+                              {!isSpam && prediction.sentiment && (
+                                <div className="flex items-center gap-1.5 mt-0.5">
+                                  <span className={`text-[11px] font-semibold px-2 py-0.5 rounded-full ${prediction.sentiment === 'positive' ? 'bg-emerald-100 text-emerald-700' : prediction.sentiment === 'negative' ? 'bg-rose-100 text-rose-700' : 'bg-gray-100 text-gray-700'}`}>
+                                    {prediction.sentiment === 'positive' ? '😊 Positif' : prediction.sentiment === 'negative' ? '😠 Negatif' : '😐 Netral'}
+                                  </span>
+                                  <span className="text-[10px] text-gray-400">{Math.round(prediction.sentiment_score * 100)}%</span>
+                                </div>
+                              )}
                             </div>
                           )}
                         </div>
