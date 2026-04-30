@@ -12,6 +12,9 @@ import {
 } from 'recharts';
 import { historyService } from '@/services/historyService';
 
+// Variabel global sementara untuk mencegah alert bertumpuk
+let isSessionExpiredAlertShown = false;
+
 export default function DashboardPage() {
   const { data: session } = useSession();
   const router = useRouter();
@@ -24,8 +27,12 @@ export default function DashboardPage() {
   // Helper untuk menangani sesi habis
   const handleApiError = (err) => {
     if (err.isExpired) {
-      alert("Sesi Google Anda telah berakhir. Silakan Login kembali.");
-      signOut({ callbackUrl: '/login' });
+      if (!isSessionExpiredAlertShown) {
+        isSessionExpiredAlertShown = true;
+        alert("Sesi Google Anda telah berakhir. Silakan Login kembali.");
+        signOut({ callbackUrl: '/login' });
+        setTimeout(() => { isSessionExpiredAlertShown = false; }, 5000);
+      }
       return true;
     }
     return false;

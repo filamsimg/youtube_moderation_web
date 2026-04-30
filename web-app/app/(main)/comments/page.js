@@ -8,6 +8,9 @@ import { signOut } from 'next-auth/react';
 import axios from 'axios';
 import { historyService } from '@/services/historyService';
 
+// Variabel global sementara untuk mencegah alert bertumpuk
+let isSessionExpiredAlertShown = false;
+
 export default function CommentsPage() {
   const { data: session } = useSession();
   const router = useRouter();
@@ -15,8 +18,12 @@ export default function CommentsPage() {
   // Helper untuk menangani sesi habis
   const handleApiError = (err) => {
     if (err.isExpired) {
-      alert("Sesi Google Anda telah berakhir demi keamanan. Silakan Login kembali.");
-      signOut({ callbackUrl: '/login' });
+      if (!isSessionExpiredAlertShown) {
+        isSessionExpiredAlertShown = true;
+        alert("Sesi Google Anda telah berakhir demi keamanan. Silakan Login kembali.");
+        signOut({ callbackUrl: '/login' });
+        setTimeout(() => { isSessionExpiredAlertShown = false; }, 5000);
+      }
       return true;
     }
     return false;
@@ -37,7 +44,7 @@ export default function CommentsPage() {
   const [processingComment, setProcessingComment] = useState(null);
   const [filter, setFilter] = useState('semua');
 
-  // Ref to keep session for use inside predictComments
+  // Ref to keep values for use inside predictComments (avoid stale closure)
   const sessionRef = useRef(session);
   useEffect(() => { sessionRef.current = session; }, [session]);
 
