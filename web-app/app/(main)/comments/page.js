@@ -46,7 +46,9 @@ export default function CommentsPage() {
 
   // Ref to keep values for use inside predictComments (avoid stale closure)
   const sessionRef = useRef(session);
+  const predictionsRef = useRef({});
   useEffect(() => { sessionRef.current = session; }, [session]);
+  useEffect(() => { predictionsRef.current = predictions; }, [predictions]);
 
   // ── Load videos on mount ─────────────────────────────────────
   useEffect(() => {
@@ -137,6 +139,9 @@ export default function CommentsPage() {
     const pendingHold = [], pendingReject = [];
 
     for (const comment of commentList) {
+      // Lewati jika komentar sudah pernah diprediksi sebelumnya (menghemat resource backend AI)
+      if (predictionsRef.current[comment.id]) continue;
+
       try {
         const res = await axios.post('/api/predict', { text: comment.textDisplay });
         const prediction = { label: res.data.label, confidence: res.data.confidence, sentiment: res.data.sentiment, sentiment_score: res.data.sentiment_score };
