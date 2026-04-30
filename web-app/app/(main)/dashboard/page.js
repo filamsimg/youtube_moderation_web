@@ -180,13 +180,13 @@ export default function DashboardPage() {
 
         <div className="bg-white rounded-xl border border-gray-200 p-4 lg:p-5 hover:shadow-sm transition-shadow">
           <div className="flex items-center justify-between mb-3">
-            <p className="text-xs font-medium text-gray-500">Spam</p>
+            <p className="text-xs font-medium text-gray-500">Ditolak</p>
             <svg className="w-5 h-5 text-red-500" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" d="M9.75 9.75l4.5 4.5m0-4.5l-4.5 4.5M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
             </svg>
           </div>
           <p className="text-2xl font-bold text-gray-900">{totalRejected}</p>
-          <p className="text-[11px] text-gray-400 mt-1">komentar spam</p>
+          <p className="text-[11px] text-gray-400 mt-1">komentar dihapus</p>
         </div>
       </div>
 
