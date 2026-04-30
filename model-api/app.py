@@ -6,6 +6,9 @@ import torch.nn.functional as F
 import os
 import random
 import numpy as np
+import re
+import unicodedata
+import string
 
 # Set seed untuk hasil yang konsisten (Deterministik)
 SEED = 42
@@ -37,6 +40,47 @@ LABEL_MAP = {
     1: "Spam"
 }
 
+# --- TEXT CLEANSING UTILITIES FROM COLAB ---
+LEET_DICT = {"4":"a", "7":"t", "0":"o", "1":"i", "3":"e", "5":"s", "@":"a"}
+url_re = re.compile(r"(https?://\S+|www\.\S+)", re.IGNORECASE)
+DOMAIN_EXCLUDE = re.compile(r"\.(com|net|org|id|xyz|biz|info|io|gov|edu)\b", re.IGNORECASE)
+
+def fold_spaced_words(text):
+    return re.sub(r"\b(?:[a-z]\s+){2,}[a-z]\b",
+                  lambda m: m.group(0).replace(" ", ""),
+                  text)
+
+def selective_leet_fix(match):
+    word = match.group(0)
+    if DOMAIN_EXCLUDE.search(word):
+        return word
+
+    if re.search(r'[a-z]', word):
+        suffix_digits = re.search(r'\d+\b$', word)
+        safe_index = suffix_digits.start() if suffix_digits else len(word)
+
+        new_word = ""
+        for i, char in enumerate(word):
+            if char in LEET_DICT and i < safe_index:
+                new_word += LEET_DICT[char]
+            else:
+                new_word += char
+        return new_word
+    return word
+
+def clean_text(text):
+    if not isinstance(text, str):
+        return ""
+    t = unicodedata.normalize("NFKC", text).lower()
+    t = re.sub(r'\b[a-z0-9@.]+\b', selective_leet_fix, t)
+    t = fold_spaced_words(t)
+    t = re.sub(r'([a-z])\1{2,}', r'\1\1', t)
+    t = t.encode('ascii', 'ignore').decode('ascii')
+    t = t.translate(str.maketrans('', '', string.punctuation))
+    t = re.sub(r"\s+", " ", t).strip()
+    return t
+# -------------------------------------------
+
 @app.route('/predict', methods=['POST'])
 def predict():
     try:
@@ -46,8 +90,11 @@ def predict():
         if not text:
             return jsonify({"error": "No text provided"}), 400
 
+        # Text Cleansing (Train-Serving Skew Fix)
+        cleaned_text = clean_text(text)
+
         # Tokenization
-        inputs = tokenizer(text, return_tensors="pt", truncation=True, padding=True, max_length=128)
+        inputs = tokenizer(cleaned_text, return_tensors="pt", truncation=True, padding=True, max_length=128)
 
         # Inference
         with torch.no_grad():
@@ -60,7 +107,7 @@ def predict():
         label_name = LABEL_MAP.get(label_id, f"LABEL_{label_id}")
         
         # Sentiment Analysis
-        sentiment_result = sentiment_analyzer(text)[0]
+        sentiment_result = sentiment_analyzer(cleaned_text)[0]
         raw_sentiment = sentiment_result['label'].upper() # Pastikan uppercase untuk perbandingan
         
         # Mapping lebih robust
@@ -75,7 +122,7 @@ def predict():
             # Jika model sudah memberikan label teks sendiri
             sentiment_label = raw_sentiment.lower()
 
-        print(f"Text: {text[:30]}... | Raw Sentiment: {raw_sentiment} -> Final: {sentiment_label}")
+        print(f"Original: {text[:30]}... | Cleaned: {cleaned_text[:30]}... | Sentiment: {sentiment_label}")
         
         return jsonify({
             "label": label_name,
