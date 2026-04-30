@@ -116,10 +116,25 @@ export default function CommentsPage() {
       if (!isSilent) setCommentsLoading(true);
       setError(null);
       const data = await youtubeService.getComments(videoId, token);
+      
+      // Hydration: Sinkronisasi dengan riwayat lokal untuk menutupi Eventual Consistency API YouTube
+      const email = sessionRef.current?.user?.email;
+      const historyMap = {};
+      if (email) {
+        try {
+          const history = await historyService.getHistory(email);
+          history.forEach(h => {
+            if (h.comment_id) historyMap[h.comment_id] = h.action;
+          });
+        } catch (e) {
+          console.error('Gagal memuat history untuk sinkronisasi:', e);
+        }
+      }
+
       const normalized = data.items.map(item => ({
         id: item.id,
         ...item.snippet.topLevelComment.snippet,
-        status: 'published',
+        status: historyMap[item.id] || 'published',
       }));
       setComments(normalized);
       await predictComments(normalized);
