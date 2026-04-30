@@ -23,22 +23,14 @@ model_judol_indobertweet/
 *.h5
 
 # Files Skripsi & Temp (JANGAN MASUK GITHUB)
-*.pdf
-*.docx
-help.txt
+/*.pdf
+/*.docx
+/*.txt
+/*.md
+!README.md
 implementation_plan_*
 walkthrough_*
-task.md
 
 # OS Files
 .DS_Store
 Thumbs.db
-
-# Plans (Private)
-implementation_auto_hold.txt
-AUTO_HOLD_PLAN.md
-
-# Presentation Materials
-Materi_Presentasi_Skripsi_Filamsi.txt
-SOP PRESENTER RESEARCH CONNECT.txt
-extracted_text.txt
