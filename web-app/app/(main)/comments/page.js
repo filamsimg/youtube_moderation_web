@@ -7,6 +7,7 @@ import { useRouter } from 'next/navigation';
 import { signOut } from 'next-auth/react';
 import axios from 'axios';
 import { historyService } from '@/services/historyService';
+import { QUOTA_COSTS } from '@/services/quotaService';
 
 // Variabel global sementara untuk mencegah alert bertumpuk
 let isSessionExpiredAlertShown = false;
@@ -29,6 +30,32 @@ export default function CommentsPage() {
     return false;
   };
 
+  // Helper: Potong kuota via API Route (server-side, aman)
+  const deductQuota = async (actionKey, description = '') => {
+    try {
+      const res = await fetch('/api/quota/deduct', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action: actionKey, description }),
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        if (res.status === 402) {
+          setQuotaError(`Kuota habis! Sisa: ${data.balance ?? 0} unit. Diperlukan: ${QUOTA_COSTS[actionKey]} unit.`);
+          return false;
+        }
+        return false;
+      }
+      // Trigger refresh QuotaIndicator di Sidebar/Header
+      window.dispatchEvent(new CustomEvent('quota-updated'));
+      setQuotaError(null);
+      return true;
+    } catch (err) {
+      console.error('deductQuota error:', err);
+      return false;
+    }
+  };
+
   // ── Video state ──────────────────────────────────────────────
   const [videos, setVideos] = useState([]);
   const [videosLoading, setVideosLoading] = useState(true);
@@ -39,6 +66,7 @@ export default function CommentsPage() {
   const [comments, setComments] = useState([]);
   const [commentsLoading, setCommentsLoading] = useState(false);
   const [error, setError] = useState(null);
+  const [quotaError, setQuotaError] = useState(null); // notifikasi kuota habis
   const [predictions, setPredictions] = useState({});
   const [isPolling, setIsPolling] = useState(false);
   const [processingComment, setProcessingComment] = useState(null);
@@ -115,6 +143,14 @@ export default function CommentsPage() {
     try {
       if (!isSilent) setCommentsLoading(true);
       setError(null);
+
+      // ── Quota Check ────────────────────────────────────────────
+      const ok = await deductQuota('FETCH_COMMENTS', `Video: ${selectedVideo?.title || videoId}`);
+      if (!ok) {
+        if (!isSilent) setCommentsLoading(false);
+        return;
+      }
+
       const data = await youtubeService.getComments(videoId, token);
       
       // Hydration: Sinkronisasi dengan riwayat lokal untuk menutupi Eventual Consistency API YouTube
@@ -232,6 +268,11 @@ export default function CommentsPage() {
     setProcessingComment(commentId);
     try {
       const statusMap = { hold: 'heldForReview', publish: 'published', reject: 'rejected' };
+
+      // ── Quota Check sebelum moderasi ──────────────────────────
+      const ok = await deductQuota('MODERATE_SINGLE', `Action: ${action} | CommentID: ${commentId}`);
+      if (!ok) { setProcessingComment(null); return; }
+
       await youtubeService.moderateComment(commentId, statusMap[action], sessionRef.current.accessToken);
       setComments(prev => prev.map(c => c.id === commentId ? { ...c, status: statusMap[action] } : c));
 
@@ -356,7 +397,6 @@ export default function CommentsPage() {
     </div>
   );
 
-  // ── Comment area ──────────────────────────────────────────────
   const CommentArea = () => {
     if (!selectedVideo) {
       return (
@@ -368,7 +408,6 @@ export default function CommentsPage() {
           </div>
           <p className="text-sm font-medium text-gray-500">Pilih video terlebih dahulu</p>
           <p className="text-xs text-gray-400 mt-1">Klik salah satu video di panel kiri untuk memuat komentar</p>
-          {/* Mobile: show button to open video panel */}
           <button
             onClick={() => setShowVideoPanel(true)}
             className="mt-4 lg:hidden px-4 py-2 bg-indigo-600 text-white text-xs font-medium rounded-lg hover:bg-indigo-700 transition-all"
@@ -384,6 +423,25 @@ export default function CommentsPage() {
         <div className="flex flex-col items-center justify-center h-full py-20">
           <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-indigo-600 mb-3"></div>
           <p className="text-xs text-gray-400">Memuat & menganalisis komentar...</p>
+        </div>
+      );
+    }
+
+    if (quotaError) {
+      return (
+        <div className="m-4">
+          <div className="bg-amber-50 p-5 rounded-xl flex items-start gap-3 border border-amber-100">
+            <svg className="w-5 h-5 text-amber-500 flex-shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v3.75m9-.75a9 9 0 11-18 0 9 9 0 0118 0zm-9 3.75h.008v.008H12v-.008z" />
+            </svg>
+            <div className="flex-1">
+              <h3 className="text-sm font-semibold text-amber-800">Kuota API Tidak Cukup</h3>
+              <p className="text-xs text-amber-700 mt-0.5">{quotaError}</p>
+              <a href="/pricing" className="inline-block mt-2 text-xs font-medium text-amber-700 underline hover:text-amber-900">
+                ⚡ Top-up Kuota Sekarang →
+              </a>
+            </div>
+          </div>
         </div>
       );
     }
