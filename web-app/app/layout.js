@@ -5,7 +5,7 @@ import SessionProvider from "@/components/SessionProvider";
 const inter = Inter({ subsets: ["latin"] });
 
 export const metadata = {
-  title: "YouTube Comments Moderation",
+  title: "Athena Shield",
   description: "AI-powered YouTube comment moderation using IndoBERT",
 };
 

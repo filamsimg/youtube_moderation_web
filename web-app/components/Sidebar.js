@@ -80,13 +80,9 @@ export default function Sidebar() {
     <aside className="flex flex-col w-[220px] h-full bg-white border-r border-gray-200 overflow-y-auto overflow-x-hidden custom-scrollbar">
       {/* Logo */}
       <div className="px-5 py-5 flex items-center gap-3">
-        <div className="w-8 h-8 bg-indigo-600 rounded-lg flex items-center justify-center flex-shrink-0">
-          <svg className="w-4 h-4 text-white" viewBox="0 0 24 24" fill="currentColor">
-            <path d="M23.498 6.186a2.994 2.994 0 0 0-2.112-2.12C19.544 3.5 12 3.5 12 3.5s-7.544 0-9.386.566A2.994 2.994 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a2.994 2.994 0 0 0 2.112 2.12C4.456 20.5 12 20.5 12 20.5s7.544 0 9.386-.566a2.994 2.994 0 0 0 2.112-2.12C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/>
-          </svg>
-        </div>
+        <img src="/logo.webp" alt="Athena Shield" className="w-8 h-8 object-contain" />
         <div>
-          <p className="text-sm font-semibold text-gray-900 leading-none">Moderasi YouTube</p>
+          <p className="text-sm font-semibold text-gray-900 leading-none">Athena Shield</p>
           <p className="text-[11px] text-gray-400 mt-0.5">Kelola komentar</p>
         </div>
       </div>
@@ -110,7 +106,7 @@ export default function Sidebar() {
               </span>
               <span>{link.name}</span>
               {link.badge && (
-                <span className="ml-auto w-2 h-2 rounded-full bg-indigo-500 animate-pulse"></span>
+                <span className="ml-auto w-2 h-2 rounded-full bg-amber-500 animate-pulse"></span>
               )}
             </Link>
           );
@@ -131,7 +127,7 @@ export default function Sidebar() {
             <img
               src={session.user.image || 'https://ui-avatars.com/api/?name=User&background=6366f1&color=fff&size=32'}
               alt="avatar"
-              className="w-7 h-7 rounded-full border border-indigo-100 flex-shrink-0"
+              className="w-7 h-7 rounded-full border border-amber-100 flex-shrink-0"
             />
             <p className="text-[11px] text-gray-500 truncate">{session.user.name}</p>
           </div>

@@ -19,12 +19,8 @@ export default function PublicLayout({ children }) {
         <div className="max-w-6xl mx-auto px-4 sm:px-6 h-14 flex items-center justify-between">
           {/* Logo */}
           <Link href="/" className="flex items-center gap-2 group">
-            <div className="w-7 h-7 bg-indigo-600 rounded-lg flex items-center justify-center flex-shrink-0 group-hover:bg-indigo-700 transition-colors">
-              <svg className="w-3.5 h-3.5 text-white" viewBox="0 0 24 24" fill="currentColor">
-                <path d="M23.498 6.186a2.994 2.994 0 0 0-2.112-2.12C19.544 3.5 12 3.5 12 3.5s-7.544 0-9.386.566A2.994 2.994 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a2.994 2.994 0 0 0 2.112 2.12C4.456 20.5 12 20.5 12 20.5s7.544 0 9.386-.566a2.994 2.994 0 0 0 2.112-2.12C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/>
-              </svg>
-            </div>
-            <span className="text-sm font-semibold text-gray-900">YT Moderasi</span>
+            <img src="/logo.webp" alt="Athena Shield" className="w-7 h-7 object-contain" />
+            <span className="text-sm font-semibold text-gray-900">Athena Shield</span>
           </Link>
 
           {/* Nav Links */}
@@ -52,7 +48,7 @@ export default function PublicLayout({ children }) {
             {session ? (
               <Link
                 href="/dashboard"
-                className="px-3 py-1.5 bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-semibold rounded-lg transition-colors flex items-center gap-1.5"
+                className="px-3 py-1.5 bg-amber-600 hover:bg-amber-700 text-white text-xs font-semibold rounded-lg transition-colors flex items-center gap-1.5"
               >
                 Dashboard
                 <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" strokeWidth={2.5} stroke="currentColor">
@@ -88,15 +84,11 @@ export default function PublicLayout({ children }) {
       <footer className="border-t border-gray-100 bg-gray-50">
         <div className="max-w-6xl mx-auto px-4 sm:px-6 py-8 flex flex-col sm:flex-row items-center justify-between gap-4">
           <div className="flex items-center gap-2">
-            <div className="w-5 h-5 bg-indigo-600 rounded flex items-center justify-center">
-              <svg className="w-2.5 h-2.5 text-white" viewBox="0 0 24 24" fill="currentColor">
-                <path d="M23.498 6.186a2.994 2.994 0 0 0-2.112-2.12C19.544 3.5 12 3.5 12 3.5s-7.544 0-9.386.566A2.994 2.994 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a2.994 2.994 0 0 0 2.112 2.12C4.456 20.5 12 20.5 12 20.5s7.544 0 9.386-.566a2.994 2.994 0 0 0 2.112-2.12C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/>
-              </svg>
-            </div>
-            <span className="text-xs font-semibold text-gray-700">YT Moderasi</span>
+            <img src="/logo.webp" alt="Athena Shield" className="w-6 h-6 object-contain grayscale opacity-70" />
+            <span className="text-xs font-semibold text-gray-700">Athena Shield</span>
           </div>
           <p className="text-[11px] text-gray-400">
-            © 2024 YT Moderasi · Skripsi Moderasi Komentar Judol berbasis AI
+            © 2024 Athena Shield · Skripsi Moderasi Komentar Judol berbasis AI
           </p>
           <div className="flex items-center gap-4">
             <Link href="/pricing" className="text-[11px] text-gray-400 hover:text-gray-600 transition-colors">Harga</Link>

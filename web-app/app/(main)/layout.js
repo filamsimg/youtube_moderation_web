@@ -19,7 +19,7 @@ export default function MainLayout({ children }) {
   if (status === 'loading') {
     return (
       <div className="flex min-h-screen items-center justify-center bg-gray-50">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-indigo-600"></div>
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-amber-600"></div>
       </div>
     );
   }
@@ -53,7 +53,7 @@ export default function MainLayout({ children }) {
             <img
               src={session?.user?.image || 'https://ui-avatars.com/api/?name=User&background=6366f1&color=fff&size=32'}
               alt="avatar"
-              className="w-8 h-8 rounded-full border-2 border-indigo-100 flex-shrink-0"
+              className="w-8 h-8 rounded-full border-2 border-amber-100 flex-shrink-0"
             />
           </div>
         </header>

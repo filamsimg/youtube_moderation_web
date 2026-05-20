@@ -14,7 +14,7 @@ const FEATURES = [
     ),
     title: 'Deteksi AI (IndoBERT)',
     desc: 'Model NLP berbasis IndoBERT yang dilatih khusus untuk mengenali komentar judi online (judol) di YouTube.',
-    color: 'indigo',
+    color: 'amber',
   },
   {
     icon: (
@@ -44,7 +44,7 @@ const FEATURES = [
     ),
     title: 'Polling Real-time',
     desc: 'Aktifkan polling otomatis agar komentar baru dianalisis secara berkala tanpa perlu refresh manual.',
-    color: 'blue',
+    color: 'amber',
   },
   {
     icon: (
@@ -75,10 +75,10 @@ const STATS = [
 ];
 
 const colorMap = {
-  indigo: 'bg-indigo-50 text-indigo-600',
+  amber: 'bg-amber-50 text-amber-600',
   emerald: 'bg-emerald-50 text-emerald-600',
   amber: 'bg-amber-50 text-amber-600',
-  blue: 'bg-blue-50 text-blue-600',
+  amber: 'bg-amber-50 text-amber-600',
   rose: 'bg-rose-50 text-rose-600',
   violet: 'bg-violet-50 text-violet-600',
 };
@@ -98,7 +98,7 @@ export default function LandingPage() {
   if (status === 'loading' || status === 'authenticated') {
     return (
       <div className="flex items-center justify-center min-h-[60vh]">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-indigo-600" />
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-amber-600" />
       </div>
     );
   }
@@ -110,19 +110,19 @@ export default function LandingPage() {
       <section className="relative pt-20 pb-24 px-4 text-center overflow-hidden">
         {/* Background gradient blobs */}
         <div className="absolute inset-0 -z-10 overflow-hidden">
-          <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[600px] h-[400px] bg-indigo-100/60 rounded-full blur-3xl" />
+          <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[600px] h-[400px] bg-amber-100/60 rounded-full blur-3xl" />
           <div className="absolute top-20 right-0 w-[300px] h-[300px] bg-purple-100/40 rounded-full blur-3xl" />
         </div>
 
         {/* Badge */}
-        <div className="inline-flex items-center gap-2 px-3 py-1.5 bg-indigo-50 border border-indigo-100 rounded-full text-xs font-medium text-indigo-700 mb-6">
-          <span className="w-1.5 h-1.5 bg-indigo-500 rounded-full animate-pulse" />
+        <div className="inline-flex items-center gap-2 px-3 py-1.5 bg-amber-50 border border-amber-100 rounded-full text-xs font-medium text-amber-700 mb-6">
+          <span className="w-1.5 h-1.5 bg-amber-500 rounded-full animate-pulse" />
           Powered by IndoBERT AI
         </div>
 
         <h1 className="text-4xl sm:text-5xl font-bold text-gray-900 leading-tight mb-4 max-w-3xl mx-auto">
           Moderasi Komentar{' '}
-          <span className="text-indigo-600">Judi Online</span>{' '}
+          <span className="text-amber-600">Judi Online</span>{' '}
           di YouTube secara Otomatis
         </h1>
         <p className="text-base text-gray-500 max-w-xl mx-auto mb-8 leading-relaxed">
@@ -134,7 +134,7 @@ export default function LandingPage() {
         <div className="flex items-center justify-center gap-3 flex-wrap">
           <Link
             href={session ? '/dashboard' : '/login'}
-            className="px-6 py-3 bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-semibold rounded-xl shadow-md shadow-indigo-200 transition-all hover:shadow-lg hover:shadow-indigo-200 active:scale-95 flex items-center gap-2"
+            className="px-6 py-3 bg-amber-600 hover:bg-amber-700 text-white text-sm font-semibold rounded-xl shadow-md shadow-amber-200 transition-all hover:shadow-lg hover:shadow-amber-200 active:scale-95 flex items-center gap-2"
           >
             {session ? 'Buka Dashboard' : 'Mulai Gratis'}
             <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" strokeWidth={2.5} stroke="currentColor">
@@ -205,13 +205,13 @@ export default function LandingPage() {
       </section>
 
       {/* ── CTA BOTTOM ────────────────────────────────────────────── */}
-      <section className="py-20 px-4 bg-indigo-600">
+      <section className="py-20 px-4 bg-amber-600">
         <div className="max-w-2xl mx-auto text-center">
           <h2 className="text-2xl font-bold text-white mb-3">Siap Membersihkan Komentar Anda?</h2>
-          <p className="text-sm text-indigo-200 mb-8">Mulai gratis sekarang. Tidak perlu kartu kredit.</p>
+          <p className="text-sm text-amber-200 mb-8">Mulai gratis sekarang. Tidak perlu kartu kredit.</p>
           <Link
             href={session ? '/dashboard' : '/login'}
-            className="inline-flex items-center gap-2 px-8 py-3.5 bg-white text-indigo-700 text-sm font-bold rounded-xl shadow-lg hover:shadow-xl transition-all hover:-translate-y-0.5 active:scale-95"
+            className="inline-flex items-center gap-2 px-8 py-3.5 bg-white text-amber-700 text-sm font-bold rounded-xl shadow-lg hover:shadow-xl transition-all hover:-translate-y-0.5 active:scale-95"
           >
             {session ? 'Buka Dashboard →' : 'Mulai Gratis — Login dengan Google'}
           </Link>

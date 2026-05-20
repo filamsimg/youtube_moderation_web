@@ -32,7 +32,7 @@ const PLANS = [
     period: '/ bulan',
     quota: '50.000',
     quotaNum: 50000,
-    color: 'indigo',
+    color: 'amber',
     description: 'Untuk content creator aktif dengan video yang sering ramai komentar.',
     features: [
       '50.000 unit API / bulan',
@@ -108,7 +108,7 @@ export default function PricingPage() {
 
   const colorMap = {
     gray:    { border: 'border-gray-200',  bg: 'bg-gray-50',    badge: 'bg-gray-100 text-gray-600',   btn: 'bg-gray-100 text-gray-500 cursor-default',       icon: 'text-gray-400',  check: 'text-gray-500' },
-    indigo:  { border: 'border-indigo-400 ring-2 ring-indigo-200', bg: 'bg-indigo-600', badge: 'bg-indigo-100 text-indigo-700', btn: 'bg-indigo-600 hover:bg-indigo-700 text-white', icon: 'text-indigo-500', check: 'text-indigo-600' },
+    amber:  { border: 'border-amber-400 ring-2 ring-amber-200', bg: 'bg-amber-600', badge: 'bg-amber-100 text-amber-700', btn: 'bg-amber-600 hover:bg-amber-700 text-white', icon: 'text-amber-500', check: 'text-amber-600' },
     amber:   { border: 'border-amber-300', bg: 'bg-amber-500',   badge: 'bg-amber-100 text-amber-700', btn: 'bg-amber-500 hover:bg-amber-600 text-white',       icon: 'text-amber-500', check: 'text-amber-600' },
     emerald: { btn: 'bg-emerald-500 hover:bg-emerald-600 text-white', badge: 'bg-emerald-100 text-emerald-700' },
     blue:    { btn: 'bg-blue-600 hover:bg-blue-700 text-white',   badge: 'bg-blue-100 text-blue-700' },
@@ -141,7 +141,7 @@ export default function PricingPage() {
               />
             </div>
             <span className={`text-xs font-semibold px-2 py-0.5 rounded-full ${
-              profile.tier === 'PRO' ? 'bg-indigo-100 text-indigo-700' :
+              profile.tier === 'PRO' ? 'bg-amber-100 text-amber-700' :
               profile.tier === 'ENTERPRISE' ? 'bg-amber-100 text-amber-700' :
               'bg-gray-100 text-gray-600'
             }`}>{profile.tier}</span>
@@ -202,7 +202,7 @@ export default function PricingPage() {
                 <div>
                   <span className="text-2xl font-bold text-gray-900">{plan.price}</span>
                   <span className="text-xs text-gray-400 ml-1">{plan.period}</span>
-                  <p className="text-[11px] text-indigo-600 font-medium mt-1">⚡ {plan.quota} unit API</p>
+                  <p className="text-[11px] text-amber-600 font-medium mt-1">⚡ {plan.quota} unit API</p>
                 </div>
 
                 {/* Features */}
@@ -329,7 +329,7 @@ export default function PricingPage() {
       {/* Footer note */}
       <p className="text-center text-[11px] text-gray-400">
         *BYOK (Bring Your Own Key): Gunakan API Key YouTube Anda sendiri untuk kuota tak terbatas. Dapat dikonfigurasi di{' '}
-        <Link href="/preferensi" className="text-indigo-500 hover:underline">Preferensi</Link>.
+        <Link href="/preferensi" className="text-amber-500 hover:underline">Preferensi</Link>.
       </p>
     </div>
   );

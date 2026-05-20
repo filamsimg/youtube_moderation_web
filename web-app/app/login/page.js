@@ -19,10 +19,8 @@ export default function LoginPage() {
     return (
       <div className="flex h-screen w-full items-center justify-center bg-white">
         <div className="animate-pulse flex flex-col items-center">
-          <div className="w-12 h-12 bg-indigo-100 rounded-2xl mb-4 animate-bounce flex items-center justify-center">
-            <svg className="w-6 h-6 text-indigo-600" viewBox="0 0 24 24" fill="currentColor">
-              <path d="M23.498 6.186a2.994 2.994 0 0 0-2.112-2.12C19.544 3.5 12 3.5 12 3.5s-7.544 0-9.386.566A2.994 2.994 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a2.994 2.994 0 0 0 2.112 2.12C4.456 20.5 12 20.5 12 20.5s7.544 0 9.386-.566a2.994 2.994 0 0 0 2.112-2.12C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/>
-            </svg>
+          <div className="w-16 h-16 mb-4 animate-bounce flex items-center justify-center">
+            <img src="/logo.webp" alt="Athena Shield" className="w-full h-full object-contain" />
           </div>
           <p className="text-gray-400 text-sm">Memuat...</p>
         </div>
@@ -36,33 +34,31 @@ export default function LoginPage() {
       content: (
         <div className="animate-fade-in-up">
           {/* Icon */}
-          <div className="w-16 h-16 bg-blue-600 rounded-2xl mx-auto mb-6 flex items-center justify-center shadow-lg shadow-blue-200">
-            <svg className="w-8 h-8 text-white" viewBox="0 0 24 24" fill="currentColor">
-              <path d="M23.498 6.186a2.994 2.994 0 0 0-2.112-2.12C19.544 3.5 12 3.5 12 3.5s-7.544 0-9.386.566A2.994 2.994 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a2.994 2.994 0 0 0 2.112 2.12C4.456 20.5 12 20.5 12 20.5s7.544 0 9.386-.566a2.994 2.994 0 0 0 2.112-2.12C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/>
-            </svg>
+          <div className="w-20 h-20 mx-auto mb-6 flex items-center justify-center">
+            <img src="/logo.webp" alt="Athena Shield" className="w-full h-full object-contain drop-shadow-xl" />
           </div>
 
-          <h1 className="text-xl font-semibold text-gray-900 mb-2">Selamat Datang di Moderasi YouTube</h1>
+          <h1 className="text-xl font-semibold text-gray-900 mb-2">Selamat Datang di Athena Shield</h1>
           <p className="text-sm text-gray-400 mb-8">Kelola komentar kanal YouTube Anda dengan lebih efisien dan aman</p>
 
           {/* Feature cards */}
           <div className="grid grid-cols-3 gap-3 mb-8">
-            <div className="border border-gray-200 rounded-xl p-4 text-center hover:border-blue-200 hover:bg-blue-50/30 transition-all">
-              <svg className="w-6 h-6 text-blue-500 mx-auto mb-2" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
+            <div className="border border-gray-200 rounded-xl p-4 text-center hover:border-amber-200 hover:bg-amber-50/30 transition-all">
+              <svg className="w-6 h-6 text-amber-500 mx-auto mb-2" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" d="M9 12.75L11.25 15 15 9.75m-3-7.036A11.959 11.959 0 013.598 6 11.99 11.99 0 003 9.749c0 5.592 3.824 10.29 9 11.623 5.176-1.332 9-6.03 9-11.622 0-1.31-.21-2.571-.598-3.751h-.152c-3.196 0-6.1-1.248-8.25-3.285z" />
               </svg>
               <p className="text-xs font-semibold text-gray-700">Moderasi Otomatis</p>
               <p className="text-[10px] text-gray-400 mt-1">Tinjau dan kelola komentar dengan cepat</p>
             </div>
-            <div className="border border-gray-200 rounded-xl p-4 text-center hover:border-blue-200 hover:bg-blue-50/30 transition-all">
-              <svg className="w-6 h-6 text-blue-500 mx-auto mb-2" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
+            <div className="border border-gray-200 rounded-xl p-4 text-center hover:border-amber-200 hover:bg-amber-50/30 transition-all">
+              <svg className="w-6 h-6 text-amber-500 mx-auto mb-2" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" d="M3.75 13.5l10.5-11.25L12 10.5h8.25L9.75 21.75 12 13.5H3.75z" />
               </svg>
               <p className="text-xs font-semibold text-gray-700">Keputusan Cepat</p>
               <p className="text-[10px] text-gray-400 mt-1">Tahan, tolak, atau terbitkan dalam sekali klik</p>
             </div>
-            <div className="border border-gray-200 rounded-xl p-4 text-center hover:border-blue-200 hover:bg-blue-50/30 transition-all">
-              <svg className="w-6 h-6 text-blue-500 mx-auto mb-2" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
+            <div className="border border-gray-200 rounded-xl p-4 text-center hover:border-amber-200 hover:bg-amber-50/30 transition-all">
+              <svg className="w-6 h-6 text-amber-500 mx-auto mb-2" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
               </svg>
               <p className="text-xs font-semibold text-gray-700">Riwayat Lengkap</p>
@@ -95,8 +91,8 @@ export default function LoginPage() {
     {
       content: (
         <div className="animate-fade-in-up">
-          <div className="w-16 h-16 bg-indigo-100 rounded-2xl mx-auto mb-6 flex items-center justify-center">
-            <svg className="w-8 h-8 text-indigo-600" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
+          <div className="w-16 h-16 bg-amber-100 rounded-2xl mx-auto mb-6 flex items-center justify-center">
+            <svg className="w-8 h-8 text-amber-600" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" d="M6 20.25h12m-7.5-3v3m3-3v3m-10.125-3h17.25c.621 0 1.125-.504 1.125-1.125V4.875c0-.621-.504-1.125-1.125-1.125H3.375c-.621 0-1.125.504-1.125 1.125v11.25c0 .621.504 1.125 1.125 1.125z" />
             </svg>
           </div>
@@ -169,7 +165,7 @@ export default function LoginPage() {
   ];
 
   return (
-    <div className="flex h-screen w-full items-center justify-center bg-gradient-to-br from-blue-50/50 via-white to-indigo-50/50">
+    <div className="flex h-screen w-full items-center justify-center bg-gradient-to-br from-amber-50/50 via-white to-amber-50/50">
       <div className="max-w-lg w-full mx-4">
         <div className="bg-white rounded-2xl shadow-sm border border-gray-200 p-8 text-center">
           {steps[currentStep].content}
@@ -183,7 +179,7 @@ export default function LoginPage() {
               onClick={() => setCurrentStep(i)}
               className={`h-2 rounded-full transition-all duration-300 ${
                 i === currentStep
-                  ? 'w-6 bg-blue-600'
+                  ? 'w-6 bg-amber-600'
                   : 'w-2 bg-gray-300 hover:bg-gray-400'
               }`}
             />

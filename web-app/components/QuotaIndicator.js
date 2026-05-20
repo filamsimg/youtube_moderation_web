@@ -60,7 +60,7 @@ export default function QuotaIndicator({ compact = false }) {
     'text-red-600';
 
   const tierBadgeColor =
-    profile.tier === 'PRO' ? 'bg-indigo-100 text-indigo-700' :
+    profile.tier === 'PRO' ? 'bg-amber-100 text-amber-700' :
     profile.tier === 'ENTERPRISE' ? 'bg-amber-100 text-amber-700' :
     'bg-gray-100 text-gray-500';
 

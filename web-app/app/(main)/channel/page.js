@@ -37,7 +37,7 @@ export default function ChannelPage() {
   if (loading) {
     return (
       <div className="flex justify-center items-center h-64">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-indigo-600"></div>
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-amber-600"></div>
       </div>
     );
   }
@@ -77,23 +77,23 @@ export default function ChannelPage() {
           <div
             key={channel.id}
             onClick={() => handleSelectChannel(channel.id)}
-            className="group relative bg-white p-5 rounded-xl border border-gray-200 hover:shadow-md hover:border-indigo-200 cursor-pointer transition-all hover:-translate-y-0.5"
+            className="group relative bg-white p-5 rounded-xl border border-gray-200 hover:shadow-md hover:border-amber-200 cursor-pointer transition-all hover:-translate-y-0.5"
           >
             <div className="flex items-center gap-3 mb-3">
               <img
                 src={channel.snippet.thumbnails.default.url}
                 alt={channel.snippet.title}
-                className="w-12 h-12 rounded-full border-2 border-indigo-50 flex-shrink-0"
+                className="w-12 h-12 rounded-full border-2 border-amber-50 flex-shrink-0"
               />
               <div className="flex-1 overflow-hidden">
-                <h3 className="text-sm font-bold text-gray-900 truncate group-hover:text-indigo-600 transition-colors">
+                <h3 className="text-sm font-bold text-gray-900 truncate group-hover:text-amber-600 transition-colors">
                   {channel.snippet.title}
                 </h3>
                 <p className="text-xs text-gray-400 truncate">{channel.snippet.customUrl}</p>
               </div>
             </div>
             <div className="flex items-center justify-end">
-              <span className="flex items-center gap-1 text-indigo-600 font-medium text-xs opacity-0 group-hover:opacity-100 transition-opacity">
+              <span className="flex items-center gap-1 text-amber-600 font-medium text-xs opacity-0 group-hover:opacity-100 transition-opacity">
                 <span>Pilih</span>
                 <CheckCircle2 className="w-3.5 h-3.5" />
               </span>
