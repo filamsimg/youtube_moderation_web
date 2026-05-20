@@ -35,7 +35,7 @@ export default function RiwayatPage() {
   };
 
   const getActionLabel = (action) => {
-    const map = { published: 'Diterbitkan', rejected: 'Ditolak', heldForReview: 'Ditahan' };
+    const map = { published: 'Aman', rejected: 'Ditolak', heldForReview: 'Ditahan' };
     return map[action] || action;
   };
 
@@ -59,7 +59,7 @@ export default function RiwayatPage() {
     return matchesSearch && matchesFilter;
   });
 
-  const totalDiterbitkan = activities.filter(a => a.action === 'published').length;
+  const totalAman = activities.filter(a => a.action === 'published').length;
   const totalDitolak = activities.filter(a => a.action === 'rejected').length;
   const totalDitahan = activities.filter(a => a.action === 'heldForReview').length;
 
@@ -82,15 +82,15 @@ export default function RiwayatPage() {
       {activities.length > 0 && (
         <div className="bg-white rounded-xl border border-gray-200 p-5">
           <div className="flex items-center gap-2 mb-3">
-            <svg className="w-5 h-5 text-indigo-400" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
+            <svg className="w-5 h-5 text-amber-400" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" d="M3.75 3v11.25A2.25 2.25 0 006 16.5h2.25M3.75 3h-1.5m1.5 0h16.5m0 0h1.5m-1.5 0v11.25A2.25 2.25 0 0118 16.5h-2.25m-7.5 0h7.5m-7.5 0l-1 3m8.5-3l1 3m0 0l.5 1.5m-.5-1.5h-9.5m0 0l-.5 1.5" />
             </svg>
             <p className="text-xs font-semibold text-gray-700">Statistik Riwayat</p>
           </div>
           <div className="grid grid-cols-3 gap-3 text-center">
             <div className="bg-green-50 rounded-lg p-3">
-              <p className="text-lg font-bold text-green-600">{totalDiterbitkan}</p>
-              <p className="text-[10px] text-green-500 mt-0.5">Diterbitkan</p>
+              <p className="text-lg font-bold text-green-600">{totalAman}</p>
+              <p className="text-[10px] text-green-500 mt-0.5">Aman</p>
             </div>
             <div className="bg-amber-50 rounded-lg p-3">
               <p className="text-lg font-bold text-amber-600">{totalDitahan}</p>
@@ -114,17 +114,17 @@ export default function RiwayatPage() {
             placeholder="Cari komentar, pengguna..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full pl-10 pr-4 py-2.5 text-xs bg-white border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500"
+            className="w-full pl-10 pr-4 py-2.5 text-xs bg-white border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-amber-500"
           />
         </div>
         <div className="relative">
           <select
             value={filterAction}
             onChange={(e) => setFilterAction(e.target.value)}
-            className="w-full sm:w-auto appearance-none bg-white border border-gray-200 rounded-lg px-3 py-2.5 pr-8 text-xs text-gray-600 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+            className="w-full sm:w-auto appearance-none bg-white border border-gray-200 rounded-lg px-3 py-2.5 pr-8 text-xs text-gray-600 focus:outline-none focus:ring-2 focus:ring-amber-500"
           >
             <option value="semua">Semua Tindakan</option>
-            <option value="diterbitkan">Diterbitkan</option>
+            <option value="aman">Aman</option>
             <option value="ditolak">Ditolak</option>
             <option value="ditahan">Ditahan</option>
           </select>
@@ -143,7 +143,7 @@ export default function RiwayatPage() {
       {/* List / Loading / Empty */}
       {loading ? (
         <div className="flex flex-col items-center justify-center py-20 bg-white rounded-xl border border-gray-200">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-indigo-600 mb-3"></div>
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-amber-600 mb-3"></div>
           <p className="text-xs text-gray-400">Sinkronisasi data database...</p>
         </div>
       ) : filtered.length === 0 ? (
@@ -193,7 +193,7 @@ export default function RiwayatPage() {
                       <td className="px-5 py-3">
                         <div className="flex flex-col gap-1">
                           <span className={`text-[10px] font-semibold px-2 py-0.5 rounded-full w-fit ${item.aiLabel?.toLowerCase() === 'spam' ? 'bg-red-100 text-red-700' : 'bg-green-100 text-green-700'}`}>
-                            {item.aiLabel === 'Spam' ? '🚨 Spam' : '✅ Normal'}
+                            {item.aiLabel === 'Spam' ? '🚨 Spam Judol' : '✅ Normal'}
                           </span>
                           {item.aiLabel !== 'Spam' && item.sentiment && (
                             <span className={`text-[10px] font-semibold px-2 py-0.5 rounded-full w-fit ${item.sentiment === 'positive' ? 'bg-emerald-100 text-emerald-700' : item.sentiment === 'negative' ? 'bg-rose-100 text-rose-700' : 'bg-gray-100 text-gray-700'}`}>
@@ -228,7 +228,7 @@ export default function RiwayatPage() {
                 <p className="text-xs text-gray-700 line-clamp-2">{item.commentText || '-'}</p>
                 <div className="flex items-center gap-2">
                    <span className={`text-[10px] font-semibold px-2 py-0.5 rounded-full ${item.aiLabel?.toLowerCase() === 'spam' ? 'bg-red-100 text-red-700' : 'bg-green-100 text-green-700'}`}>
-                      {item.aiLabel === 'Spam' ? '🚨 Spam' : '✅ Normal'}
+                      {item.aiLabel === 'Spam' ? '🚨 Spam Judol' : '✅ Normal'}
                    </span>
                    {item.aiLabel !== 'Spam' && item.sentiment && (
                       <span className={`text-[10px] font-semibold px-2 py-0.5 rounded-full ${item.sentiment === 'positive' ? 'bg-emerald-100 text-emerald-700' : item.sentiment === 'negative' ? 'bg-rose-100 text-rose-700' : 'bg-gray-100 text-gray-700'}`}>
