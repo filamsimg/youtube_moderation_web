@@ -8,7 +8,7 @@ export const historyService = {
       .select('*')
       .eq('user_email', email)
       .order('created_at', { ascending: false })
-      .limit(200);
+      .limit(5000);
     
     if (error) {
       console.error('Error fetching history:', error);
