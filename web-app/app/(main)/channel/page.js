@@ -9,7 +9,7 @@ import { useYouTube } from '@/contexts/YouTubeContext';
 export default function ChannelPage() {
   const { data: session } = useSession();
   const router = useRouter();
-  
+
   const { channels, fetchChannel, loadingChannel, updateSelectedChannelId } = useYouTube();
 
   useEffect(() => {

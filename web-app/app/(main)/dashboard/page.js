@@ -46,17 +46,17 @@ const CustomBarTooltip = ({ active, payload, label }) => {
 // ── Stat Card Component ───────────────────────────────────────
 function StatCard({ label, value, sub, icon, color, delay = 0 }) {
   const glowColor = {
-    blue:    'rgba(59, 130, 246, 0.12)',
+    blue: 'rgba(59, 130, 246, 0.12)',
     emerald: 'rgba(16, 185, 129, 0.12)',
-    amber:   'rgba(245, 158, 11, 0.12)',
-    rose:    'rgba(244, 63, 94, 0.12)',
+    amber: 'rgba(245, 158, 11, 0.12)',
+    rose: 'rgba(244, 63, 94, 0.12)',
   }[color] || 'rgba(99, 102, 241, 0.12)';
 
   const iconBg = {
-    blue:    'bg-blue-500/10 border-blue-500/20 text-blue-400',
+    blue: 'bg-blue-500/10 border-blue-500/20 text-blue-400',
     emerald: 'bg-emerald-500/10 border-emerald-500/20 text-emerald-400',
-    amber:   'bg-amber-500/10 border-amber-500/20 text-amber-400',
-    rose:    'bg-rose-500/10 border-rose-500/20 text-rose-400',
+    amber: 'bg-amber-500/10 border-amber-500/20 text-amber-400',
+    rose: 'bg-rose-500/10 border-rose-500/20 text-rose-400',
   }[color] || 'bg-indigo-500/10 border-indigo-500/20 text-indigo-400';
 
   return (
@@ -86,10 +86,10 @@ function StatCard({ label, value, sub, icon, color, delay = 0 }) {
 export default function DashboardPage() {
   const { data: session } = useSession();
   const router = useRouter();
-  
+
   const { activeChannel: channelInfo, channels, fetchChannel, fetchVideos, videosCache } = useYouTube();
   const videos = channelInfo ? (videosCache[channelInfo.id] || []).slice(0, 10) : [];
-  
+
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [history, setHistory] = useState([]);
@@ -117,11 +117,11 @@ export default function DashboardPage() {
         const mapped = dbHistory.map(item => ({
           ...item,
           commentText: item.comment_text,
-          videoTitle:  item.video_title,
-          aiLabel:     item.ai_label,
+          videoTitle: item.video_title,
+          aiLabel: item.ai_label,
           aiConfidence: item.ai_confidence,
           sentimentScore: item.sentiment_score,
-          timestamp:   item.created_at,
+          timestamp: item.created_at,
         }));
         setHistory(mapped);
       }
@@ -140,26 +140,26 @@ export default function DashboardPage() {
 
   // Global metrics
   const totalPublished = history.filter(h => h.action === 'published').length;
-  const totalRejected  = history.filter(h => h.action === 'rejected').length;
-  const totalHeld      = history.filter(h => h.action === 'heldForReview').length;
+  const totalRejected = history.filter(h => h.action === 'rejected').length;
+  const totalHeld = history.filter(h => h.action === 'heldForReview').length;
 
   // Filtered metrics
-  const normalCount   = filteredHistory.filter(h => h.aiLabel === 'Normal').length;
-  const spamCount     = filteredHistory.filter(h => h.aiLabel === 'Spam').length;
+  const normalCount = filteredHistory.filter(h => h.aiLabel === 'Normal').length;
+  const spamCount = filteredHistory.filter(h => h.aiLabel === 'Spam').length;
   const positiveCount = filteredHistory.filter(h => h.sentiment === 'positive').length;
   const negativeCount = filteredHistory.filter(h => h.sentiment === 'negative').length;
-  const neutralCount  = filteredHistory.filter(h => h.sentiment === 'neutral').length;
+  const neutralCount = filteredHistory.filter(h => h.sentiment === 'neutral').length;
 
-  const contentData   = [{ name: 'Normal', value: normalCount }, { name: 'Spam Judol', value: spamCount }];
-  const actionData    = [
-    { name: 'Aman',    jumlah: history.filter(h => h.action === 'published').length },
+  const contentData = [{ name: 'Normal', value: normalCount }, { name: 'Spam Judol', value: spamCount }];
+  const actionData = [
+    { name: 'Aman', jumlah: history.filter(h => h.action === 'published').length },
     { name: 'Ditahan', jumlah: history.filter(h => h.action === 'heldForReview').length },
     { name: 'Ditolak', jumlah: history.filter(h => h.action === 'rejected').length },
   ];
   const sentimentData = [
     { name: 'Positif', value: positiveCount },
     { name: 'Negatif', value: negativeCount },
-    { name: 'Netral',  value: neutralCount },
+    { name: 'Netral', value: neutralCount },
   ];
 
   const perVideoData = useMemo(() => {
@@ -186,8 +186,8 @@ export default function DashboardPage() {
   }, [history]);
 
   // Dark chart colors
-  const COLORS           = ['#10b981', '#f43f5e'];
-  const ACTION_COLORS    = ['#3b82f6', '#f59e0b', '#f43f5e'];
+  const COLORS = ['#10b981', '#f43f5e'];
+  const ACTION_COLORS = ['#3b82f6', '#f59e0b', '#f43f5e'];
   const SENTIMENT_COLORS = ['#10b981', '#f43f5e', '#475569'];
 
   // Axis tick style (wajib override di dark mode)
@@ -484,7 +484,7 @@ export default function DashboardPage() {
                 <YAxis axisLine={false} tickLine={false} tick={axisTick} />
                 <Tooltip content={<CustomBarTooltip />} cursor={{ fill: 'rgba(255,255,255,0.03)' }} />
                 <Bar dataKey="judol" name="Spam Judol" fill="#f43f5e" radius={[4, 4, 0, 0]} />
-                <Bar dataKey="normal" name="Normal"     fill="#10b981" radius={[4, 4, 0, 0]} />
+                <Bar dataKey="normal" name="Normal" fill="#10b981" radius={[4, 4, 0, 0]} />
               </BarChart>
             </ResponsiveContainer>
           </div>
@@ -507,7 +507,7 @@ export default function DashboardPage() {
               {[
                 { emoji: '😊', label: 'Positif', count: positiveCount, total: positiveCount + negativeCount + neutralCount, colorClass: 'bg-emerald-500/10 border-emerald-500/20', textColor: 'text-emerald-400' },
                 { emoji: '😠', label: 'Negatif', count: negativeCount, total: positiveCount + negativeCount + neutralCount, colorClass: 'bg-rose-500/10 border-rose-500/20', textColor: 'text-rose-400' },
-                { emoji: '😐', label: 'Netral',  count: neutralCount,  total: positiveCount + negativeCount + neutralCount, colorClass: 'bg-card-hover border-[var(--border-default)]', textColor: 'text-secondary' },
+                { emoji: '😐', label: 'Netral', count: neutralCount, total: positiveCount + negativeCount + neutralCount, colorClass: 'bg-card-hover border-[var(--border-default)]', textColor: 'text-secondary' },
               ].map(item => (
                 <div key={item.label} className={`flex items-center justify-between p-3 rounded-xl border ${item.colorClass}`}>
                   <div className="flex items-center gap-2">
