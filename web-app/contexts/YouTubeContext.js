@@ -17,28 +17,39 @@ export function YouTubeProvider({ children }) {
   const [loadingChannel, setLoadingChannel] = useState(false);
   const [loadingVideos, setLoadingVideos] = useState(false);
 
-  // Initialize selected channel from local storage on mount
-  useEffect(() => {
-    const savedId = localStorage.getItem('selectedChannelId');
-    if (savedId) setSelectedChannelId(savedId);
-  }, []);
-
   const hasFetchedChannelRef = useRef(false);
   const fetchedVideosChannelsRef = useRef(new Set());
   const lastTokenRef = useRef(null);
 
-  // Reset tracking refs if the authentication token changes (e.g. user switched accounts or logged out)
+  // Watch session change (User Switch or Sign Out) to purge states and load scoped selectedChannelId
   useEffect(() => {
-    if (session?.accessToken !== lastTokenRef.current) {
-      lastTokenRef.current = session?.accessToken || null;
-      hasFetchedChannelRef.current = false;
-      fetchedVideosChannelsRef.current.clear();
+    const email = session?.user?.email;
+
+    // Purge all sensitive internal in-memory states
+    setChannels([]);
+    setVideosCache({});
+    setLoadingChannel(false);
+    setLoadingVideos(false);
+
+    // Reset tracking refs
+    hasFetchedChannelRef.current = false;
+    fetchedVideosChannelsRef.current = new Set();
+    lastTokenRef.current = session?.accessToken || null;
+
+    if (email) {
+      const savedId = localStorage.getItem(`selectedChannelId_${email}`);
+      setSelectedChannelId(savedId || null);
+    } else {
+      setSelectedChannelId(null);
     }
-  }, [session?.accessToken]);
+  }, [session?.user?.email, session?.accessToken]);
 
   const updateSelectedChannelId = (id) => {
     setSelectedChannelId(id);
-    localStorage.setItem('selectedChannelId', id);
+    const email = session?.user?.email;
+    if (email && id) {
+      localStorage.setItem(`selectedChannelId_${email}`, id);
+    }
   };
 
   const fetchChannel = useCallback(async () => {

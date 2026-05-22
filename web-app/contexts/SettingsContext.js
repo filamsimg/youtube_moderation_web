@@ -33,13 +33,29 @@ export function SettingsProvider({ children }) {
     } else {
       const saved = localStorage.getItem('userSettings');
       if (saved) {
-        setSettingsState({ ...DEFAULT_SETTINGS, ...JSON.parse(saved) });
+        try {
+          setSettingsState({ ...DEFAULT_SETTINGS, ...JSON.parse(saved) });
+        } catch {
+          setSettingsState(DEFAULT_SETTINGS);
+        }
+      } else {
+        setSettingsState(DEFAULT_SETTINGS);
       }
       setLoading(false);
     }
   }, [session?.user?.email]);
 
   const loadSettings = async (email) => {
+    // Muat dari localStorage terlebih dahulu untuk responsivitas instan
+    const saved = localStorage.getItem(`userSettings_${email}`);
+    if (saved) {
+      try {
+        setSettingsState({ ...DEFAULT_SETTINGS, ...JSON.parse(saved) });
+      } catch (err) {
+        console.error('Error parsing scoped local settings:', err);
+      }
+    }
+
     try {
       const data = await settingsService.getSettings(email);
       if (data) {
@@ -53,7 +69,7 @@ export function SettingsProvider({ children }) {
           batchModeration: data.batch_moderation ?? true,
         };
         setSettingsState({ ...DEFAULT_SETTINGS, ...mapped });
-        localStorage.setItem('userSettings', JSON.stringify(mapped));
+        localStorage.setItem(`userSettings_${email}`, JSON.stringify(mapped));
 
         if (mapped.theme && mapped.theme !== theme) {
           setTheme(mapped.theme);
@@ -69,15 +85,18 @@ export function SettingsProvider({ children }) {
   const updateSettings = async (newSettings) => {
     const updated = { ...settings, ...newSettings };
     setSettingsState(updated);
-    localStorage.setItem('userSettings', JSON.stringify(updated));
+    
+    const email = session?.user?.email;
+    const storageKey = email ? `userSettings_${email}` : 'userSettings';
+    localStorage.setItem(storageKey, JSON.stringify(updated));
 
     if (newSettings.theme && newSettings.theme !== theme) {
       setTheme(newSettings.theme);
     }
 
-    if (session?.user?.email) {
+    if (email) {
       try {
-        await settingsService.saveSettings(session.user.email, updated);
+        await settingsService.saveSettings(email, updated);
         toast.success('Pengaturan berhasil disimpan');
       } catch (err) {
         toast.error('Gagal menyimpan pengaturan ke server');

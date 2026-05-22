@@ -29,8 +29,13 @@ export function QuotaProvider({ children }) {
   }, [session?.user?.email]);
 
   useEffect(() => {
+    if (!session?.user?.email) {
+      setProfile(null);
+      setLoading(false);
+      return;
+    }
     fetchQuota();
-  }, [fetchQuota]);
+  }, [session?.user?.email, fetchQuota]);
 
   const deductQuota = async (actionKey, description = '') => {
     try {

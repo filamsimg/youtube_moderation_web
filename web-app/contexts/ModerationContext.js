@@ -48,26 +48,64 @@ export function ModerationProvider({ children }) {
   useEffect(() => { predictionsRef.current = predictions; }, [predictions]);
   useEffect(() => { selectedVideoIdsRef.current = selectedVideoIds; }, [selectedVideoIds]);
 
-  // Restore saved selection
-  useEffect(() => {
-    if (!selectedChannelId || !videosCache[selectedChannelId]) return;
-    const currentVideos = videosCache[selectedChannelId];
-    if (currentVideos.length === 0) return;
+  const lastUserChannelRef = useRef({ email: null, channelId: null });
 
-    try {
-      const savedIds = JSON.parse(localStorage.getItem('selectedVideoIds') || '[]');
-      if (savedIds.length > 0) {
-        const validIds = savedIds.filter(id => currentVideos.some(v => v.id.videoId === id));
-        if (validIds.length > 0) {
-          setSelectedVideoIds(new Set(validIds));
-          const firstVideo = currentVideos.find(v => v.id.videoId === validIds[0]);
-          if (firstVideo) {
-            setPrimaryVideo({ id: firstVideo.id.videoId, title: firstVideo.snippet.title });
+  // Watch session change (User Switch or Sign Out) to purge states and load scoped selectedVideoIds
+  useEffect(() => {
+    const email = session?.user?.email;
+
+    // Jika user email atau channel berganti, lakukan pembersihan total
+    if (email !== lastUserChannelRef.current.email || selectedChannelId !== lastUserChannelRef.current.channelId) {
+      lastUserChannelRef.current = { email, channelId: selectedChannelId };
+      
+      // Purge all sensitive internal in-memory states
+      setSelectedVideoIds(new Set());
+      setPrimaryVideo(null);
+      setComments([]);
+      setCommentsLoading(false);
+      setError(null);
+      setPredictions({});
+      setIsPolling(false);
+      setProcessingComment(null);
+      setFetchProgress({ current: 0, total: 0 });
+      setIsFetchingMulti(false);
+      setHasLoaded(false);
+      setSessionHistory([]);
+      setDbHistory([]);
+      setNextPageTokens({});
+      setCanLoadMore(false);
+      setLoadingMore(false);
+
+      // Reset tracking refs
+      predictionsRef.current = {};
+      selectedVideoIdsRef.current = new Set();
+      isFetchingRef.current = false;
+    }
+
+    // Muat seleksi dari localStorage terisolasi jika channel & cache sudah siap
+    if (email && selectedChannelId && videosCache[selectedChannelId]) {
+      const currentVideos = videosCache[selectedChannelId];
+      if (currentVideos.length > 0) {
+        try {
+          const savedIds = JSON.parse(localStorage.getItem(`selectedVideoIds_${email}`) || '[]');
+          if (savedIds.length > 0) {
+            const validIds = savedIds.filter(id => currentVideos.some(v => v.id.videoId === id));
+            if (validIds.length > 0) {
+              const newSet = new Set(validIds);
+              setSelectedVideoIds(newSet);
+              selectedVideoIdsRef.current = newSet;
+              const firstVideo = currentVideos.find(v => v.id.videoId === validIds[0]);
+              if (firstVideo) {
+                setPrimaryVideo({ id: firstVideo.id.videoId, title: firstVideo.snippet.title });
+              }
+            }
           }
+        } catch (err) {
+          console.error('Error restoring selectedVideoIds:', err);
         }
       }
-    } catch { /* ignore */ }
-  }, [selectedChannelId, videosCache]);
+    }
+  }, [session?.user?.email, selectedChannelId, videosCache]);
 
   const handleToggleVideo = (video) => {
     const videoId = video.id.videoId;
@@ -92,7 +130,10 @@ export function ModerationProvider({ children }) {
     }
 
     setSelectedVideoIds(next);
-    localStorage.setItem('selectedVideoIds', JSON.stringify([...next]));
+    const email = session?.user?.email;
+    if (email) {
+      localStorage.setItem(`selectedVideoIds_${email}`, JSON.stringify([...next]));
+    }
   };
 
   const handleSelectAll = () => {
@@ -103,13 +144,19 @@ export function ModerationProvider({ children }) {
     if (currentVideos.length > 0) {
       setPrimaryVideo({ id: currentVideos[0].id.videoId, title: currentVideos[0].snippet.title });
     }
-    localStorage.setItem('selectedVideoIds', JSON.stringify(allIds));
+    const email = session?.user?.email;
+    if (email) {
+      localStorage.setItem(`selectedVideoIds_${email}`, JSON.stringify(allIds));
+    }
   };
 
   const handleDeselectAll = () => {
     setSelectedVideoIds(new Set());
     setPrimaryVideo(null);
-    localStorage.removeItem('selectedVideoIds');
+    const email = session?.user?.email;
+    if (email) {
+      localStorage.removeItem(`selectedVideoIds_${email}`);
+    }
     setComments([]);
     setPredictions({});
     setSessionHistory([]);
