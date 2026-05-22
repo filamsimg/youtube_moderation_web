@@ -10,7 +10,30 @@ export async function POST(req) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    const { text } = await req.json();
+    const body = await req.json();
+    
+    // Support Batch Inference
+    if (body.texts && Array.isArray(body.texts)) {
+      const results = [];
+      for (const text of body.texts) {
+        try {
+          const prediction = await modelService.classifyComment(text);
+          results.push(prediction);
+        } catch (e) {
+          console.error('Batch classification item error:', e);
+          results.push({ 
+            label: 'Normal', 
+            confidence: 1.0, 
+            sentiment: 'neutral', 
+            sentiment_score: 0.5 
+          });
+        }
+      }
+      return NextResponse.json({ results });
+    }
+
+    // Support Single Inference
+    const { text } = body;
     if (!text) {
       return NextResponse.json({ error: 'Text is required' }, { status: 400 });
     }

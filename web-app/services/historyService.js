@@ -67,5 +67,19 @@ export const historyService = {
       return null;
     }
     return data;
+  },
+
+  async deleteAction(commentId) {
+    if (!commentId) return false;
+    const { error } = await supabase
+      .from('moderation_history')
+      .delete()
+      .eq('comment_id', commentId);
+    
+    if (error) {
+      console.error('Error deleting action:', error);
+      return false;
+    }
+    return true;
   }
 };
