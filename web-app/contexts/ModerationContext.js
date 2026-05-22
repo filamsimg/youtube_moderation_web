@@ -204,18 +204,11 @@ export function ModerationProvider({ children }) {
 
         let newPredictions = {};
         if (settings.batchModeration) {
-          // Kirim SEMUA teks komentar sekaligus ke Flask model
-          const ok = await deductQuota('MODERATE_BATCH', `${allNewComments.length} Komentar`);
-          if (ok) {
-            newPredictions = await performInferenceBatch(allNewComments);
-            // Biaya: 50 unit SEKALI (bukan dikali jumlah komentar)
-          }
+          // Kirim SEMUA teks komentar sekaligus ke Flask model secara batch
+          newPredictions = await performInferenceBatch(allNewComments);
         } else {
           // Kirim satu-satu ke Flask model
-          // Biaya: 50 unit × jumlah komentar
           for (let i = 0; i < allNewComments.length; i++) {
-            const ok = await deductQuota('MODERATE_SINGLE', '1 Komentar');
-            if (!ok) break;
             try {
               const res = await axios.post('/api/predict', { text: allNewComments[i].textOriginal });
               newPredictions[allNewComments[i].id] = {
