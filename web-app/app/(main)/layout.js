@@ -12,10 +12,10 @@ export default function MainLayout({ children }) {
   const router = useRouter();
 
   useEffect(() => {
-    if (status === 'unauthenticated') {
+    if (status === 'unauthenticated' || session?.error === 'RefreshAccessTokenError') {
       router.replace('/login');
     }
-  }, [status, router]);
+  }, [status, session?.error, router]);
 
   if (status === 'loading') {
     return (

@@ -65,10 +65,12 @@ export const youtubeService = {
 
       return {
         ...res.data,
-        items: res.data.items.map(item => ({
-          ...item,
-          id: { videoId: item.snippet.resourceId.videoId }
-        }))
+        items: (res.data?.items || [])
+          .filter(item => item?.snippet?.resourceId?.videoId)
+          .map(item => ({
+            ...item,
+            id: { videoId: item.snippet.resourceId.videoId }
+          }))
       };
     } catch (error) {
       const err = extractError(error);

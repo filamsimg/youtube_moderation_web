@@ -82,7 +82,13 @@ export function YouTubeProvider({ children }) {
       return videoItems;
     } catch (err) {
       console.error('Fetch videos error:', err);
-      toast.error('Gagal mengambil daftar video dari YouTube');
+      if (err.isExpired || err.status === 401) {
+        toast.error('Sesi akses YouTube berakhir. Silakan masuk kembali (Re-login).');
+      } else if (err.reason === 'quotaExceeded' || err.status === 403) {
+        toast.error('Kuota harian YouTube API Anda telah habis.');
+      } else {
+        toast.error(`Gagal mengambil daftar video: ${err.message || 'Error tidak diketahui'}`);
+      }
       return [];
     } finally {
       setLoadingVideos(false);
