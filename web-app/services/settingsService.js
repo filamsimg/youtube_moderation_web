@@ -21,6 +21,7 @@ export const settingsService = {
       .from('user_settings')
       .upsert({
         user_email: email,
+        theme: settings.theme,
         auto_hapus: settings.autoHapus,
         auto_tahan: settings.autoTahan,
         threshold_reject: settings.thresholdReject,
@@ -31,7 +32,7 @@ export const settingsService = {
     
     if (error) {
       console.error('Error saving settings:', error);
-      return null;
+      throw error;
     }
     return data;
   }

@@ -2,16 +2,19 @@
 
 import { useTheme } from '@/components/ThemeProvider';
 import { useState } from 'react';
+import { useSettings } from '@/contexts/SettingsContext';
 
 export default function ThemeToggle({ className = '' }) {
-  const { theme, toggleTheme } = useTheme();
+  const { theme } = useTheme();
+  const { updateSettings } = useSettings();
   const [isAnimating, setIsAnimating] = useState(false);
 
   const isDark = theme === 'dark';
 
   const handleClick = () => {
     setIsAnimating(true);
-    toggleTheme();
+    const nextTheme = isDark ? 'light' : 'dark';
+    updateSettings({ theme: nextTheme });
     setTimeout(() => setIsAnimating(false), 400);
   };
 

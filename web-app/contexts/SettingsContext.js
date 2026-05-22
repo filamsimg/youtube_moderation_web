@@ -9,8 +9,7 @@ import { useToast } from './ToastContext';
 const SettingsContext = createContext(null);
 
 const DEFAULT_SETTINGS = {
-  bahasa: 'id',
-  kepadatan: 'standar',
+  theme: 'dark',
   notifKomentar: true,
   autoTahan: true,
   autoHapus: false,
@@ -45,8 +44,7 @@ export function SettingsProvider({ children }) {
       const data = await settingsService.getSettings(email);
       if (data) {
         const mapped = {
-          bahasa: data.bahasa || 'id',
-          kepadatan: data.kepadatan || 'standar',
+          theme: data.theme || 'dark',
           autoTahan: data.auto_tahan ?? true,
           autoHapus: data.auto_hapus ?? false,
           thresholdHold: data.threshold_hold ?? 70,
@@ -56,6 +54,10 @@ export function SettingsProvider({ children }) {
         };
         setSettingsState({ ...DEFAULT_SETTINGS, ...mapped });
         localStorage.setItem('userSettings', JSON.stringify(mapped));
+
+        if (mapped.theme && mapped.theme !== theme) {
+          setTheme(mapped.theme);
+        }
       }
     } catch (err) {
       console.error('Settings load error:', err);
@@ -69,16 +71,13 @@ export function SettingsProvider({ children }) {
     setSettingsState(updated);
     localStorage.setItem('userSettings', JSON.stringify(updated));
 
-    if (newSettings.tema && newSettings.tema !== theme) {
-      setTheme(newSettings.tema);
+    if (newSettings.theme && newSettings.theme !== theme) {
+      setTheme(newSettings.theme);
     }
 
     if (session?.user?.email) {
       try {
-        await settingsService.saveSettings(session.user.email, {
-          ...updated,
-          tema: newSettings.tema || theme
-        });
+        await settingsService.saveSettings(session.user.email, updated);
         toast.success('Pengaturan berhasil disimpan');
       } catch (err) {
         toast.error('Gagal menyimpan pengaturan ke server');

@@ -11,8 +11,6 @@ export default function PreferensiPage() {
   const { theme, setTheme } = useTheme();
   const { settings, updateSettings, loading } = useSettings();
 
-  const [bahasa, setBahasa] = useState('id');
-  const [kepadatan, setKepadatan] = useState('standar');
   const [notifKomentar, setNotifKomentar] = useState(true);
   const [autoTahan, setAutoTahan] = useState(true);
   const [autoHapus, setAutoHapus] = useState(false);
@@ -24,8 +22,6 @@ export default function PreferensiPage() {
   // Sync local state with context when settings are loaded
   useEffect(() => {
     if (!loading && settings) {
-      setBahasa(settings.bahasa || 'id');
-      setKepadatan(settings.kepadatan || 'standar');
       setNotifKomentar(settings.notifKomentar ?? true);
       setAutoTahan(settings.autoTahan ?? true);
       setAutoHapus(settings.autoHapus ?? false);
@@ -38,10 +34,14 @@ export default function PreferensiPage() {
 
   const handleSave = async () => {
     await updateSettings({
-      bahasa, tema: theme, kepadatan, notifKomentar,
-      autoTahan, autoHapus,
-      thresholdHold, thresholdReject,
-      pollingInterval, batchModeration,
+      theme,
+      notifKomentar,
+      autoTahan,
+      autoHapus,
+      thresholdHold,
+      thresholdReject,
+      pollingInterval,
+      batchModeration,
     });
   };
 
@@ -204,14 +204,6 @@ export default function PreferensiPage() {
         </div>
         <p className="text-xs mb-2" style={{ color: 'var(--text-muted)' }}>Sesuaikan tampilan antarmuka</p>
 
-        <SelectField
-          label="Bahasa Antarmuka"
-          desc="Bahasa yang digunakan untuk antarmuka aplikasi"
-          value={bahasa}
-          onChange={setBahasa}
-          options={[{ value: 'id', label: 'Bahasa Indonesia' }, { value: 'en', label: 'English' }]}
-        />
-
         {/* ── Tema Toggle — Sambung ke ThemeContext ─────────── */}
         <div className="py-4 border-t" style={{ borderColor: 'var(--border-default)' }}>
           <p className="text-sm font-medium mb-1" style={{ color: 'var(--text-secondary)' }}>Tema Warna</p>
@@ -262,18 +254,6 @@ export default function PreferensiPage() {
             })}
           </div>
         </div>
-
-        <SelectField
-          label="Kepadatan Tampilan"
-          desc="Atur jarak dan ukuran elemen antarmuka"
-          value={kepadatan}
-          onChange={setKepadatan}
-          options={[
-            { value: 'standar', label: 'Standar' },
-            { value: 'kompak',  label: 'Kompak' },
-            { value: 'longgar', label: 'Longgar' },
-          ]}
-        />
       </div>
 
       {/* ── Notifikasi & Otomasi ──────────────────────────────── */}
