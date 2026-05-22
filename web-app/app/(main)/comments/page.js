@@ -449,12 +449,12 @@ export default function CommentsPage() {
 
   const getStatusBadge = (status) => {
     const map = {
-      published:    { label: 'Diterbitkan', cls: 'bg-green-100 text-green-700' },
-      heldForReview:{ label: 'Ditahan',     cls: 'bg-amber-100 text-amber-700' },
-      rejected:     { label: 'Ditolak',     cls: 'bg-red-100 text-red-700' },
+      published:     { label: 'Diterbitkan', cls: 'badge badge-success' },
+      heldForReview: { label: 'Ditahan',     cls: 'badge badge-warning' },
+      rejected:      { label: 'Ditolak',     cls: 'badge badge-danger' },
     };
     const s = map[status] || map.published;
-    return <span className={`text-[11px] font-medium px-2 py-0.5 rounded-full ${s.cls}`}>{s.label}</span>;
+    return <span className={s.cls}>{s.label}</span>;
   };
 
   // Video unik dari komentar yang sudah dimuat (untuk dropdown filter)
@@ -466,9 +466,9 @@ export default function CommentsPage() {
   const VideoPanelContent = () => (
     <div className="flex flex-col h-full">
       {/* Header */}
-      <div className="px-4 py-3 border-b border-gray-100">
-        <p className="text-xs font-semibold text-gray-500 uppercase tracking-wider">Daftar Video</p>
-        <p className="text-[11px] text-gray-400 mt-0.5">
+      <div className="px-4 py-3 border-b" style={{ borderColor: 'var(--border-default)' }}>
+        <p className="text-xs font-semibold uppercase tracking-wider" style={{ color: 'var(--text-muted)' }}>Daftar Video</p>
+        <p className="text-[11px] mt-0.5" style={{ color: 'var(--text-muted)' }}>
           {selectedVideoIds.size > 0
             ? `${selectedVideoIds.size} dari ${videos.length} dipilih`
             : `${videos.length} video tersedia`}
@@ -477,17 +477,18 @@ export default function CommentsPage() {
 
       {/* Pilih Semua / Batal */}
       {!videosLoading && videos.length > 0 && (
-        <div className="flex gap-1.5 px-3 py-2 border-b border-gray-100">
+        <div className="flex gap-1.5 px-3 py-2 border-b" style={{ borderColor: 'var(--border-default)' }}>
           <button
             onClick={handleSelectAll}
-            className="flex-1 text-[11px] text-amber-600 hover:text-amber-700 font-medium py-1 px-2 rounded-md hover:bg-amber-50 transition-colors"
+            className="flex-1 text-[11px] text-indigo-500 hover:text-indigo-600 font-medium py-1 px-2 rounded-md hover:bg-indigo-500/10 transition-colors"
           >
             Pilih Semua
           </button>
           <button
             onClick={handleDeselectAll}
             disabled={selectedVideoIds.size === 0}
-            className="flex-1 text-[11px] text-gray-500 hover:text-gray-700 font-medium py-1 px-2 rounded-md hover:bg-gray-100 transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+            className="flex-1 text-[11px] font-medium py-1 px-2 rounded-md transition-colors disabled:opacity-40 disabled:cursor-not-allowed hover:bg-[var(--bg-card-hover)]"
+            style={{ color: 'var(--text-secondary)' }}
           >
             Batal Pilih
           </button>
@@ -498,14 +499,14 @@ export default function CommentsPage() {
       <div className="flex-1 overflow-y-auto">
         {videosLoading ? (
           <div className="flex justify-center py-8">
-            <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-amber-500" />
+            <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-indigo-500" />
           </div>
         ) : videos.length === 0 ? (
           <div className="text-center py-8 px-4">
-            <p className="text-xs text-gray-400">Tidak ada video ditemukan.</p>
+            <p className="text-xs" style={{ color: 'var(--text-muted)' }}>Tidak ada video ditemukan.</p>
             <button
               onClick={() => router.push('/channel')}
-              className="text-xs text-amber-600 hover:underline mt-2 block mx-auto"
+              className="text-xs text-indigo-400 hover:underline mt-2 block mx-auto"
             >
               Ganti Kanal →
             </button>
@@ -518,19 +519,19 @@ export default function CommentsPage() {
               return (
                 <label
                   key={videoId}
-                  className={`flex items-center gap-2.5 p-2.5 rounded-lg cursor-pointer transition-all select-none ${
+                  className={`flex items-center gap-2.5 p-2.5 rounded-lg cursor-pointer transition-all select-none border ${
                     isChecked
-                      ? 'bg-amber-50 border border-amber-100'
-                      : 'hover:bg-gray-50 border border-transparent'
+                      ? 'bg-indigo-500/10 border-indigo-500/20'
+                      : 'border-transparent hover:bg-[var(--bg-card-hover)]'
                   }`}
                 >
                   <input
                     type="checkbox"
                     checked={isChecked}
                     onChange={() => handleToggleVideo(video)}
-                    className="w-3.5 h-3.5 rounded accent-amber-600 cursor-pointer flex-shrink-0"
+                  className="w-3.5 h-3.5 rounded accent-indigo-500 cursor-pointer flex-shrink-0"
                   />
-                  <div className="w-12 h-9 rounded-md overflow-hidden flex-shrink-0 bg-gray-100">
+                  <div className="w-12 h-9 rounded-md overflow-hidden flex-shrink-0 bg-card-hover border border-border-default">
                     <img
                       src={video.snippet.thumbnails.default.url}
                       alt=""
@@ -538,10 +539,14 @@ export default function CommentsPage() {
                     />
                   </div>
                   <div className="flex-1 min-w-0">
-                    <p className={`text-[12px] font-medium line-clamp-2 leading-tight ${isChecked ? 'text-amber-700' : 'text-gray-700'}`}>
+                    <p className={`text-[12px] font-medium line-clamp-2 leading-tight ${
+                      isChecked ? 'text-indigo-400' : ''
+                    }`}
+                    style={!isChecked ? { color: 'var(--text-secondary)' } : {}}
+                    >
                       {video.snippet.title}
                     </p>
-                    <p className="text-[10px] text-gray-400 mt-0.5">
+                    <p className="text-[10px] mt-0.5" style={{ color: 'var(--text-muted)' }}>
                       {new Date(video.snippet.publishedAt).toLocaleDateString('id-ID')}
                     </p>
                   </div>
@@ -553,17 +558,17 @@ export default function CommentsPage() {
       </div>
 
       {/* Footer: Progress + Tombol Muat */}
-      <div className="p-3 border-t border-gray-100 space-y-2">
+      <div className="p-3 border-t space-y-2" style={{ borderColor: 'var(--border-default)' }}>
         {/* Progress bar saat fetch */}
         {isFetchingMulti && fetchProgress.total > 0 && (
           <div className="space-y-1">
-            <div className="flex justify-between text-[10px] text-gray-400">
+            <div className="flex justify-between text-[10px]" style={{ color: 'var(--text-muted)' }}>
               <span>Video {fetchProgress.current} / {fetchProgress.total}</span>
               <span>{Math.round((fetchProgress.current / fetchProgress.total) * 100)}%</span>
             </div>
-            <div className="h-1 bg-gray-100 rounded-full overflow-hidden">
+            <div className="h-1 rounded-full overflow-hidden" style={{ background: 'var(--border-default)' }}>
               <div
-                className="h-full bg-amber-500 rounded-full transition-all duration-300"
+                className="h-full bg-indigo-500 rounded-full transition-all duration-300"
                 style={{ width: `${fetchProgress.total > 0 ? (fetchProgress.current / fetchProgress.total) * 100 : 0}%` }}
               />
             </div>
@@ -573,7 +578,7 @@ export default function CommentsPage() {
         <button
           onClick={() => { handleLoadSelected(false); setShowVideoPanel(false); }}
           disabled={selectedVideoIds.size === 0 || isFetchingMulti}
-          className="w-full py-2 px-3 bg-amber-600 hover:bg-amber-700 disabled:bg-gray-100 disabled:text-gray-400 text-white text-xs font-semibold rounded-xl transition-all active:scale-95 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+          className="w-full py-2 px-3 bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-semibold rounded-xl transition-all active:scale-95 disabled:cursor-not-allowed flex items-center justify-center gap-2 disabled:opacity-50"
         >
           {isFetchingMulti ? (
             <>
@@ -594,7 +599,7 @@ export default function CommentsPage() {
 
         <button
           onClick={() => router.push('/channel')}
-          className="w-full text-xs text-gray-500 hover:text-amber-600 py-1.5 transition-colors"
+          className="w-full text-xs py-1.5 transition-colors text-indigo-400 hover:text-indigo-300"
         >
           ← Ganti Kanal
         </button>
@@ -608,13 +613,13 @@ export default function CommentsPage() {
     if (selectedVideoIds.size === 0) {
       return (
         <div className="flex flex-col items-center justify-center h-full py-20 text-center">
-          <div className="w-16 h-16 bg-gray-100 rounded-2xl flex items-center justify-center mb-4">
-            <svg className="w-8 h-8 text-gray-300" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
+          <div className="w-16 h-16 rounded-2xl flex items-center justify-center mb-4" style={{ background: 'var(--bg-card-hover)' }}>
+            <svg className="w-8 h-8" style={{ color: 'var(--border-hover)' }} fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" d="M5.25 5.653c0-.856.917-1.398 1.667-.986l11.54 6.348a1.125 1.125 0 010 1.971l-11.54 6.347a1.125 1.125 0 01-1.667-.985V5.653z" />
             </svg>
           </div>
-          <p className="text-sm font-medium text-gray-500">Belum ada video dipilih</p>
-          <p className="text-xs text-gray-400 mt-1">Centang satu atau beberapa video di panel kiri,<br />lalu klik &quot;Muat Komentar&quot;</p>
+          <p className="text-sm font-medium" style={{ color: 'var(--text-secondary)' }}>Belum ada video dipilih</p>
+          <p className="text-xs mt-1" style={{ color: 'var(--text-muted)' }}>Centang satu atau beberapa video di panel kiri,<br />lalu klik &quot;Muat Komentar&quot;</p>
           <button
             onClick={() => setShowVideoPanel(true)}
             className="mt-4 lg:hidden px-4 py-2 bg-amber-600 text-white text-xs font-medium rounded-lg hover:bg-amber-700 transition-all"
@@ -631,19 +636,19 @@ export default function CommentsPage() {
         <div className="flex flex-col items-center justify-center h-full py-20">
           {fetchProgress.total > 1 && (
             <div className="mb-4 text-center">
-              <p className="text-xs font-medium text-gray-600 mb-2">
+              <p className="text-xs font-medium mb-2" style={{ color: 'var(--text-secondary)' }}>
                 Video {fetchProgress.current} / {fetchProgress.total}
               </p>
-              <div className="w-48 h-1.5 bg-gray-100 rounded-full overflow-hidden mx-auto">
+              <div className="w-48 h-1.5 rounded-full overflow-hidden mx-auto" style={{ background: 'var(--border-default)' }}>
                 <div
-                  className="h-full bg-amber-500 rounded-full transition-all duration-300"
+                  className="h-full bg-indigo-500 rounded-full transition-all duration-300"
                   style={{ width: `${fetchProgress.total > 0 ? (fetchProgress.current / fetchProgress.total) * 100 : 0}%` }}
                 />
               </div>
             </div>
           )}
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-amber-600 mb-3" />
-          <p className="text-xs text-gray-400">Memuat &amp; menganalisis komentar...</p>
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-indigo-500 mb-3" />
+          <p className="text-xs" style={{ color: 'var(--text-muted)' }}>Memuat &amp; menganalisis komentar...</p>
         </div>
       );
     }
@@ -652,14 +657,14 @@ export default function CommentsPage() {
     if (quotaError) {
       return (
         <div className="m-4">
-          <div className="bg-amber-50 p-5 rounded-xl flex items-start gap-3 border border-amber-100">
-            <svg className="w-5 h-5 text-amber-500 flex-shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
+          <div className="bento-card border-amber-500/20 p-5 flex items-start gap-3" style={{ background: 'var(--color-warning-bg)' }}>
+            <svg className="w-5 h-5 flex-shrink-0 mt-0.5" style={{ color: 'var(--color-warning-text)' }} fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v3.75m9-.75a9 9 0 11-18 0 9 9 0 0118 0zm-9 3.75h.008v.008H12v-.008z" />
             </svg>
             <div className="flex-1">
-              <h3 className="text-sm font-semibold text-amber-800">Kuota API Tidak Cukup</h3>
-              <p className="text-xs text-amber-700 mt-0.5">{quotaError}</p>
-              <a href="/pricing" className="inline-block mt-2 text-xs font-medium text-amber-700 underline hover:text-amber-900">
+              <h3 className="text-sm font-semibold" style={{ color: 'var(--color-warning-text)' }}>Kuota API Tidak Cukup</h3>
+              <p className="text-xs mt-0.5" style={{ color: 'var(--color-warning-text)', opacity: 0.85 }}>{quotaError}</p>
+              <a href="/pricing" className="inline-block mt-2 text-xs font-medium underline" style={{ color: 'var(--color-warning-text)' }}>
                 ⚡ Top-up Kuota Sekarang →
               </a>
             </div>
@@ -672,13 +677,13 @@ export default function CommentsPage() {
     if (error) {
       return (
         <div className="m-4">
-          <div className="bg-red-50 p-5 rounded-xl flex items-start gap-3 border border-red-100">
-            <svg className="w-5 h-5 text-red-500 flex-shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
+          <div className="bento-card border-rose-500/20 p-5 flex items-start gap-3" style={{ background: 'var(--color-danger-bg)' }}>
+            <svg className="w-5 h-5 flex-shrink-0 mt-0.5" style={{ color: 'var(--color-danger-text)' }} fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126zM12 15.75h.007v.008H12v-.008z" />
             </svg>
             <div>
-              <h3 className="text-sm font-semibold text-red-800">Gagal memuat komentar</h3>
-              <p className="text-xs text-red-600 mt-0.5">{error}</p>
+              <h3 className="text-sm font-semibold" style={{ color: 'var(--color-danger-text)' }}>Gagal memuat komentar</h3>
+              <p className="text-xs mt-0.5" style={{ color: 'var(--color-danger-text)', opacity: 0.85 }}>{error}</p>
             </div>
           </div>
         </div>
@@ -689,21 +694,21 @@ export default function CommentsPage() {
     if (comments.length === 0) {
       return (
         <div className="flex flex-col items-center justify-center h-full py-20 text-center">
-          <div className="w-14 h-14 bg-amber-50 rounded-2xl flex items-center justify-center mb-4">
-            <svg className="w-7 h-7 text-amber-400" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
+          <div className="w-14 h-14 rounded-2xl flex items-center justify-center mb-4" style={{ background: 'var(--accent-ai-soft)' }}>
+            <svg className="w-7 h-7 text-indigo-400" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5M16.5 12L12 16.5m0 0L7.5 12m4.5 4.5V3" />
             </svg>
           </div>
-          <p className="text-sm font-medium text-gray-600">
+          <p className="text-sm font-medium" style={{ color: 'var(--text-secondary)' }}>
             {selectedVideoIds.size} video dipilih
           </p>
-          <p className="text-xs text-gray-400 mt-1 mb-4">
+          <p className="text-xs mt-1 mb-4" style={{ color: 'var(--text-muted)' }}>
             Klik tombol di bawah untuk memuat komentar dari semua video yang dipilih
           </p>
           <button
             onClick={() => handleLoadSelected(false)}
             disabled={isFetchingMulti}
-            className="px-5 py-2.5 bg-amber-600 hover:bg-amber-700 text-white text-xs font-semibold rounded-xl transition-all active:scale-95 flex items-center gap-2"
+            className="px-5 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-semibold rounded-xl transition-all active:scale-95 flex items-center gap-2 disabled:opacity-50"
           >
             <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5M16.5 12L12 16.5m0 0L7.5 12m4.5 4.5V3" />
@@ -718,14 +723,14 @@ export default function CommentsPage() {
     return (
       <div className="flex flex-col h-full">
         {/* Header bar */}
-        <div className="px-4 py-3 border-b border-gray-100 flex items-center justify-between gap-3 flex-shrink-0">
+        <div className="px-4 py-3 border-b flex items-center justify-between gap-3 flex-shrink-0" style={{ borderColor: 'var(--border-default)' }}>
           <div className="flex-1 min-w-0">
             {selectedVideoIds.size === 1 ? (
-              <p className="text-xs font-semibold text-gray-700 truncate">{primaryVideo?.title}</p>
+              <p className="text-xs font-semibold truncate" style={{ color: 'var(--text-secondary)' }}>{primaryVideo?.title}</p>
             ) : (
-              <p className="text-xs font-semibold text-gray-700">{selectedVideoIds.size} video dimuat</p>
+              <p className="text-xs font-semibold" style={{ color: 'var(--text-secondary)' }}>{selectedVideoIds.size} video dimuat</p>
             )}
-            <p className="text-[10px] text-gray-400 mt-0.5">
+            <p className="text-[10px] mt-0.5" style={{ color: 'var(--text-muted)' }}>
               {filteredComments.length} komentar ditampilkan
               {comments.length !== filteredComments.length && ` • ${comments.length} total`}
             </p>
@@ -733,14 +738,16 @@ export default function CommentsPage() {
           <div className="flex items-center gap-2 flex-shrink-0">
             <button
               onClick={() => setIsPolling(!isPolling)}
-              className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs font-medium border transition-all ${
-                isPolling
-                  ? 'bg-green-50 border-green-200 text-green-700'
-                  : 'bg-white border-gray-200 text-gray-600 hover:bg-gray-50'
-              }`}
+                className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs font-medium border transition-all ${
+                  isPolling
+                    ? 'bg-emerald-500/10 border-emerald-500/20 text-emerald-400'
+                    : 'border-[var(--border-default)] hover:bg-[var(--bg-card-hover)]'
+                }`}
+                style={!isPolling ? { color: 'var(--text-secondary)' } : {}}
             >
               <svg
-                className={`w-3.5 h-3.5 ${isPolling ? 'animate-spin text-green-500' : 'text-gray-400'}`}
+                className={`w-3.5 h-3.5 ${isPolling ? 'animate-spin text-emerald-400' : ''}`}
+                style={!isPolling ? { color: 'var(--text-muted)' } : {}}
                 fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor"
               >
                 <path strokeLinecap="round" strokeLinejoin="round" d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0l3.181 3.183a8.25 8.25 0 0013.803-3.7M4.031 9.865a8.25 8.25 0 0113.803-3.7l3.181 3.182" />
@@ -750,7 +757,7 @@ export default function CommentsPage() {
             <button
               onClick={() => handleLoadSelected(false)}
               disabled={isFetchingMulti}
-              className="px-2.5 py-1.5 bg-amber-600 text-white text-xs font-medium rounded-lg hover:bg-amber-700 transition-all active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed"
+              className="px-2.5 py-1.5 bg-indigo-600 text-white text-xs font-medium rounded-lg hover:bg-indigo-700 transition-all active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed"
             >
               Refresh
             </button>
@@ -758,7 +765,7 @@ export default function CommentsPage() {
         </div>
 
         {/* Filter bar */}
-        <div className="px-4 py-2 border-b border-gray-50 flex items-center gap-2 overflow-x-auto flex-shrink-0">
+        <div className="px-4 py-2 border-b flex items-center gap-2 overflow-x-auto flex-shrink-0" style={{ borderColor: 'var(--border-default)' }}>
           {/* Label filter */}
           {['semua', 'spam', 'normal'].map(f => (
             <button
@@ -766,9 +773,10 @@ export default function CommentsPage() {
               onClick={() => setFilter(f)}
               className={`px-3 py-1 rounded-lg text-xs font-medium transition-all capitalize whitespace-nowrap ${
                 filter === f
-                  ? 'bg-gray-900 text-white'
-                  : 'bg-white border border-gray-200 text-gray-600 hover:bg-gray-50'
+                  ? 'bg-indigo-600 text-white'
+                  : 'border border-[var(--border-default)] hover:bg-[var(--bg-card-hover)]'
               }`}
+              style={filter !== f ? { color: 'var(--text-secondary)' } : {}}
             >
               {f === 'semua' ? 'Semua' : f}
             </button>
@@ -780,7 +788,7 @@ export default function CommentsPage() {
               <select
                 value={videoFilter}
                 onChange={e => setVideoFilter(e.target.value)}
-                className="text-xs border border-gray-200 rounded-lg px-2.5 py-1 bg-white text-gray-600 focus:outline-none focus:ring-1 focus:ring-amber-300 cursor-pointer"
+                className="input-dark text-xs"
               >
                 <option value="all">Semua Video ({comments.length})</option>
                 {loadedVideos.map(v => {
@@ -799,26 +807,24 @@ export default function CommentsPage() {
         <div className="flex-1 overflow-y-auto">
           {filteredComments.length === 0 ? (
             <div className="flex flex-col items-center justify-center py-16 text-center">
-              <svg className="w-10 h-10 text-gray-200 mb-3" fill="none" viewBox="0 0 24 24" strokeWidth={1} stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" d="M20.25 8.511c.884.284 1.5 1.128 1.5 2.097v4.286c0 1.136-.847 2.1-1.98 2.193-.34.027-.68.052-1.02.072v3.091l-3-3c-1.354 0-2.694-.055-4.02-.163a2.115 2.115 0 01-.825-.242m9.345-8.334a2.126 2.126 0 00-.476-.095 48.64 48.64 0 00-8.048 0c-1.131.094-1.976 1.057-1.976 2.192v4.286c0 .837.46 1.58 1.155 1.951m9.345-8.334V6.637c0-1.621-1.152-3.026-2.76-3.235A48.455 48.455 0 0011.25 3c-2.115 0-4.198.137-6.24.402-1.608.209-2.76 1.614-2.76 3.235v6.226c0 1.621 1.152 3.026 2.76 3.235.577.075 1.157.14 1.74.194V21l4.155-4.155" />
+              <svg className="w-10 h-10 text-muted mb-3" fill="none" viewBox="0 0 24 24" strokeWidth={1} stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" d="M2.25 12.76c0 1.6 1.123 2.994 2.707 3.227 1.068.157 2.148.279 3.238.364.466.037.893.281 1.153.671L12 21l2.652-3.978c.26-.39.687-.634 1.153-.67 1.09-.086 2.17-.208 3.238-.365 1.584-.233 2.707-1.626 2.707-3.228V6.741c0-1.602-1.123-2.995-2.707-3.228A48.394 48.394 0 0012 3c-2.392 0-4.744.175-7.043.513C3.373 3.746 2.25 5.14 2.25 6.741v6.018z" />
               </svg>
-              <p className="text-sm text-gray-400">Tidak ada komentar ditemukan</p>
+              <p className="text-sm text-secondary">Tidak ada komentar ditemukan</p>
             </div>
           ) : (
             <>
               {/* Desktop Table */}
               <div className="hidden md:block">
                 <table className="w-full">
-                  <thead className="sticky top-0 bg-white z-10">
-                    <tr className="border-b border-gray-100">
-                      <th className="px-4 py-3 text-left text-[11px] font-semibold text-gray-400 uppercase tracking-wider">Pengguna</th>
-                      <th className="px-4 py-3 text-left text-[11px] font-semibold text-gray-400 uppercase tracking-wider">Komentar</th>
-                      {loadedVideos.length > 1 && (
-                        <th className="px-4 py-3 text-left text-[11px] font-semibold text-gray-400 uppercase tracking-wider">Video</th>
-                      )}
-                      <th className="px-4 py-3 text-left text-[11px] font-semibold text-gray-400 uppercase tracking-wider">AI</th>
-                      <th className="px-4 py-3 text-left text-[11px] font-semibold text-gray-400 uppercase tracking-wider">Status</th>
-                      <th className="px-4 py-3 text-right text-[11px] font-semibold text-gray-400 uppercase tracking-wider">Aksi</th>
+                  <thead
+                    className="sticky top-0 z-10"
+                    style={{ background: 'var(--bg-card)' }}
+                  >
+                    <tr className="border-b" style={{ borderColor: 'var(--border-default)' }}>
+                      {['Pengguna','Komentar', ...(loadedVideos.length > 1 ? ['Video'] : []), 'AI','Status','Aksi'].map(h => (
+                        <th key={h} className="px-4 py-3 text-left text-[11px] font-semibold uppercase tracking-wider" style={{ color: 'var(--text-muted)' }}>{h}</th>
+                      ))}
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-gray-50">
@@ -827,46 +833,46 @@ export default function CommentsPage() {
                       const isSpam = prediction?.label?.toLowerCase() === 'spam';
                       const isProcessing = processingComment === comment.id;
                       return (
-                        <tr key={comment.id} className="hover:bg-gray-50/50 transition-colors group">
+                        <tr key={comment.id} className="transition-colors group hover:bg-[var(--bg-card-hover)] border-b" style={{ borderColor: 'var(--border-default)' }}>
                           <td className="px-4 py-3">
                             <div className="flex items-center gap-2">
                               <img className="w-7 h-7 rounded-full flex-shrink-0" src={comment.authorProfileImageUrl} alt="" />
                               <div>
-                                <p className="text-xs font-medium text-gray-800 whitespace-nowrap">{comment.authorDisplayName}</p>
-                                <p className="text-[10px] text-gray-400">{new Date(comment.publishedAt).toLocaleDateString('id-ID')}</p>
+                                <p className="text-xs font-medium whitespace-nowrap" style={{ color: 'var(--text-primary)' }}>{comment.authorDisplayName}</p>
+                                <p className="text-[10px]" style={{ color: 'var(--text-muted)' }}>{new Date(comment.publishedAt).toLocaleDateString('id-ID')}</p>
                               </div>
                             </div>
                           </td>
                           <td className="px-4 py-3 max-w-[200px] xl:max-w-xs">
-                            <p className="text-xs text-gray-700 line-clamp-2" dangerouslySetInnerHTML={{ __html: comment.textDisplay }} />
+                            <p className="text-xs line-clamp-2" style={{ color: 'var(--text-secondary)' }} dangerouslySetInnerHTML={{ __html: comment.textDisplay }} />
                           </td>
                           {/* Kolom Video — hanya tampil jika multi-video */}
                           {loadedVideos.length > 1 && (
                             <td className="px-4 py-3 max-w-[120px]">
-                              <p className="text-[10px] text-gray-500 line-clamp-2 leading-tight">{comment.videoTitle}</p>
+                              <p className="text-[10px] line-clamp-2 leading-tight" style={{ color: 'var(--text-muted)' }}>{comment.videoTitle}</p>
                             </td>
                           )}
                           <td className="px-4 py-3">
                             {!prediction ? (
                               <div className="flex items-center gap-1">
                                 <div className="animate-spin rounded-full h-3 w-3 border-b-2 border-amber-400" />
-                                <span className="text-[10px] text-gray-400">...</span>
+                                <span className="text-[10px] text-muted">...</span>
                               </div>
                             ) : (
                               <div>
-                                <span className={`text-[11px] font-semibold px-2 py-0.5 rounded-full ${isSpam ? 'bg-red-100 text-red-700' : 'bg-green-100 text-green-700'}`}>
+                                <span className={`badge ${isSpam ? 'badge-danger' : 'badge-success'}`}>
                                   {isSpam ? '🚨 Spam' : '✅ Normal'}
                                 </span>
                                 {!isSpam && prediction.sentiment && (
-                                  <span className={`ml-1 text-[11px] font-semibold px-2 py-0.5 rounded-full ${
-                                    prediction.sentiment === 'positive' ? 'bg-emerald-100 text-emerald-700'
-                                    : prediction.sentiment === 'negative' ? 'bg-rose-100 text-rose-700'
-                                    : 'bg-gray-100 text-gray-700'
+                                  <span className={`ml-1 badge ${
+                                    prediction.sentiment === 'positive' ? 'badge-success'
+                                    : prediction.sentiment === 'negative' ? 'badge-danger'
+                                    : 'badge-muted'
                                   }`}>
                                     {prediction.sentiment === 'positive' ? '😊 Positif' : prediction.sentiment === 'negative' ? '😠 Negatif' : '😐 Netral'}
                                   </span>
                                 )}
-                                <p className="text-[10px] text-gray-400 mt-1">
+                                <p className="text-[10px] mt-1" style={{ color: 'var(--text-muted)' }}>
                                   {Math.round(prediction.confidence * 100)}%
                                   {prediction.sentiment_score && !isSpam ? ` • Sentimen: ${Math.round(prediction.sentiment_score * 100)}%` : ''}
                                 </p>
@@ -876,32 +882,20 @@ export default function CommentsPage() {
                           <td className="px-4 py-3">{getStatusBadge(comment.status)}</td>
                           <td className="px-4 py-3 text-right">
                             <div className="flex items-center justify-end gap-0.5 opacity-30 group-hover:opacity-100 transition-opacity">
-                              <button
-                                disabled={isProcessing}
-                                onClick={() => handleModerate(comment.id, 'publish')}
-                                title="Terbitkan"
-                                className="p-1.5 rounded-md text-green-600 hover:bg-green-50 disabled:opacity-30"
-                              >
+                              <button disabled={isProcessing} onClick={() => handleModerate(comment.id, 'publish')} title="Terbitkan"
+                                className="p-1.5 rounded-md hover:bg-emerald-500/10 disabled:opacity-30" style={{ color: 'var(--color-success-text)' }}>
                                 <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor">
                                   <path strokeLinecap="round" strokeLinejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                                 </svg>
                               </button>
-                              <button
-                                disabled={isProcessing}
-                                onClick={() => handleModerate(comment.id, 'hold')}
-                                title="Tahan"
-                                className="p-1.5 rounded-md text-amber-600 hover:bg-amber-50 disabled:opacity-30"
-                              >
+                              <button disabled={isProcessing} onClick={() => handleModerate(comment.id, 'hold')} title="Tahan"
+                                className="p-1.5 rounded-md hover:bg-amber-500/10 text-amber-500 disabled:opacity-30">
                                 <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor">
                                   <path strokeLinecap="round" strokeLinejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 11-18 0 9 9 0 0118 0z" />
                                 </svg>
                               </button>
-                              <button
-                                disabled={isProcessing}
-                                onClick={() => handleModerate(comment.id, 'reject')}
-                                title="Tolak"
-                                className="p-1.5 rounded-md text-red-600 hover:bg-red-50 disabled:opacity-30"
-                              >
+                              <button disabled={isProcessing} onClick={() => handleModerate(comment.id, 'reject')} title="Tolak"
+                                className="p-1.5 rounded-md hover:bg-rose-500/10 disabled:opacity-30" style={{ color: 'var(--color-danger-text)' }}>
                                 <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor">
                                   <path strokeLinecap="round" strokeLinejoin="round" d="M9.75 9.75l4.5 4.5m0-4.5l-4.5 4.5M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                                 </svg>
@@ -922,13 +916,13 @@ export default function CommentsPage() {
                   const isSpam = prediction?.label?.toLowerCase() === 'spam';
                   const isProcessing = processingComment === comment.id;
                   return (
-                    <div key={comment.id} className="bg-gray-50 rounded-xl border border-gray-100 p-3.5 space-y-2.5">
+                    <div key={comment.id} className="rounded-xl border p-3.5 space-y-2.5" style={{ background: 'var(--bg-card-hover)', borderColor: 'var(--border-default)' }}>
                       <div className="flex items-center justify-between">
                         <div className="flex items-center gap-2">
                           <img className="w-7 h-7 rounded-full flex-shrink-0" src={comment.authorProfileImageUrl} alt="" />
                           <div>
-                            <p className="text-xs font-medium text-gray-800">{comment.authorDisplayName}</p>
-                            <p className="text-[10px] text-gray-400">{new Date(comment.publishedAt).toLocaleDateString('id-ID')}</p>
+                            <p className="text-xs font-medium" style={{ color: 'var(--text-primary)' }}>{comment.authorDisplayName}</p>
+                            <p className="text-[10px]" style={{ color: 'var(--text-muted)' }}>{new Date(comment.publishedAt).toLocaleDateString('id-ID')}</p>
                           </div>
                         </div>
                         {getStatusBadge(comment.status)}
@@ -937,21 +931,21 @@ export default function CommentsPage() {
                       {/* Video badge — hanya tampil jika multi-video */}
                       {loadedVideos.length > 1 && (
                         <div className="flex items-center gap-1">
-                          <svg className="w-3 h-3 text-gray-400 flex-shrink-0" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor">
+                          <svg className="w-3 h-3 text-muted flex-shrink-0" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor">
                             <path strokeLinecap="round" strokeLinejoin="round" d="M5.25 5.653c0-.856.917-1.398 1.667-.986l11.54 6.348a1.125 1.125 0 010 1.971l-11.54 6.347a1.125 1.125 0 01-1.667-.985V5.653z" />
                           </svg>
-                          <p className="text-[10px] text-gray-500 line-clamp-1">{comment.videoTitle}</p>
+                          <p className="text-[10px] text-secondary line-clamp-1">{comment.videoTitle}</p>
                         </div>
                       )}
 
-                      <p className="text-xs text-gray-700 line-clamp-3" dangerouslySetInnerHTML={{ __html: comment.textDisplay }} />
+                      <p className="text-xs line-clamp-3" style={{ color: 'var(--text-secondary)' }} dangerouslySetInnerHTML={{ __html: comment.textDisplay }} />
 
-                      <div className="flex items-center justify-between pt-1 border-t border-gray-100">
+                      <div className="flex items-center justify-between pt-1 border-t" style={{ borderColor: 'var(--border-default)' }}>
                         <div>
                           {!prediction ? (
                             <div className="flex items-center gap-1">
                               <div className="animate-spin rounded-full h-3 w-3 border-b-2 border-amber-400" />
-                              <span className="text-[10px] text-gray-400">Menganalisis...</span>
+                              <span className="text-[10px] text-muted">Menganalisis...</span>
                             </div>
                           ) : (
                             <div className="flex flex-col gap-1">
@@ -959,31 +953,31 @@ export default function CommentsPage() {
                                 <span className={`text-[11px] font-semibold px-2 py-0.5 rounded-full ${isSpam ? 'bg-red-100 text-red-700' : 'bg-green-100 text-green-700'}`}>
                                   {isSpam ? '🚨 Spam' : '✅ Normal'}
                                 </span>
-                                <span className="text-[10px] text-gray-400">{Math.round(prediction.confidence * 100)}%</span>
+                                <span className="text-[10px] text-muted">{Math.round(prediction.confidence * 100)}%</span>
                               </div>
                               {!isSpam && prediction.sentiment && (
                                 <div className="flex items-center gap-1.5 mt-0.5">
-                                  <span className={`text-[11px] font-semibold px-2 py-0.5 rounded-full ${
-                                    prediction.sentiment === 'positive' ? 'bg-emerald-100 text-emerald-700'
-                                    : prediction.sentiment === 'negative' ? 'bg-rose-100 text-rose-700'
-                                    : 'bg-gray-100 text-gray-700'
+                                  <span className={`badge ${
+                                    prediction.sentiment === 'positive' ? 'badge-success'
+                                    : prediction.sentiment === 'negative' ? 'badge-danger'
+                                    : 'badge-muted'
                                   }`}>
                                     {prediction.sentiment === 'positive' ? '😊 Positif' : prediction.sentiment === 'negative' ? '😠 Negatif' : '😐 Netral'}
                                   </span>
-                                  <span className="text-[10px] text-gray-400">{Math.round(prediction.sentiment_score * 100)}%</span>
+                                  <span className="text-[10px]" style={{ color: 'var(--text-muted)' }}>{Math.round(prediction.sentiment_score * 100)}%</span>
                                 </div>
                               )}
                             </div>
                           )}
                         </div>
                         <div className="flex items-center gap-1">
-                          <button disabled={isProcessing} onClick={() => handleModerate(comment.id, 'publish')} className="p-2 rounded-lg text-green-600 hover:bg-green-50 disabled:opacity-30 active:scale-95 transition-all">
+                          <button disabled={isProcessing} onClick={() => handleModerate(comment.id, 'publish')} className="p-2 rounded-lg hover:bg-emerald-500/10 disabled:opacity-30 active:scale-95 transition-all" style={{ color: 'var(--color-success-text)' }}>
                             <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
                           </button>
-                          <button disabled={isProcessing} onClick={() => handleModerate(comment.id, 'hold')} className="p-2 rounded-lg text-amber-600 hover:bg-amber-50 disabled:opacity-30 active:scale-95 transition-all">
+                          <button disabled={isProcessing} onClick={() => handleModerate(comment.id, 'hold')} className="p-2 rounded-lg text-amber-500 hover:bg-amber-500/10 disabled:opacity-30 active:scale-95 transition-all">
                             <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
                           </button>
-                          <button disabled={isProcessing} onClick={() => handleModerate(comment.id, 'reject')} className="p-2 rounded-lg text-red-600 hover:bg-red-50 disabled:opacity-30 active:scale-95 transition-all">
+                          <button disabled={isProcessing} onClick={() => handleModerate(comment.id, 'reject')} className="p-2 rounded-lg hover:bg-rose-500/10 disabled:opacity-30 active:scale-95 transition-all" style={{ color: 'var(--color-danger-text)' }}>
                             <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" d="M9.75 9.75l4.5 4.5m0-4.5l-4.5 4.5M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
                           </button>
                         </div>
@@ -1003,16 +997,17 @@ export default function CommentsPage() {
   return (
     <div className="animate-fade-in-up -m-4 lg:-m-6 h-[calc(100vh-3.5rem)] flex flex-col">
       {/* Page title bar */}
-      <div className="flex items-center justify-between px-4 lg:px-6 py-3 border-b border-gray-200 bg-white flex-shrink-0">
+      <div className="flex items-center justify-between px-4 lg:px-6 py-3 border-b flex-shrink-0" style={{ background: 'var(--bg-card)', borderColor: 'var(--border-default)' }}>
         <div>
-          <h1 className="text-base lg:text-lg font-semibold text-gray-900">Antrian Moderasi</h1>
-          <p className="text-[11px] text-gray-400">Pilih beberapa video lalu muat komentarnya sekaligus</p>
+          <h1 className="text-base lg:text-lg font-semibold" style={{ color: 'var(--text-primary)' }}>Antrian Moderasi</h1>
+          <p className="text-[11px]" style={{ color: 'var(--text-muted)' }}>Pilih beberapa video lalu muat komentarnya sekaligus</p>
         </div>
         <button
           onClick={() => setShowVideoPanel(true)}
-          className="lg:hidden flex items-center gap-2 px-3 py-1.5 bg-white border border-gray-200 rounded-lg text-xs font-medium text-gray-600 hover:bg-gray-50 transition-all"
+          className="lg:hidden flex items-center gap-2 px-3 py-1.5 rounded-lg border text-xs font-medium transition-all bento-card"
+          style={{ color: 'var(--text-secondary)' }}
         >
-          <svg className="w-4 h-4 text-gray-400" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
+          <svg className="w-4 h-4" style={{ color: 'var(--text-muted)' }} fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
             <path strokeLinecap="round" strokeLinejoin="round" d="M5.25 5.653c0-.856.917-1.398 1.667-.986l11.54 6.348a1.125 1.125 0 010 1.971l-11.54 6.347a1.125 1.125 0 01-1.667-.985V5.653z" />
           </svg>
           {selectedVideoIds.size > 0 ? `${selectedVideoIds.size} dipilih` : 'Pilih Video'}
@@ -1022,12 +1017,12 @@ export default function CommentsPage() {
       {/* Split layout */}
       <div className="flex flex-1 overflow-hidden">
         {/* Desktop: Left video panel (checklist) */}
-        <div className="hidden lg:flex lg:flex-col w-64 xl:w-72 border-r border-gray-200 bg-white flex-shrink-0 overflow-hidden">
+        <div className="hidden lg:flex lg:flex-col w-64 xl:w-72 border-r flex-shrink-0 overflow-hidden" style={{ background: 'var(--bg-sidebar)', borderColor: 'var(--border-default)' }}>
           <VideoPanelContent />
         </div>
 
         {/* Right: comment area */}
-        <div className="flex-1 bg-white overflow-hidden flex flex-col">
+        <div className="flex-1 overflow-hidden flex flex-col" style={{ background: 'var(--bg-card)' }}>
           <CommentArea />
         </div>
       </div>
@@ -1037,16 +1032,17 @@ export default function CommentsPage() {
         <div className="lg:hidden fixed inset-0 z-50 flex" onClick={() => setShowVideoPanel(false)}>
           <div className="fixed inset-0 bg-black/40 backdrop-blur-sm" />
           <div
-            className="relative z-50 w-[300px] max-w-[85vw] h-full bg-white shadow-2xl flex flex-col"
+            className="relative z-50 w-[300px] max-w-[85vw] h-full shadow-2xl flex flex-col"
+            style={{ background: 'var(--bg-card)' }}
             onClick={e => e.stopPropagation()}
           >
-            <div className="flex items-center justify-between px-4 py-3 border-b border-gray-100">
-              <p className="text-sm font-semibold text-gray-900">Pilih Video</p>
+            <div className="flex items-center justify-between px-4 py-3 border-b" style={{ borderColor: 'var(--border-default)' }}>
+              <p className="text-sm font-semibold" style={{ color: 'var(--text-primary)' }}>Pilih Video</p>
               <button
                 onClick={() => setShowVideoPanel(false)}
-                className="p-1.5 rounded-lg hover:bg-gray-100 transition-colors"
+                className="p-1.5 rounded-lg transition-colors hover:bg-[var(--bg-card-hover)]"
               >
-                <svg className="w-4 h-4 text-gray-500" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor">
+                <svg className="w-4 h-4" style={{ color: 'var(--text-secondary)' }} fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor">
                   <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
                 </svg>
               </button>

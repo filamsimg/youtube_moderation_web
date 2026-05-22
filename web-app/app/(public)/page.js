@@ -120,12 +120,12 @@ export default function LandingPage() {
           Powered by IndoBERT AI
         </div>
 
-        <h1 className="text-4xl sm:text-5xl font-bold text-gray-900 leading-tight mb-4 max-w-3xl mx-auto">
+        <h1 className="text-4xl sm:text-5xl font-bold text-primary leading-tight mb-4 max-w-3xl mx-auto">
           Moderasi Komentar{' '}
-          <span className="text-amber-600">Judi Online</span>{' '}
+          <span className="text-amber-500">Judi Online</span>{' '}
           di YouTube secara Otomatis
         </h1>
-        <p className="text-base text-gray-500 max-w-xl mx-auto mb-8 leading-relaxed">
+        <p className="text-base text-secondary max-w-xl mx-auto mb-8 leading-relaxed">
           Sistem AI berbasis IndoBERT untuk mendeteksi dan memoderasi komentar spam judol
           di kanal YouTube Anda — cepat, akurat, dan tanpa batas manual.
         </p>
@@ -143,7 +143,8 @@ export default function LandingPage() {
           </Link>
           <Link
             href="/pricing"
-            className="px-6 py-3 bg-white border border-gray-200 hover:border-gray-300 text-gray-700 text-sm font-semibold rounded-xl transition-all hover:shadow-sm active:scale-95"
+            className="px-6 py-3 bg-card border hover:bg-card-hover text-primary text-sm font-semibold rounded-xl transition-all hover:shadow-sm active:scale-95"
+            style={{ borderColor: 'var(--border-default)' }}
           >
             Lihat Harga
           </Link>
@@ -153,28 +154,28 @@ export default function LandingPage() {
         <div className="flex items-center justify-center gap-8 mt-12 flex-wrap">
           {STATS.map(s => (
             <div key={s.label} className="text-center">
-              <p className="text-2xl font-bold text-gray-900">{s.value}</p>
-              <p className="text-xs text-gray-400 mt-0.5">{s.label}</p>
+              <p className="text-2xl font-bold text-primary">{s.value}</p>
+              <p className="text-xs text-muted mt-0.5">{s.label}</p>
             </div>
           ))}
         </div>
       </section>
 
       {/* ── FEATURES SECTION ──────────────────────────────────────── */}
-      <section className="py-20 px-4 bg-gray-50 border-y border-gray-100">
+      <section className="py-20 px-4 bg-page border-y" style={{ borderColor: 'var(--border-default)' }}>
         <div className="max-w-5xl mx-auto">
           <div className="text-center mb-12">
-            <h2 className="text-2xl font-bold text-gray-900 mb-2">Semua yang Anda Butuhkan</h2>
-            <p className="text-sm text-gray-400">Fitur lengkap untuk menjaga komentar kanal Anda tetap bersih</p>
+            <h2 className="text-2xl font-bold text-primary mb-2">Semua yang Anda Butuhkan</h2>
+            <p className="text-sm text-muted">Fitur lengkap untuk menjaga komentar kanal Anda tetap bersih</p>
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
             {FEATURES.map((f) => (
-              <div key={f.title} className="bg-white rounded-2xl border border-gray-100 p-5 hover:shadow-md transition-shadow group">
+              <div key={f.title} className="bg-card rounded-2xl border p-5 hover:border-[var(--border-hover)] transition-all group" style={{ borderColor: 'var(--border-default)' }}>
                 <div className={`w-9 h-9 rounded-xl flex items-center justify-center mb-3 ${colorMap[f.color]}`}>
                   {f.icon}
                 </div>
-                <h3 className="text-sm font-semibold text-gray-900 mb-1">{f.title}</h3>
-                <p className="text-xs text-gray-400 leading-relaxed">{f.desc}</p>
+                <h3 className="text-sm font-semibold text-primary mb-1">{f.title}</h3>
+                <p className="text-xs text-muted leading-relaxed">{f.desc}</p>
               </div>
             ))}
           </div>
@@ -185,8 +186,8 @@ export default function LandingPage() {
       <section className="py-20 px-4">
         <div className="max-w-4xl mx-auto">
           <div className="text-center mb-12">
-            <h2 className="text-2xl font-bold text-gray-900 mb-2">Cara Kerja Sistem</h2>
-            <p className="text-sm text-gray-400">Tiga langkah sederhana untuk moderasi otomatis</p>
+            <h2 className="text-2xl font-bold text-primary mb-2">Cara Kerja Sistem</h2>
+            <p className="text-sm text-muted">Tiga langkah sederhana untuk moderasi otomatis</p>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             {[
@@ -195,9 +196,9 @@ export default function LandingPage() {
               { step: '03', title: 'AI Bekerja', desc: 'IndoBERT menganalisis setiap komentar. Spam judol ditandai dan dapat dimoderasi otomatis.' },
             ].map((item) => (
               <div key={item.step} className="relative">
-                <div className="text-5xl font-black text-gray-100 mb-3">{item.step}</div>
-                <h3 className="text-sm font-semibold text-gray-900 mb-1.5">{item.title}</h3>
-                <p className="text-xs text-gray-400 leading-relaxed">{item.desc}</p>
+                <div className="text-5xl font-black mb-3" style={{ color: 'var(--border-default)' }}>{item.step}</div>
+                <h3 className="text-sm font-semibold text-primary mb-1.5">{item.title}</h3>
+                <p className="text-xs text-secondary leading-relaxed">{item.desc}</p>
               </div>
             ))}
           </div>

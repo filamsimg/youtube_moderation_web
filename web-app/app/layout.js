@@ -1,6 +1,7 @@
 import { Inter } from "next/font/google";
 import "./globals.css";
 import SessionProvider from "@/components/SessionProvider";
+import { ThemeProvider } from "@/components/ThemeProvider";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -11,11 +12,15 @@ export const metadata = {
 
 export default function RootLayout({ children }) {
   return (
-    <html lang="en">
-      <body className={`${inter.className} bg-gray-50 text-slate-900 antialiased`}>
-        <SessionProvider>
-          {children}
-        </SessionProvider>
+    // suppressHydrationWarning mencegah React error saat class 'dark' 
+    // ditambahkan client-side (berbeda dari HTML awal server)
+    <html lang="id" suppressHydrationWarning>
+      <body className={inter.className}>
+        <ThemeProvider>
+          <SessionProvider>
+            {children}
+          </SessionProvider>
+        </ThemeProvider>
       </body>
     </html>
   );

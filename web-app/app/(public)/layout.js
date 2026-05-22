@@ -13,31 +13,29 @@ export default function PublicLayout({ children }) {
   const pathname = usePathname();
 
   return (
-    <div className="min-h-screen flex flex-col bg-white">
+    <div className="min-h-screen flex flex-col bg-page">
       {/* ── Public Navbar ─────────────────────────────────────── */}
-      <header className="sticky top-0 z-50 bg-white/80 backdrop-blur-md border-b border-gray-100">
+      <header className="sticky top-0 z-50 bg-header backdrop-blur-md border-b" style={{ borderColor: 'var(--border-default)' }}>
         <div className="max-w-6xl mx-auto px-4 sm:px-6 h-14 flex items-center justify-between">
           {/* Logo */}
           <Link href="/" className="flex items-center gap-2 group">
             <img src="/logo.webp" alt="Athena Shield" className="w-7 h-7 object-contain" />
-            <span className="text-sm font-semibold text-gray-900">Athena Shield</span>
+            <span className="text-sm font-semibold text-primary">Athena Shield</span>
           </Link>
 
           {/* Nav Links */}
           <nav className="hidden sm:flex items-center gap-1">
             <Link
               href="/"
-              className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-colors ${
-                pathname === '/' ? 'bg-gray-100 text-gray-900' : 'text-gray-500 hover:text-gray-700 hover:bg-gray-50'
-              }`}
+              className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-colors ${pathname === '/' ? 'bg-card-hover text-primary' : 'text-secondary hover:text-primary hover:bg-card-hover'
+                }`}
             >
               Beranda
             </Link>
             <Link
               href="/pricing"
-              className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-colors ${
-                pathname === '/pricing' ? 'bg-gray-100 text-gray-900' : 'text-gray-500 hover:text-gray-700 hover:bg-gray-50'
-              }`}
+              className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-colors ${pathname === '/pricing' ? 'bg-card-hover text-primary' : 'text-secondary hover:text-primary hover:bg-card-hover'
+                }`}
             >
               Harga
             </Link>
@@ -59,13 +57,13 @@ export default function PublicLayout({ children }) {
               <>
                 <Link
                   href="/login"
-                  className="px-3 py-1.5 text-xs font-medium text-gray-600 hover:text-gray-900 transition-colors"
+                  className="px-3 py-1.5 text-xs font-medium text-secondary hover:text-primary transition-colors"
                 >
                   Masuk
                 </Link>
                 <Link
                   href="/login"
-                  className="px-3 py-1.5 bg-gray-900 hover:bg-gray-700 text-white text-xs font-semibold rounded-lg transition-colors"
+                  className="px-3 py-1.5 bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-semibold rounded-lg transition-colors"
                 >
                   Mulai Gratis
                 </Link>
@@ -81,18 +79,18 @@ export default function PublicLayout({ children }) {
       </main>
 
       {/* ── Footer ────────────────────────────────────────────── */}
-      <footer className="border-t border-gray-100 bg-gray-50">
+      <footer className="border-t bg-card" style={{ borderColor: 'var(--border-default)' }}>
         <div className="max-w-6xl mx-auto px-4 sm:px-6 py-8 flex flex-col sm:flex-row items-center justify-between gap-4">
           <div className="flex items-center gap-2">
             <img src="/logo.webp" alt="Athena Shield" className="w-6 h-6 object-contain grayscale opacity-70" />
-            <span className="text-xs font-semibold text-gray-700">Athena Shield</span>
+            <span className="text-xs font-semibold text-secondary">Athena Shield</span>
           </div>
-          <p className="text-[11px] text-gray-400">
-            © 2024 Athena Shield · Skripsi Moderasi Komentar Judol berbasis AI
+          <p className="text-[11px] text-muted">
+            © 2026 Athena Shield · Moderasi Komentar Judol berbasis AI
           </p>
           <div className="flex items-center gap-4">
-            <Link href="/pricing" className="text-[11px] text-gray-400 hover:text-gray-600 transition-colors">Harga</Link>
-            <Link href="/login" className="text-[11px] text-gray-400 hover:text-gray-600 transition-colors">Login</Link>
+            <Link href="/pricing" className="text-[11px] text-muted hover:text-primary transition-colors">Harga</Link>
+            <Link href="/login" className="text-[11px] text-muted hover:text-primary transition-colors">Login</Link>
           </div>
         </div>
       </footer>

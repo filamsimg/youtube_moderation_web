@@ -6,8 +6,8 @@ import Link from 'next/link';
 
 /**
  * QuotaIndicator
- * Menampilkan sisa kuota user dalam bentuk progress bar mini.
- * Dipanggil dari Sidebar dan Header.
+ * Menampilkan sisa kuota user dalam bentuk progress bar mini (dark mode).
+ * Dipanggil dari Sidebar (full) dan Header (compact).
  */
 export default function QuotaIndicator({ compact = false }) {
   const { data: session } = useSession();
@@ -42,7 +42,7 @@ export default function QuotaIndicator({ compact = false }) {
 
   if (loading || !profile) {
     return compact ? null : (
-      <div className="h-4 w-full bg-gray-100 rounded-full animate-pulse" />
+      <div className="h-[72px] rounded-xl skeleton" />
     );
   }
 
@@ -52,72 +52,93 @@ export default function QuotaIndicator({ compact = false }) {
   const barColor =
     pct > 50 ? 'bg-emerald-500' :
     pct > 20 ? 'bg-amber-400' :
-    'bg-red-500';
+    'bg-rose-500';
+
+  const barGlow =
+    pct > 50 ? '0 0 8px rgba(16, 185, 129, 0.60)' :
+    pct > 20 ? '0 0 8px rgba(245, 158, 11, 0.60)' :
+    '0 0 8px rgba(244, 63, 94, 0.60)';
 
   const textColor =
-    pct > 50 ? 'text-emerald-600' :
-    pct > 20 ? 'text-amber-600' :
-    'text-red-600';
+    pct > 50 ? 'text-emerald-400' :
+    pct > 20 ? 'text-amber-400' :
+    'text-rose-400';
 
-  const tierBadgeColor =
-    profile.tier === 'PRO' ? 'bg-amber-100 text-amber-700' :
-    profile.tier === 'ENTERPRISE' ? 'bg-amber-100 text-amber-700' :
-    'bg-gray-100 text-gray-500';
+  const tierBadgeClass =
+    profile.tier === 'PRO'
+      ? 'bg-amber-500/10 text-amber-400 border border-amber-500/20'
+      : profile.tier === 'ENTERPRISE'
+      ? 'bg-violet-500/10 text-violet-400 border border-violet-500/20'
+      : 'bg-card-hover text-muted border border-[var(--border-default)]';
 
-  // ── Mode Compact (untuk Header) ──────────────────────────────────────────
+  // ── Compact Mode (untuk Header) ──────────────────────────────
   if (compact) {
     return (
-      <div className="flex items-center gap-2">
+      <div className="flex items-center gap-2.5">
         <div className="text-right">
-          <p className="text-[10px] text-gray-400">Kuota</p>
+          <p className="text-[10px] text-muted">Kuota</p>
           <p className={`text-xs font-semibold ${textColor}`}>
             {profile.quota_balance.toLocaleString('id-ID')} unit
           </p>
         </div>
-        <div className="w-12 h-1.5 bg-gray-100 rounded-full overflow-hidden">
+        <div className="w-14 h-1.5 rounded-full overflow-hidden" style={{ background: 'var(--border-default)' }}>
           <div
             className={`h-full rounded-full transition-all duration-500 ${barColor}`}
-            style={{ width: `${Math.min(pct, 100)}%` }}
+            style={{
+              width: `${Math.min(pct, 100)}%`,
+              boxShadow: barGlow,
+            }}
           />
         </div>
       </div>
     );
   }
 
-  // ── Mode Full (untuk Sidebar) ─────────────────────────────────────────────
+  // ── Full Mode (untuk Sidebar) ─────────────────────────────────
   return (
-    <div className="p-3 rounded-xl bg-gray-50 border border-gray-100 space-y-2">
-      {/* Header baris */}
+    <div
+      className="p-3 rounded-xl border space-y-2.5"
+      style={{ background: 'var(--bg-page)', borderColor: 'var(--border-default)' }}
+    >
+      {/* Header */}
       <div className="flex items-center justify-between">
-        <p className="text-[11px] font-semibold text-gray-600">Kuota API</p>
-        <span className={`text-[10px] font-semibold px-1.5 py-0.5 rounded-full ${tierBadgeColor}`}>
+        <div className="flex items-center gap-1.5">
+          <svg className="w-3.5 h-3.5 text-secondary" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
+            <path strokeLinecap="round" strokeLinejoin="round" d="M3.75 13.5l10.5-11.25L12 10.5h8.25L9.75 21.75 12 13.5H3.75z" />
+          </svg>
+          <p className="text-[11px] font-semibold text-secondary">Kuota API</p>
+        </div>
+        <span className={`text-[10px] font-semibold px-1.5 py-0.5 rounded-full ${tierBadgeClass}`}>
           {profile.tier}
         </span>
       </div>
 
       {/* Progress Bar */}
-      <div className="w-full h-1.5 bg-gray-200 rounded-full overflow-hidden">
+      <div className="w-full h-1.5 rounded-full overflow-hidden" style={{ background: 'var(--border-default)' }}>
         <div
           className={`h-full rounded-full transition-all duration-700 ${barColor}`}
-          style={{ width: `${Math.min(pct, 100)}%` }}
+          style={{
+            width: `${Math.min(pct, 100)}%`,
+            boxShadow: barGlow,
+          }}
         />
       </div>
 
-      {/* Angka */}
+      {/* Numbers */}
       <div className="flex items-center justify-between">
-        <p className={`text-[11px] font-medium ${textColor}`}>
-          {profile.quota_balance.toLocaleString('id-ID')} unit tersisa
+        <p className={`text-[11px] font-semibold ${textColor}`}>
+          {profile.quota_balance.toLocaleString('id-ID')} unit
         </p>
-        <p className="text-[10px] text-gray-400">
+        <p className="text-[10px]" style={{ color: 'var(--text-muted)' }}>
           / {profile.quota_limit.toLocaleString('id-ID')}
         </p>
       </div>
 
-      {/* Alert jika kuota menipis */}
+      {/* Top-up Alert */}
       {pct <= 20 && (
         <Link
           href="/pricing"
-          className="block w-full text-center py-1.5 rounded-lg bg-red-50 border border-red-100 text-[11px] font-medium text-red-600 hover:bg-red-100 transition-colors"
+          className="block w-full text-center py-1.5 rounded-lg bg-rose-500/10 border border-rose-500/20 text-[11px] font-medium text-rose-400 hover:bg-rose-500/15 transition-colors"
         >
           ⚡ Top-up Kuota
         </Link>

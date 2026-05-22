@@ -31,7 +31,7 @@ export default function Sidebar() {
       name: 'Beranda',
       href: '/dashboard',
       icon: (
-        <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
+        <svg className="w-4.5 h-4.5" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
           <path strokeLinecap="round" strokeLinejoin="round" d="M2.25 12l8.954-8.955a1.126 1.126 0 011.591 0L21.75 12M4.5 9.75v10.125c0 .621.504 1.125 1.125 1.125H9.75v-4.875c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125V21h4.125c.621 0 1.125-.504 1.125-1.125V9.75M8.25 21h8.25" />
         </svg>
       ),
@@ -41,7 +41,7 @@ export default function Sidebar() {
       href: '/comments',
       badge: true,
       icon: (
-        <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
+        <svg className="w-4.5 h-4.5" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
           <path strokeLinecap="round" strokeLinejoin="round" d="M19.5 14.25v-2.625a3.375 3.375 0 00-3.375-3.375h-1.5A1.125 1.125 0 0113.5 7.125v-1.5a3.375 3.375 0 00-3.375-3.375H8.25m0 12.75h7.5m-7.5 3H12M10.5 2.25H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 00-9-9z" />
         </svg>
       ),
@@ -50,7 +50,7 @@ export default function Sidebar() {
       name: 'Riwayat',
       href: '/riwayat',
       icon: (
-        <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
+        <svg className="w-4.5 h-4.5" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
           <path strokeLinecap="round" strokeLinejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 11-18 0 9 9 0 0118 0z" />
         </svg>
       ),
@@ -59,17 +59,17 @@ export default function Sidebar() {
       name: 'Preferensi',
       href: '/preferensi',
       icon: (
-        <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
+        <svg className="w-4.5 h-4.5" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
           <path strokeLinecap="round" strokeLinejoin="round" d="M9.594 3.94c.09-.542.56-.94 1.11-.94h2.593c.55 0 1.02.398 1.11.94l.213 1.281c.063.374.313.686.645.87.074.04.147.083.22.127.324.196.72.257 1.075.124l1.217-.456a1.125 1.125 0 011.37.49l1.296 2.247a1.125 1.125 0 01-.26 1.431l-1.003.827c-.293.24-.438.613-.431.992a6.759 6.759 0 010 .255c-.007.378.138.75.43.99l1.005.828c.424.35.534.954.26 1.43l-1.298 2.247a1.125 1.125 0 01-1.369.491l-1.217-.456c-.355-.133-.75-.072-1.076.124a6.57 6.57 0 01-.22.128c-.331.183-.581.495-.644.869l-.213 1.28c-.09.543-.56.941-1.11.941h-2.594c-.55 0-1.02-.398-1.11-.94l-.213-1.281c-.062-.374-.312-.686-.644-.87a6.52 6.52 0 01-.22-.127c-.325-.196-.72-.257-1.076-.124l-1.217.456a1.125 1.125 0 01-1.369-.49l-1.297-2.247a1.125 1.125 0 01.26-1.431l1.004-.827c.292-.24.437-.613.43-.992a6.932 6.932 0 010-.255c.007-.378-.138-.75-.43-.99l-1.004-.828a1.125 1.125 0 01-.26-1.43l1.297-2.247a1.125 1.125 0 011.37-.491l1.216.456c.356.133.751.072 1.076-.124.072-.044.146-.087.22-.128.332-.183.582-.495.644-.869l.214-1.281z" />
           <path strokeLinecap="round" strokeLinejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
         </svg>
       ),
     },
     {
-      name: 'Pricing',
+      name: 'Paket & Kuota',
       href: '/pricing',
       icon: (
-        <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
+        <svg className="w-4.5 h-4.5" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
           <path strokeLinecap="round" strokeLinejoin="round" d="M2.25 18.75a60.07 60.07 0 0115.797 2.101c.727.198 1.453-.342 1.453-1.096V18.75M3.75 4.5v.75A.75.75 0 013 6h-.75m0 0v-.375c0-.621.504-1.125 1.125-1.125H20.25M2.25 6v9m18-10.5v.75c0 .414.336.75.75.75h.75m-1.5-1.5h.375c.621 0 1.125.504 1.125 1.125v9.75c0 .621-.504 1.125-1.125 1.125h-.375m1.5-1.5H21a.75.75 0 00-.75.75v.75m0 0H3.75m0 0h-.375a1.125 1.125 0 01-1.125-1.125V15m1.5 1.5v-.75A.75.75 0 003 15h-.75M15 10.5a3 3 0 11-6 0 3 3 0 016 0zm3 0h.008v.008H18V10.5zm-12 0h.008v.008H6V10.5z" />
         </svg>
       ),
@@ -77,66 +77,114 @@ export default function Sidebar() {
   ];
 
   const SidebarContent = () => (
-    <aside className="flex flex-col w-[220px] h-full bg-white border-r border-gray-200 overflow-y-auto overflow-x-hidden custom-scrollbar">
-      {/* Logo */}
+    <aside
+      className="flex flex-col w-[240px] h-full overflow-y-auto overflow-x-hidden border-r"
+      style={{ background: 'var(--bg-sidebar)', borderColor: 'var(--border-default)' }}
+    >
+
+      {/* ── Logo & Brand ─────────────────────────────────────── */}
       <div className="px-5 py-5 flex items-center gap-3">
-        <img src="/logo.webp" alt="Athena Shield" className="w-8 h-8 object-contain" />
+        <div className="relative flex-shrink-0">
+          {/* Glow behind logo */}
+          <div className="absolute inset-0 rounded-full bg-indigo-500/25 blur-md" />
+          <img
+            src="/logo.webp"
+            alt="Athena Shield"
+            className="relative w-9 h-9 object-contain drop-shadow-lg"
+          />
+        </div>
         <div>
-          <p className="text-sm font-semibold text-gray-900 leading-none">Athena Shield</p>
-          <p className="text-[11px] text-gray-400 mt-0.5">Kelola komentar</p>
+          <p className="text-sm font-semibold leading-none tracking-tight" style={{ color: 'var(--text-primary)' }}>
+            Athena Shield
+          </p>
+          <p className="text-[11px] mt-0.5" style={{ color: 'var(--text-muted)' }}>Moderasi AI</p>
         </div>
       </div>
 
-      {/* Navigation */}
-      <nav className="flex-1 px-3 mt-2 space-y-1">
+      {/* ── Divider ──────────────────────────────────────────── */}
+      <div className="mx-5 h-px" style={{ background: 'var(--border-default)' }} />
+
+      {/* ── Section label ────────────────────────────────────── */}
+      <p className="px-5 pt-4 pb-1.5 text-[10px] font-semibold uppercase tracking-widest" style={{ color: 'var(--text-muted)' }}>
+        Navigasi
+      </p>
+
+      {/* ── Navigation Links ─────────────────────────────────── */}
+      <nav className="flex-1 px-3 space-y-0.5">
         {navLinks.map((link) => {
-          const isActive = pathname === link.href || (pathname === '/' && link.href === '/dashboard');
+          const isActive =
+            pathname === link.href ||
+            (pathname === '/' && link.href === '/dashboard');
           return (
             <Link
               key={link.name}
               href={link.href}
-              className={`flex items-center gap-3 px-3 py-2.5 rounded-lg text-[13px] font-medium transition-all duration-150 group relative ${
+              className={`flex items-center gap-3 px-3 py-2.5 rounded-xl text-[13px] font-medium transition-all duration-200 group relative border ${
                 isActive
-                  ? 'bg-gray-100 text-gray-900'
-                  : 'text-gray-500 hover:bg-gray-50 hover:text-gray-700'
+                  ? 'bg-indigo-500/10 border-indigo-500/30 text-indigo-300'
+                  : 'border-transparent hover:bg-indigo-500/5 hover:border-indigo-500/10'
               }`}
+            style={!isActive ? { color: 'var(--text-secondary)' } : {}}
             >
-              <span className={isActive ? 'text-gray-700' : 'text-gray-400 group-hover:text-gray-500'}>
+              <span
+                className={isActive ? 'text-indigo-400' : ''}
+                style={!isActive ? { color: 'var(--text-muted)' } : {}}
+              >
                 {link.icon}
               </span>
               <span>{link.name}</span>
               {link.badge && (
-                <span className="ml-auto w-2 h-2 rounded-full bg-amber-500 animate-pulse"></span>
+                <span className="ml-auto w-2 h-2 rounded-full bg-amber-500 badge-pulse shadow-[0_0_6px_rgba(245,158,11,0.7)]" />
+              )}
+              {/* Active indicator line */}
+              {isActive && (
+                <span className="absolute right-3 w-1 h-1 rounded-full bg-indigo-400" />
               )}
             </Link>
           );
         })}
       </nav>
 
-      {/* Bottom */}
-      <div className="px-3 pb-5 space-y-3">
+      {/* ── Bottom Section ───────────────────────────────────── */}
+      <div className="px-3 pb-5 mt-4 space-y-3">
+        <div className="mx-2 h-px" style={{ background: 'var(--border-default)' }} />
+
         {/* Quota Indicator */}
         <QuotaIndicator />
 
-        <div className="flex items-center gap-2 px-2">
-          <span className="w-2 h-2 bg-green-500 rounded-full"></span>
-          <span className="text-xs text-green-600 font-medium">Terhubung</span>
+        {/* Online Status */}
+        <div className="flex items-center gap-2 px-3">
+          <span className="dot-online" />
+          <span className="text-xs text-emerald-400 font-medium">Model API Terhubung</span>
         </div>
+
+        {/* User Info */}
         {session?.user && (
-          <div className="flex items-center gap-2 py-2">
+          <div
+            className="flex items-center gap-2.5 px-3 py-2 rounded-xl transition-colors cursor-default hover:bg-[var(--bg-card-hover)]"
+          >
             <img
-              src={session.user.image || 'https://ui-avatars.com/api/?name=User&background=6366f1&color=fff&size=32'}
+              src={session.user.image || `https://ui-avatars.com/api/?name=${encodeURIComponent(session.user.name || 'User')}&background=6366f1&color=fff&size=32`}
               alt="avatar"
-              className="w-7 h-7 rounded-full border border-amber-100 flex-shrink-0"
+              className="w-7 h-7 rounded-full border border-indigo-500/40 flex-shrink-0"
             />
-            <p className="text-[11px] text-gray-500 truncate">{session.user.name}</p>
+            <div className="min-w-0">
+              <p className="text-[12px] truncate font-medium leading-tight" style={{ color: 'var(--text-secondary)' }}>
+                {session.user.name}
+              </p>
+              <p className="text-[10px] truncate leading-tight" style={{ color: 'var(--text-muted)' }}>
+                {session.user.email}
+              </p>
+            </div>
           </div>
         )}
+
+        {/* Sign Out */}
         <button
           onClick={() => signOut({ callbackUrl: '/login' })}
-          className="flex items-center gap-2 w-full px-3 py-2 text-[13px] font-medium text-red-600 hover:bg-red-50 rounded-lg transition-all duration-150 group"
+          className="btn-danger w-full text-[13px]"
         >
-          <svg className="w-5 h-5 text-red-400 group-hover:text-red-600" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
+          <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
             <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 9V5.25A2.25 2.25 0 0013.5 3h-6a2.25 2.25 0 00-2.25 2.25v13.5A2.25 2.25 0 007.5 21h6a2.25 2.25 0 002.25-2.25V15m3 0l3-3m0 0l-3-3m3 3H9" />
           </svg>
           <span>Keluar</span>
@@ -147,44 +195,46 @@ export default function Sidebar() {
 
   return (
     <>
-      {/* Desktop Sidebar - always visible */}
-      <div className="hidden lg:flex lg:flex-col lg:w-[220px] lg:h-screen lg:sticky lg:top-0">
+      {/* Desktop Sidebar — always visible */}
+      <div className="hidden lg:flex lg:flex-col lg:w-[240px] lg:h-screen lg:sticky lg:top-0">
         <SidebarContent />
       </div>
 
-      {/* Mobile Hamburger Button - rendered by layout's header via context/prop,
-          but we expose it as a floating button for simplicity */}
+      {/* Mobile Hamburger Button */}
       <button
         onClick={() => setIsOpen(true)}
-        className="lg:hidden fixed top-3.5 left-4 z-40 p-2 rounded-lg bg-white border border-gray-200 shadow-sm hover:bg-gray-50 transition-colors"
+        className="lg:hidden fixed top-3.5 left-4 z-40 p-2 rounded-xl transition-all border"
+        style={{ background: 'var(--bg-card)', borderColor: 'var(--border-default)' }}
         aria-label="Buka menu"
       >
-        <svg className="w-5 h-5 text-gray-600" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor">
+        <svg className="w-5 h-5 text-muted" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor">
           <path strokeLinecap="round" strokeLinejoin="round" d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5" />
         </svg>
       </button>
 
-      {/* Mobile Drawer Overlay */}
+      {/* Mobile Drawer */}
       {isOpen && (
         <div
           className="lg:hidden fixed inset-0 z-50 flex"
           onClick={() => setIsOpen(false)}
         >
           {/* Backdrop */}
-          <div className="fixed inset-0 bg-black/40 backdrop-blur-sm" />
+          <div className="fixed inset-0 bg-black/50 dark:bg-black/60 backdrop-blur-sm" />
 
           {/* Drawer */}
           <div
-            className="relative z-50 flex flex-col h-full shadow-2xl"
+            className="relative z-50 flex flex-col h-full shadow-2xl animate-fade-in"
             onClick={(e) => e.stopPropagation()}
           >
-            <div className="flex items-center justify-end px-4 pt-4 pb-2 bg-white border-b border-gray-100">
+            {/* Close Button */}
+            <div className="flex items-center justify-end px-4 pt-4 pb-2 border-b"
+              style={{ background: 'var(--bg-sidebar)', borderColor: 'var(--border-default)' }}>
               <button
                 onClick={() => setIsOpen(false)}
-                className="p-1.5 rounded-lg hover:bg-gray-100 transition-colors"
+                className="p-1.5 rounded-lg transition-colors hover:bg-[var(--bg-card-hover)]"
                 aria-label="Tutup menu"
               >
-                <svg className="w-5 h-5 text-gray-500" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor">
+                <svg className="w-5 h-5" style={{ color: 'var(--text-secondary)' }} fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor">
                   <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
                 </svg>
               </button>
