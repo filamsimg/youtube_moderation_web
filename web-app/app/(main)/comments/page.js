@@ -1,12 +1,26 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useModeration } from '@/contexts/ModerationContext';
 import { useYouTube } from '@/contexts/YouTubeContext';
 
 export default function CommentsPage() {
   const router = useRouter();
+
+  useEffect(() => {
+    const mainEl = document.querySelector('main');
+    if (mainEl) {
+      const originalPadding = mainEl.style.padding;
+      const originalOverflow = mainEl.style.overflow;
+      mainEl.style.padding = '0';
+      mainEl.style.overflow = 'hidden';
+      return () => {
+        mainEl.style.padding = originalPadding;
+        mainEl.style.overflow = originalOverflow;
+      };
+    }
+  }, []);
 
   const {
     selectedVideoIds, primaryVideo, handleToggleVideo, handleSelectAll, handleDeselectAll,
@@ -51,7 +65,7 @@ export default function CommentsPage() {
   const handleExecuteBatch = async (action) => {
     const idsArray = Array.from(selectedComments);
     if (idsArray.length === 0) return;
-    
+
     const success = await handleBatchAction(idsArray, action);
     if (success) {
       setSelectedComments(new Set()); // Reset seleksi setelah sukses
@@ -66,6 +80,7 @@ export default function CommentsPage() {
   const [filter, setFilter] = useState('semua');
   const [videoFilter, setVideoFilter] = useState('all');
   const [activeTab, setActiveTab] = useState('belum'); // 'belum' | 'sudah'
+  const [videoSearchQuery, setVideoSearchQuery] = useState('');
 
   const quotaError = null;
 
@@ -166,147 +181,226 @@ export default function CommentsPage() {
   ).values()];
 
   // ── Video Panel: Checklist ───────────────────────────────────
-  const VideoPanelContent = () => (
-    <div className="flex flex-col h-full">
-      {/* Header */}
-      <div className="px-4 py-3 border-b" style={{ borderColor: 'var(--border-default)' }}>
-        <p className="text-xs font-semibold uppercase tracking-wider" style={{ color: 'var(--text-muted)' }}>Daftar Video</p>
-        <p className="text-[11px] mt-0.5" style={{ color: 'var(--text-muted)' }}>
-          {selectedVideoIds.size > 0
-            ? `${selectedVideoIds.size} dari ${videos.length} dipilih`
-            : `${videos.length} video tersedia`}
-        </p>
-      </div>
+  const VideoPanelContent = () => {
+    const filteredVideos = videos.filter(video =>
+      video?.snippet?.title?.toLowerCase().includes(videoSearchQuery.toLowerCase())
+    );
 
-      {/* Pilih Semua / Batal */}
-      {!videosLoading && videos.length > 0 && (
-        <div className="flex gap-1.5 px-3 py-2 border-b" style={{ borderColor: 'var(--border-default)' }}>
-          <button
-            onClick={handleSelectAll}
-            className="flex-1 text-[11px] text-indigo-500 hover:text-indigo-600 font-medium py-1 px-2 rounded-md hover:bg-indigo-500/10 transition-colors"
-          >
-            Pilih Semua
-          </button>
-          <button
-            onClick={handleDeselectAll}
-            disabled={selectedVideoIds.size === 0}
-            className="flex-1 text-[11px] font-medium py-1 px-2 rounded-md transition-colors disabled:opacity-40 disabled:cursor-not-allowed hover:bg-[var(--bg-card-hover)]"
-            style={{ color: 'var(--text-secondary)' }}
-          >
-            Batal Pilih
-          </button>
+    return (
+      <div className="flex flex-col h-full">
+        {/* Header */}
+        <div className="px-4 py-3 border-b" style={{ borderColor: 'var(--border-default)' }}>
+          <p className="text-xs font-semibold uppercase tracking-wider" style={{ color: 'var(--text-muted)' }}>Daftar Video</p>
+          <p className="text-[11px] mt-0.5" style={{ color: 'var(--text-muted)' }}>
+            {selectedVideoIds.size > 0
+              ? `${selectedVideoIds.size} dari ${videos.length} dipilih`
+              : `${videos.length} video tersedia`}
+          </p>
         </div>
-      )}
 
-      {/* Daftar Video dengan Checkbox */}
-      <div className="flex-1 overflow-y-auto">
-        {videosLoading ? (
-          <div className="flex justify-center py-8">
-            <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-indigo-500" />
+        {/* Input Pencarian Video */}
+        {!videosLoading && videos.length > 0 && (
+          <div className="px-3 py-2 border-b" style={{ borderColor: 'var(--border-default)' }}>
+            <div className="relative">
+              <input
+                type="text"
+                placeholder="Cari judul video..."
+                value={videoSearchQuery}
+                onChange={(e) => setVideoSearchQuery(e.target.value)}
+                className="input-dark pr-7 py-1.5 text-xs w-full rounded-lg"
+                style={{
+                  background: 'var(--bg-card-hover)',
+                  borderColor: 'var(--border-default)',
+                  color: 'var(--text-primary)',
+                  paddingLeft: '2.25rem'
+                }}
+              />
+              <div className="absolute left-2.5 top-1/2 -translate-y-1/2 text-[var(--text-muted)] pointer-events-none">
+                <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.637 10.637z" />
+                </svg>
+              </div>
+              {videoSearchQuery && (
+                <button
+                  onClick={() => setVideoSearchQuery('')}
+                  className="absolute right-2.5 top-1/2 -translate-y-1/2 text-[var(--text-muted)] hover:text-[var(--text-secondary)] transition-colors"
+                >
+                  <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+                  </svg>
+                </button>
+              )}
+            </div>
           </div>
-        ) : videos.length === 0 ? (
-          <div className="text-center py-8 px-4">
-            <p className="text-xs" style={{ color: 'var(--text-muted)' }}>Tidak ada video ditemukan.</p>
+        )}
+
+        {/* Pilih Semua / Batal */}
+        {!videosLoading && videos.length > 0 && (
+          <div className="flex gap-1.5 px-3 py-2 border-b" style={{ borderColor: 'var(--border-default)' }}>
             <button
-              onClick={() => router.push('/channel')}
-              className="text-xs text-indigo-400 hover:underline mt-2 block mx-auto"
+              onClick={() => {
+                if (videoSearchQuery) {
+                  filteredVideos.forEach(v => {
+                    if (!selectedVideoIds.has(v.id.videoId)) {
+                      handleToggleVideo(v);
+                    }
+                  });
+                } else {
+                  handleSelectAll();
+                }
+              }}
+              className="flex-1 text-[11px] text-indigo-500 hover:text-indigo-600 font-medium py-1 px-2 rounded-md hover:bg-indigo-500/10 transition-colors"
             >
-              Ganti Kanal →
+              Pilih Semua
+            </button>
+            <button
+              onClick={() => {
+                if (videoSearchQuery) {
+                  filteredVideos.forEach(v => {
+                    if (selectedVideoIds.has(v.id.videoId)) {
+                      handleToggleVideo(v);
+                    }
+                  });
+                } else {
+                  handleDeselectAll();
+                }
+              }}
+              disabled={selectedVideoIds.size === 0}
+              className="flex-1 text-[11px] font-medium py-1 px-2 rounded-md transition-colors disabled:opacity-40 disabled:cursor-not-allowed hover:bg-[var(--bg-card-hover)]"
+              style={{ color: 'var(--text-secondary)' }}
+            >
+              Batal Pilih
             </button>
           </div>
-        ) : (
-          <div className="p-2 space-y-0.5">
-            {videos.map(video => {
-              const videoId = video.id.videoId;
-              const isChecked = selectedVideoIds.has(videoId);
-              return (
-                <label
-                  key={videoId}
-                  className={`flex items-center gap-2.5 p-2.5 rounded-lg cursor-pointer transition-all select-none border ${isChecked
+        )}
+
+        {/* Daftar Video dengan Checkbox */}
+        <div className="flex-1 overflow-y-auto">
+          {videosLoading ? (
+            <div className="flex justify-center py-8">
+              <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-indigo-500" />
+            </div>
+          ) : videos.length === 0 ? (
+            <div className="text-center py-8 px-4">
+              <p className="text-xs" style={{ color: 'var(--text-muted)' }}>Tidak ada video ditemukan.</p>
+              <button
+                onClick={() => router.push('/channel')}
+                className="text-xs text-indigo-400 hover:underline mt-2 block mx-auto"
+              >
+                Ganti Kanal →
+              </button>
+            </div>
+          ) : filteredVideos.length === 0 ? (
+            <div className="text-center py-8 px-4">
+              <p className="text-xs" style={{ color: 'var(--text-muted)' }}>Tidak ada video yang cocok.</p>
+              <button
+                onClick={() => setVideoSearchQuery('')}
+                className="text-xs text-indigo-400 hover:underline mt-2 block mx-auto animate-fade-in"
+              >
+                Hapus Pencarian
+              </button>
+            </div>
+          ) : (
+            <div className="p-2 space-y-0.5">
+              {filteredVideos.map(video => {
+                const videoId = video?.id?.videoId;
+                if (!videoId) return null;
+                const isChecked = selectedVideoIds.has(videoId);
+                return (
+                  <label
+                    key={videoId}
+                    className={`flex items-center gap-2.5 p-2.5 rounded-lg cursor-pointer transition-all select-none border ${isChecked
                       ? 'bg-indigo-500/10 border-indigo-500/20'
                       : 'border-transparent hover:bg-[var(--bg-card-hover)]'
-                    }`}
-                >
-                  <input
-                    type="checkbox"
-                    checked={isChecked}
-                    onChange={() => handleToggleVideo(video)}
-                    className="w-3.5 h-3.5 rounded accent-indigo-500 cursor-pointer flex-shrink-0"
-                  />
-                  <div className="w-12 h-9 rounded-md overflow-hidden flex-shrink-0 bg-card-hover border border-border-default">
-                    <img
-                      src={video.snippet.thumbnails.default.url}
-                      alt=""
-                      className="w-full h-full object-cover"
-                    />
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <p className={`text-[12px] font-medium line-clamp-2 leading-tight ${isChecked ? 'text-indigo-400' : ''
                       }`}
-                      style={!isChecked ? { color: 'var(--text-secondary)' } : {}}
-                    >
-                      {video.snippet.title}
-                    </p>
-                    <p className="text-[10px] mt-0.5" style={{ color: 'var(--text-muted)' }}>
-                      {new Date(video.snippet.publishedAt).toLocaleDateString('id-ID')}
-                    </p>
-                  </div>
-                </label>
-              );
-            })}
-          </div>
-        )}
-      </div>
-
-      {/* Footer: Progress + Tombol Muat */}
-      <div className="p-3 border-t space-y-2" style={{ borderColor: 'var(--border-default)' }}>
-        {/* Progress bar saat fetch */}
-        {isFetchingMulti && fetchProgress.total > 0 && (
-          <div className="space-y-1">
-            <div className="flex justify-between text-[10px]" style={{ color: 'var(--text-muted)' }}>
-              <span>Video {fetchProgress.current} / {fetchProgress.total}</span>
-              <span>{Math.round((fetchProgress.current / fetchProgress.total) * 100)}%</span>
+                  >
+                    <input
+                      type="checkbox"
+                      checked={isChecked}
+                      onChange={() => handleToggleVideo(video)}
+                      className="w-3.5 h-3.5 rounded accent-indigo-500 cursor-pointer flex-shrink-0"
+                    />
+                    <div className="w-12 h-9 rounded-md overflow-hidden flex-shrink-0 bg-card-hover border border-border-default">
+                      {video?.snippet?.thumbnails?.default?.url ? (
+                        <img
+                          src={video.snippet.thumbnails.default.url}
+                          alt=""
+                          className="w-full h-full object-cover"
+                        />
+                      ) : (
+                        <div className="w-full h-full bg-[var(--bg-card-hover)] flex items-center justify-center text-[10px] text-[var(--text-muted)]">No Image</div>
+                      )}
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <p className={`text-[12px] font-medium line-clamp-2 leading-tight ${isChecked ? 'text-indigo-400' : ''
+                        }`}
+                        style={!isChecked ? { color: 'var(--text-secondary)' } : {}}
+                      >
+                        {video?.snippet?.title || 'Video Tanpa Judul'}
+                      </p>
+                      <p className="text-[10px] mt-0.5" style={{ color: 'var(--text-muted)' }}>
+                        {video?.snippet?.publishedAt
+                          ? new Date(video.snippet.publishedAt).toLocaleDateString('id-ID')
+                          : 'Tanggal tidak diketahui'}
+                      </p>
+                    </div>
+                  </label>
+                );
+              })}
             </div>
-            <div className="h-1 rounded-full overflow-hidden" style={{ background: 'var(--border-default)' }}>
-              <div
-                className="h-full bg-indigo-500 rounded-full transition-all duration-300"
-                style={{ width: `${fetchProgress.total > 0 ? (fetchProgress.current / fetchProgress.total) * 100 : 0}%` }}
-              />
-            </div>
-          </div>
-        )}
-
-        <button
-          onClick={() => { handleLoadSelected(false); setShowVideoPanel(false); }}
-          disabled={selectedVideoIds.size === 0 || isFetchingMulti}
-          className="w-full py-2 px-3 bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-semibold rounded-xl transition-all active:scale-95 disabled:cursor-not-allowed flex items-center justify-center gap-2 disabled:opacity-50"
-        >
-          {isFetchingMulti ? (
-            <>
-              <div className="animate-spin rounded-full h-3 w-3 border-b-2 border-white flex-shrink-0" />
-              Memuat...
-            </>
-          ) : selectedVideoIds.size === 0 ? (
-            'Pilih video terlebih dahulu'
-          ) : (
-            <>
-              <svg className="w-3.5 h-3.5 flex-shrink-0" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5M16.5 12L12 16.5m0 0L7.5 12m4.5 4.5V3" />
-              </svg>
-              Muat Komentar ({selectedVideoIds.size} video)
-            </>
           )}
-        </button>
+        </div>
 
-        <button
-          onClick={() => router.push('/channel')}
-          className="w-full text-xs py-1.5 transition-colors text-indigo-400 hover:text-indigo-300"
-        >
-          ← Ganti Kanal
-        </button>
+        {/* Footer: Progress + Tombol Muat */}
+        <div className="p-3 border-t space-y-2" style={{ borderColor: 'var(--border-default)' }}>
+          {/* Progress bar saat fetch */}
+          {isFetchingMulti && fetchProgress.total > 0 && (
+            <div className="space-y-1">
+              <div className="flex justify-between text-[10px]" style={{ color: 'var(--text-muted)' }}>
+                <span>Video {fetchProgress.current} / {fetchProgress.total}</span>
+                <span>{Math.round((fetchProgress.current / fetchProgress.total) * 100)}%</span>
+              </div>
+              <div className="h-1 rounded-full overflow-hidden" style={{ background: 'var(--border-default)' }}>
+                <div
+                  className="h-full bg-indigo-500 rounded-full transition-all duration-300"
+                  style={{ width: `${fetchProgress.total > 0 ? (fetchProgress.current / fetchProgress.total) * 100 : 0}%` }}
+                />
+              </div>
+            </div>
+          )}
+
+          <button
+            onClick={() => { handleLoadSelected(false); setShowVideoPanel(false); }}
+            disabled={selectedVideoIds.size === 0 || isFetchingMulti}
+            className="w-full py-2 px-3 bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-semibold rounded-xl transition-all active:scale-95 disabled:cursor-not-allowed flex items-center justify-center gap-2 disabled:opacity-50"
+          >
+            {isFetchingMulti ? (
+              <>
+                <div className="animate-spin rounded-full h-3 w-3 border-b-2 border-white flex-shrink-0" />
+                Memuat...
+              </>
+            ) : selectedVideoIds.size === 0 ? (
+              'Pilih video terlebih dahulu'
+            ) : (
+              <>
+                <svg className="w-3.5 h-3.5 flex-shrink-0" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5M16.5 12L12 16.5m0 0L7.5 12m4.5 4.5V3" />
+                </svg>
+                Muat Komentar ({selectedVideoIds.size} video)
+              </>
+            )}
+          </button>
+
+          <button
+            onClick={() => router.push('/channel')}
+            className="w-full text-xs py-1.5 transition-colors text-indigo-400 hover:text-indigo-300"
+          >
+            ← Ganti Kanal
+          </button>
+        </div>
       </div>
-    </div>
-  );
+    );
+  };
 
   // ── Comment Area ─────────────────────────────────────────────
   const CommentArea = () => {
@@ -449,8 +543,8 @@ export default function CommentsPage() {
             <button
               onClick={togglePolling}
               className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs font-medium border transition-all ${isPolling
-                  ? 'bg-emerald-500/10 border-emerald-500/20 text-emerald-400'
-                  : 'border-[var(--border-default)] hover:bg-[var(--bg-card-hover)]'
+                ? 'bg-emerald-500/10 border-emerald-500/20 text-emerald-400'
+                : 'border-[var(--border-default)] hover:bg-[var(--bg-card-hover)]'
                 }`}
               style={!isPolling ? { color: 'var(--text-secondary)' } : {}}
             >
@@ -482,8 +576,8 @@ export default function CommentsPage() {
           >
             Belum Dimoderasi
             <span className={`text-[10px] px-1.5 py-0.5 rounded-full font-medium transition-all ${activeTab === 'belum'
-                ? 'bg-indigo-500/20 text-indigo-400'
-                : 'bg-[var(--bg-card-hover)] text-[var(--text-muted)]'
+              ? 'bg-indigo-500/20 text-indigo-400'
+              : 'bg-[var(--bg-card-hover)] text-[var(--text-muted)]'
               }`}>
               {comments.length}
             </span>
@@ -499,8 +593,8 @@ export default function CommentsPage() {
           >
             Sudah Dimoderasi
             <span className={`text-[10px] px-1.5 py-0.5 rounded-full font-medium transition-all ${activeTab === 'sudah'
-                ? 'bg-indigo-500/20 text-indigo-400'
-                : 'bg-[var(--bg-card-hover)] text-[var(--text-muted)]'
+              ? 'bg-indigo-500/20 text-indigo-400'
+              : 'bg-[var(--bg-card-hover)] text-[var(--text-muted)]'
               }`}>
               {moderatedCommentsList.length}
             </span>
@@ -518,8 +612,8 @@ export default function CommentsPage() {
               key={f}
               onClick={() => setFilter(f)}
               className={`px-3 py-1 rounded-lg text-xs font-medium transition-all capitalize whitespace-nowrap ${filter === f
-                  ? 'bg-indigo-600 text-white'
-                  : 'border border-[var(--border-default)] hover:bg-[var(--bg-card-hover)]'
+                ? 'bg-indigo-600 text-white'
+                : 'border border-[var(--border-default)] hover:bg-[var(--bg-card-hover)]'
                 }`}
               style={filter !== f ? { color: 'var(--text-secondary)' } : {}}
             >
@@ -645,8 +739,8 @@ export default function CommentsPage() {
                                   </span>
                                   {!isSpam && prediction.sentiment && (
                                     <span className={`ml-1 badge ${prediction.sentiment === 'positive' ? 'badge-success'
-                                        : prediction.sentiment === 'negative' ? 'badge-danger'
-                                          : 'badge-muted'
+                                      : prediction.sentiment === 'negative' ? 'badge-danger'
+                                        : 'badge-muted'
                                       }`}>
                                       {prediction.sentiment === 'positive' ? '😊 Positif' : prediction.sentiment === 'negative' ? '😠 Negatif' : '😐 Netral'}
                                     </span>
@@ -742,8 +836,8 @@ export default function CommentsPage() {
                                 {!isSpam && prediction.sentiment && (
                                   <div className="flex items-center gap-1.5 mt-0.5">
                                     <span className={`badge ${prediction.sentiment === 'positive' ? 'badge-success'
-                                        : prediction.sentiment === 'negative' ? 'badge-danger'
-                                          : 'badge-muted'
+                                      : prediction.sentiment === 'negative' ? 'badge-danger'
+                                        : 'badge-muted'
                                       }`}>
                                       {prediction.sentiment === 'positive' ? '😊 Positif' : prediction.sentiment === 'negative' ? '😠 Negatif' : '😐 Netral'}
                                     </span>
@@ -870,8 +964,8 @@ export default function CommentsPage() {
                                   </span>
                                   {comment.sentiment && (
                                     <span className={`ml-1 badge ${comment.sentiment === 'positive' ? 'badge-success'
-                                        : comment.sentiment === 'negative' ? 'badge-danger'
-                                          : 'badge-muted'
+                                      : comment.sentiment === 'negative' ? 'badge-danger'
+                                        : 'badge-muted'
                                       }`}>
                                       {comment.sentiment === 'positive' ? '😊 Positif' : comment.sentiment === 'negative' ? '😠 Negatif' : '😐 Netral'}
                                     </span>
@@ -915,8 +1009,8 @@ export default function CommentsPage() {
                                     onClick={() => handleChangeAction(comment.id, 'publish')}
                                     title="Ubah ke Diterbitkan"
                                     className={`p-1.5 rounded-md transition-all active:scale-90 ${comment.status === 'published'
-                                        ? 'bg-emerald-500/20 text-emerald-400 scale-110 shadow-sm font-bold'
-                                        : 'hover:bg-emerald-500/10 text-emerald-500/30 hover:text-emerald-500 disabled:opacity-30'
+                                      ? 'bg-emerald-500/20 text-emerald-400 scale-110 shadow-sm font-bold'
+                                      : 'hover:bg-emerald-500/10 text-emerald-500/30 hover:text-emerald-500 disabled:opacity-30'
                                       }`}
                                   >
                                     <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" strokeWidth={2.5} stroke="currentColor">
@@ -930,8 +1024,8 @@ export default function CommentsPage() {
                                     onClick={() => handleChangeAction(comment.id, 'hold')}
                                     title="Ubah ke Ditahan"
                                     className={`p-1.5 rounded-md transition-all active:scale-90 ${comment.status === 'heldForReview'
-                                        ? 'bg-amber-500/20 text-amber-400 scale-110 shadow-sm font-bold'
-                                        : 'hover:bg-amber-500/10 text-amber-500/30 hover:text-amber-500 disabled:opacity-30'
+                                      ? 'bg-amber-500/20 text-amber-400 scale-110 shadow-sm font-bold'
+                                      : 'hover:bg-amber-500/10 text-amber-500/30 hover:text-amber-500 disabled:opacity-30'
                                       }`}
                                   >
                                     <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" strokeWidth={2.5} stroke="currentColor">
@@ -945,8 +1039,8 @@ export default function CommentsPage() {
                                     onClick={() => handleChangeAction(comment.id, 'reject')}
                                     title="Ubah ke Ditolak"
                                     className={`p-1.5 rounded-md transition-all active:scale-90 ${comment.status === 'rejected'
-                                        ? 'bg-rose-500/20 text-rose-400 scale-110 shadow-sm font-bold'
-                                        : 'hover:bg-rose-500/10 text-rose-500/30 hover:text-rose-500 disabled:opacity-30'
+                                      ? 'bg-rose-500/20 text-rose-400 scale-110 shadow-sm font-bold'
+                                      : 'hover:bg-rose-500/10 text-rose-500/30 hover:text-rose-500 disabled:opacity-30'
                                       }`}
                                   >
                                     <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" strokeWidth={2.5} stroke="currentColor">
@@ -1013,8 +1107,8 @@ export default function CommentsPage() {
                                 {comment.sentiment && (
                                   <div className="flex items-center gap-1.5 mt-0.5">
                                     <span className={`badge ${comment.sentiment === 'positive' ? 'badge-success'
-                                        : comment.sentiment === 'negative' ? 'badge-danger'
-                                          : 'badge-muted'
+                                      : comment.sentiment === 'negative' ? 'badge-danger'
+                                        : 'badge-muted'
                                       }`}>
                                       {comment.sentiment === 'positive' ? '😊 Positif' : comment.sentiment === 'negative' ? '😠 Negatif' : '😐 Netral'}
                                     </span>
@@ -1082,7 +1176,7 @@ export default function CommentsPage() {
 
   // ── Main render ───────────────────────────────────────────────
   return (
-    <div className="animate-fade-in-up -m-4 lg:-m-6 h-[calc(100vh-3.5rem)] flex flex-col">
+    <div className="animate-fade-in-up h-[calc(100vh-3.5rem)] w-full flex flex-col">
       {/* Page title bar */}
       <div className="flex items-center justify-between px-4 lg:px-6 py-3 border-b flex-shrink-0" style={{ background: 'var(--bg-card)', borderColor: 'var(--border-default)' }}>
         <div>
@@ -1105,12 +1199,12 @@ export default function CommentsPage() {
       <div className="flex flex-1 overflow-hidden">
         {/* Desktop: Left video panel (checklist) */}
         <div className="hidden lg:flex lg:flex-col w-64 xl:w-72 border-r flex-shrink-0 overflow-hidden" style={{ background: 'var(--bg-sidebar)', borderColor: 'var(--border-default)' }}>
-          <VideoPanelContent />
+          {VideoPanelContent()}
         </div>
 
         {/* Right: comment area */}
         <div className="flex-1 overflow-hidden flex flex-col" style={{ background: 'var(--bg-card)' }}>
-          <CommentArea />
+          {CommentArea()}
         </div>
       </div>
 
@@ -1135,7 +1229,7 @@ export default function CommentsPage() {
               </button>
             </div>
             <div className="flex-1 overflow-hidden">
-              <VideoPanelContent />
+              {VideoPanelContent()}
             </div>
           </div>
         </div>
@@ -1143,17 +1237,15 @@ export default function CommentsPage() {
 
       {/* Floating Action Bar untuk Aksi Massal */}
       <div
-        className={`fixed bottom-6 left-1/2 -translate-x-1/2 z-40 transition-all duration-300 transform flex items-center gap-4 px-4 py-3 rounded-2xl border shadow-2xl max-w-lg w-[calc(100vw-2rem)] md:w-auto ${
-          selectedComments.size > 0 && activeTab === 'belum'
-            ? 'translate-y-0 opacity-100 scale-100'
-            : 'translate-y-24 opacity-0 scale-90 pointer-events-none'
-        }`}
+        className={`fixed bottom-6 left-1/2 -translate-x-1/2 z-40 transition-all duration-300 transform flex items-center gap-4 px-4 py-3 rounded-2xl border shadow-2xl max-w-lg w-[calc(100vw-2rem)] md:w-auto ${selectedComments.size > 0 && activeTab === 'belum'
+          ? 'translate-y-0 opacity-100 scale-100'
+          : 'translate-y-24 opacity-0 scale-90 pointer-events-none'
+          }`}
         style={{
-          background: 'rgba(25, 25, 35, 0.85)',
+          background: 'var(--bg-card)',
           backdropFilter: 'blur(16px)',
           WebkitBackdropFilter: 'blur(16px)',
-          borderColor: 'rgba(255, 255, 255, 0.08)',
-          boxShadow: '0 20px 40px -10px rgba(0, 0, 0, 0.5), 0 0 0 1px rgba(255, 255, 255, 0.05)'
+          borderColor: 'var(--border-default)',
         }}
       >
         <div className="flex flex-col md:flex-row items-center gap-3 w-full">
@@ -1161,10 +1253,10 @@ export default function CommentsPage() {
             <div className="w-6 h-6 rounded-lg bg-indigo-500/20 text-indigo-400 flex items-center justify-center font-bold text-xs">
               {selectedComments.size}
             </div>
-            <span className="text-[12px] font-semibold text-white">Komentar Terpilih</span>
+            <span className="text-[12px] font-semibold" style={{ color: 'var(--text-primary)' }}>Komentar Terpilih</span>
           </div>
 
-          <div className="h-px md:h-5 w-full md:w-px bg-white/10" />
+          <div className="h-px md:h-5 w-full md:w-px" style={{ background: 'var(--border-default)' }} />
 
           <div className="flex items-center gap-2 w-full md:w-auto justify-end">
             <button
@@ -1199,7 +1291,8 @@ export default function CommentsPage() {
 
             <button
               onClick={() => setSelectedComments(new Set())}
-              className="p-1.5 rounded-lg hover:bg-white/10 text-white/50 hover:text-white transition-colors"
+              className="p-1.5 rounded-lg hover:bg-[var(--bg-card-hover)] transition-colors"
+              style={{ color: 'var(--text-muted)' }}
               title="Batal Pilihan"
             >
               <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor">

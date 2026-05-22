@@ -151,7 +151,8 @@ export default function RiwayatPage() {
             placeholder="Cari komentar, pengguna..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="input-dark w-full pl-10"
+            className="input-dark w-full"
+            style={{ paddingLeft: '2.5rem' }}
           />
         </div>
         <div className="relative">
