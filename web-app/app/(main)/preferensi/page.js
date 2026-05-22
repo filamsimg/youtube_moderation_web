@@ -2,13 +2,14 @@
 
 import { useState, useEffect } from 'react';
 import { useSession } from 'next-auth/react';
-import { settingsService } from '@/services/settingsService';
 import { signOut } from 'next-auth/react';
 import { useTheme } from '@/components/ThemeProvider';
+import { useSettings } from '@/contexts/SettingsContext';
 
 export default function PreferensiPage() {
   const { data: session } = useSession();
   const { theme, setTheme } = useTheme();
+  const { settings, updateSettings, loading } = useSettings();
 
   const [bahasa, setBahasa] = useState('id');
   const [kepadatan, setKepadatan] = useState('standar');
@@ -19,58 +20,29 @@ export default function PreferensiPage() {
   const [thresholdReject, setThresholdReject] = useState(90);
   const [pollingInterval, setPollingInterval] = useState(120);
   const [batchModeration, setBatchModeration] = useState(true);
-  const [saveStatus, setSaveStatus] = useState(null);
 
+  // Sync local state with context when settings are loaded
   useEffect(() => {
-    if (session?.user?.email) {
-      loadSettings();
-    } else {
-      const saved = localStorage.getItem('userSettings');
-      if (saved) applySettings(JSON.parse(saved));
+    if (!loading && settings) {
+      setBahasa(settings.bahasa || 'id');
+      setKepadatan(settings.kepadatan || 'standar');
+      setNotifKomentar(settings.notifKomentar ?? true);
+      setAutoTahan(settings.autoTahan ?? true);
+      setAutoHapus(settings.autoHapus ?? false);
+      setThresholdHold(settings.thresholdHold ?? 70);
+      setThresholdReject(settings.thresholdReject ?? 90);
+      setPollingInterval(settings.pollingInterval ?? 120);
+      setBatchModeration(settings.batchModeration ?? true);
     }
-  }, [session?.user?.email]);
-
-  const loadSettings = async () => {
-    const data = await settingsService.getSettings(session.user.email);
-    if (data) {
-      const mapped = {
-        autoTahan:        data.auto_tahan,
-        autoHapus:        data.auto_hapus,
-        thresholdHold:    data.threshold_hold,
-        thresholdReject:  data.threshold_reject,
-        pollingInterval:  data.polling_interval,
-        batchModeration:  data.batch_moderation,
-      };
-      applySettings(mapped);
-      localStorage.setItem('userSettings', JSON.stringify(mapped));
-    }
-  };
-
-  const applySettings = (s) => {
-    if (s.bahasa)              setBahasa(s.bahasa);
-    if (s.kepadatan)           setKepadatan(s.kepadatan);
-    if (s.notifKomentar !== undefined) setNotifKomentar(s.notifKomentar);
-    if (s.autoTahan !== undefined)     setAutoTahan(s.autoTahan);
-    if (s.autoHapus !== undefined)     setAutoHapus(s.autoHapus);
-    if (s.thresholdHold !== undefined) setThresholdHold(s.thresholdHold);
-    if (s.thresholdReject !== undefined) setThresholdReject(s.thresholdReject);
-    if (s.pollingInterval !== undefined) setPollingInterval(s.pollingInterval);
-    if (s.batchModeration !== undefined) setBatchModeration(s.batchModeration);
-  };
+  }, [loading, settings]);
 
   const handleSave = async () => {
-    const settings = {
+    await updateSettings({
       bahasa, tema: theme, kepadatan, notifKomentar,
       autoTahan, autoHapus,
       thresholdHold, thresholdReject,
       pollingInterval, batchModeration,
-    };
-    if (session?.user?.email) {
-      await settingsService.saveSettings(session.user.email, settings);
-    }
-    localStorage.setItem('userSettings', JSON.stringify(settings));
-    setSaveStatus('success');
-    setTimeout(() => setSaveStatus(null), 3000);
+    });
   };
 
   // ── Sub-components ─────────────────────────────────────────────
@@ -451,11 +423,6 @@ export default function PreferensiPage() {
 
       {/* ── Action Buttons ────────────────────────────────────── */}
       <div className="flex items-center justify-end gap-3 pb-4">
-        {saveStatus === 'success' && (
-          <span className="text-xs font-medium animate-fade-in" style={{ color: 'var(--color-success-text)' }}>
-            ✓ Tersimpan ke sistem!
-          </span>
-        )}
         <button
           className="px-4 py-2.5 rounded-xl text-sm border transition-all bento-card"
           style={{ color: 'var(--text-secondary)' }}

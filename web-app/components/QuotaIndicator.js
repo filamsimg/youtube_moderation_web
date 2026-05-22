@@ -1,7 +1,6 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
-import { useSession } from 'next-auth/react';
+import { useQuota } from '@/contexts/QuotaContext';
 import Link from 'next/link';
 
 /**
@@ -10,35 +9,7 @@ import Link from 'next/link';
  * Dipanggil dari Sidebar (full) dan Header (compact).
  */
 export default function QuotaIndicator({ compact = false }) {
-  const { data: session } = useSession();
-  const [profile, setProfile] = useState(null);
-  const [loading, setLoading] = useState(true);
-
-  const fetchProfile = useCallback(async () => {
-    if (!session?.user?.email) return;
-    try {
-      const res = await fetch('/api/quota/profile');
-      if (res.ok) {
-        const data = await res.json();
-        setProfile(data);
-      }
-    } catch (err) {
-      console.error('QuotaIndicator fetch error:', err);
-    } finally {
-      setLoading(false);
-    }
-  }, [session?.user?.email]);
-
-  useEffect(() => {
-    fetchProfile();
-  }, [fetchProfile]);
-
-  // Listen untuk event custom dari halaman lain saat kuota berubah
-  useEffect(() => {
-    const handler = () => fetchProfile();
-    window.addEventListener('quota-updated', handler);
-    return () => window.removeEventListener('quota-updated', handler);
-  }, [fetchProfile]);
+  const { profile, loading } = useQuota();
 
   if (loading || !profile) {
     return compact ? null : (
