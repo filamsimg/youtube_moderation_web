@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import { useSession } from 'next-auth/react';
 import { historyService } from '@/services/historyService';
+import PaginationControls from '@/components/PaginationControls';
 
 export default function RiwayatPage() {
   const { data: session } = useSession();
@@ -10,6 +11,15 @@ export default function RiwayatPage() {
   const [filterAction, setFilterAction] = useState('semua');
   const [activities, setActivities] = useState([]);
   const [loading, setLoading] = useState(true);
+
+  // Pagination states
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 10;
+
+  // Reset page to 1 when filters or search change
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [searchQuery, filterAction]);
 
   useEffect(() => {
     if (session?.user?.email) loadHistory();
@@ -65,6 +75,12 @@ export default function RiwayatPage() {
       getActionLabel(a.action).toLowerCase() === filterAction.toLowerCase();
     return matchesSearch && matchesFilter;
   });
+
+  const totalPages = Math.ceil(filtered.length / itemsPerPage);
+  const paginatedActivities = filtered.slice(
+    (currentPage - 1) * itemsPerPage,
+    currentPage * itemsPerPage
+  );
 
   const totalAman    = activities.filter(a => a.action === 'published').length;
   const totalDitolak = activities.filter(a => a.action === 'rejected').length;
@@ -200,7 +216,7 @@ export default function RiwayatPage() {
                   </tr>
                 </thead>
                 <tbody style={{ '--divide-color': 'var(--border-default)' }}>
-                  {filtered.map((item, i) => (
+                  {paginatedActivities.map((item, i) => (
                     <tr
                       key={i}
                       className="border-b transition-colors hover:bg-[var(--bg-card-hover)]"
@@ -253,7 +269,7 @@ export default function RiwayatPage() {
 
           {/* Mobile Cards */}
           <div className="md:hidden space-y-3">
-            {filtered.map((item, i) => (
+            {paginatedActivities.map((item, i) => (
               <div key={i} className="bento-card p-4 space-y-2">
                 <div className="flex items-center justify-between">
                   {getActionBadge(item.action)}
@@ -289,6 +305,13 @@ export default function RiwayatPage() {
               </div>
             ))}
           </div>
+
+          {/* Pagination Controls */}
+          <PaginationControls
+            currentPage={currentPage}
+            totalPages={totalPages}
+            onPageChange={setCurrentPage}
+          />
         </>
       )}
     </div>

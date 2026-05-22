@@ -77,16 +77,22 @@ export const youtubeService = {
     }
   },
 
-  getComments: async (videoId, token) => {
+  getComments: async (videoId, token, pageToken = null) => {
     try {
+      const params = {
+        part: 'snippet,replies',
+        videoId,
+        maxResults: 20, // Dioptimalkan menjadi 20 komentar per muat halaman untuk hemat kuota dan beban AI
+        textFormat: 'html'
+      };
+      
+      if (pageToken) {
+        params.pageToken = pageToken;
+      }
+
       const res = await axios.get(`${YOUTUBE_API_BASE}/commentThreads`, {
         headers: { Authorization: `Bearer ${token}` },
-        params: {
-          part: 'snippet,replies',
-          videoId,
-          maxResults: 100,
-          textFormat: 'html'
-        },
+        params,
       });
       return res.data;
     } catch (error) {

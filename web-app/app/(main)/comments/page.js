@@ -14,7 +14,8 @@ export default function CommentsPage() {
     isPolling, togglePolling, handleLoadSelected,
     processingComment, handleAction, handleBatchAction,
     fetchProgress, isFetchingMulti, hasLoaded,
-    sessionHistory, dbHistory, handleUndoAction, handleChangeAction
+    sessionHistory, dbHistory, handleUndoAction, handleChangeAction,
+    canLoadMore, loadingMore
   } = useModeration();
 
   const [selectedComments, setSelectedComments] = useState(new Set());
@@ -768,6 +769,31 @@ export default function CommentsPage() {
                     );
                   })}
                 </div>
+
+                {/* Muat Komentar Lainnya (Load More) Button */}
+                {canLoadMore && (
+                  <div className="flex justify-center py-6 border-t" style={{ borderColor: 'var(--border-default)' }}>
+                    <button
+                      onClick={() => handleLoadSelected(false, true)}
+                      disabled={loadingMore}
+                      className="px-6 py-2.5 bg-indigo-600/10 hover:bg-indigo-600/20 text-indigo-400 border border-indigo-500/20 hover:border-indigo-500/30 text-xs font-semibold rounded-xl transition-all active:scale-95 disabled:opacity-50 disabled:pointer-events-none flex items-center justify-center gap-2"
+                    >
+                      {loadingMore ? (
+                        <>
+                          <div className="animate-spin rounded-full h-3 w-3 border-b-2 border-indigo-400 flex-shrink-0" />
+                          Memuat Komentar...
+                        </>
+                      ) : (
+                        <>
+                          <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" strokeWidth={2.5} stroke="currentColor">
+                            <path strokeLinecap="round" strokeLinejoin="round" d="M19.5 8.25l-7.5 7.5-7.5-7.5" />
+                          </svg>
+                          Muat Komentar Lainnya
+                        </>
+                      )}
+                    </button>
+                  </div>
+                )}
               </>
             )
           ) : (

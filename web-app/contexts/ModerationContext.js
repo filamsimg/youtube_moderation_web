@@ -34,6 +34,11 @@ export function ModerationProvider({ children }) {
   const [sessionHistory, setSessionHistory] = useState([]);
   const [dbHistory, setDbHistory] = useState([]);
 
+  // Pagination states
+  const [nextPageTokens, setNextPageTokens] = useState({});
+  const [canLoadMore, setCanLoadMore] = useState(false);
+  const [loadingMore, setLoadingMore] = useState(false);
+
   const sessionRef = useRef(session);
   const predictionsRef = useRef({});
   const selectedVideoIdsRef = useRef(selectedVideoIds);
@@ -138,22 +143,38 @@ export function ModerationProvider({ children }) {
     }
   };
 
-  const handleLoadSelected = useCallback(async (isSilent = false) => {
+  const handleLoadSelected = useCallback(async (isSilent = false, loadMore = false) => {
     if (isFetchingRef.current) return;
     const videoIds = [...selectedVideoIdsRef.current];
     const currentVideos = videosCache[selectedChannelId] || [];
 
     if (videoIds.length === 0) return;
 
-    isFetchingRef.current = true;
-    setIsFetchingMulti(true);
+    // Filter target videos for loadMore
+    const targets = loadMore 
+      ? videoIds.filter(vid => nextPageTokens[vid])
+      : videoIds;
 
-    if (!isSilent) {
-      setCommentsLoading(true);
-      setComments([]);
-      setPredictions({});
-      setError(null);
-      setFetchProgress({ current: 0, total: videoIds.length });
+    if (loadMore && targets.length === 0) {
+      setCanLoadMore(false);
+      return;
+    }
+
+    isFetchingRef.current = true;
+    
+    if (loadMore) {
+      setLoadingMore(true);
+    } else {
+      setIsFetchingMulti(true);
+      if (!isSilent) {
+        setCommentsLoading(true);
+        setComments([]);
+        setPredictions({});
+        setNextPageTokens({});
+        setCanLoadMore(false);
+        setError(null);
+        setFetchProgress({ current: 0, total: targets.length });
+      }
     }
 
     try {
@@ -170,9 +191,10 @@ export function ModerationProvider({ children }) {
       setDbHistory(filteredDbHistory);
 
       const allNewComments = [];
+      const updatedTokens = { ...(loadMore ? nextPageTokens : {}) };
 
-      for (let i = 0; i < videoIds.length; i++) {
-        const videoId = videoIds[i];
+      for (let i = 0; i < targets.length; i++) {
+        const videoId = targets[i];
         const videoObj = currentVideos.find(v => v.id.videoId === videoId);
         const videoTitle = videoObj?.snippet?.title || videoId;
 
@@ -180,7 +202,8 @@ export function ModerationProvider({ children }) {
         if (!ok) break;
 
         try {
-          const data = await youtubeService.getComments(videoId, sessionRef.current?.accessToken);
+          const currentToken = loadMore ? nextPageTokens[videoId] : null;
+          const data = await youtubeService.getComments(videoId, sessionRef.current?.accessToken, currentToken);
           const normalized = (data.items || []).map(item => ({
             id: item.id,
             ...item.snippet.topLevelComment.snippet,
@@ -189,25 +212,36 @@ export function ModerationProvider({ children }) {
           }));
           const filtered = normalized.filter(c => !historyMap[c.id]);
           allNewComments.push(...filtered);
+
+          // Track next token
+          updatedTokens[videoId] = data.nextPageToken || null;
         } catch (err) {
           console.error(`Error loading comments for ${videoId}:`, err);
-          if (!isSilent) {
+          if (!isSilent && !loadMore) {
             toast.error(`Gagal memuat komentar untuk video: ${videoTitle}`);
           }
         }
 
-        if (!isSilent) setFetchProgress({ current: i + 1, total: videoIds.length });
+        if (!isSilent && !loadMore) setFetchProgress({ current: i + 1, total: targets.length });
       }
 
+      setNextPageTokens(updatedTokens);
+      
+      // Determine if there are still any page tokens left among all selected video IDs
+      const activeCanLoadMore = videoIds.some(vid => !!updatedTokens[vid]);
+      setCanLoadMore(activeCanLoadMore);
+
       if (allNewComments.length > 0) {
-        if (!isSilent) setComments(allNewComments);
+        if (loadMore) {
+          setComments(prev => [...prev, ...allNewComments]);
+        } else {
+          if (!isSilent) setComments(allNewComments);
+        }
 
         let newPredictions = {};
         if (settings.batchModeration) {
-          // Kirim SEMUA teks komentar sekaligus ke Flask model secara batch
           newPredictions = await performInferenceBatch(allNewComments);
         } else {
-          // Kirim satu-satu ke Flask model
           for (let i = 0; i < allNewComments.length; i++) {
             try {
               const res = await axios.post('/api/predict', { text: allNewComments[i].textOriginal });
@@ -228,7 +262,7 @@ export function ModerationProvider({ children }) {
           return merged;
         });
 
-        if (isSilent) {
+        if (isSilent && !loadMore) {
           setComments(prev => {
             const existingIds = new Set(prev.map(c => c.id));
             const trulyNew = allNewComments.filter(c => !existingIds.has(c.id));
@@ -286,7 +320,6 @@ export function ModerationProvider({ children }) {
           }
 
           if (pendingReject.length > 0 && tok) {
-            // Biaya: 50 unit
             await youtubeService.moderateCommentsBatch(pendingReject, 'rejected', tok);
             const rejectedComments = [];
             pendingReject.forEach(cid => {
@@ -315,19 +348,22 @@ export function ModerationProvider({ children }) {
           }
         }
       } else {
-        if (!isSilent) setComments([]);
+        if (!isSilent && !loadMore) setComments([]);
       }
 
-      if (!isSilent) setHasLoaded(true);
+      if (!loadMore) {
+        setHasLoaded(true);
+      }
     } catch (err) {
       console.error('handleLoadSelected error:', err);
-      if (!isSilent) setError(err.message);
+      if (!isSilent && !loadMore) setError(err.message);
     } finally {
-      setCommentsLoading(false);
       setIsFetchingMulti(false);
+      setCommentsLoading(false);
+      setLoadingMore(false);
       isFetchingRef.current = false;
     }
-  }, [selectedChannelId, videosCache, settings, deductQuota, toast]);
+  }, [selectedChannelId, videosCache, settings, deductQuota, toast, nextPageTokens]);
 
   // Polling Effect
   useEffect(() => {
@@ -709,7 +745,8 @@ export function ModerationProvider({ children }) {
         isPolling, togglePolling, handleLoadSelected,
         processingComment, handleAction, handleBatchAction,
         fetchProgress, isFetchingMulti, hasLoaded,
-        sessionHistory, dbHistory, handleUndoAction, handleChangeAction
+        sessionHistory, dbHistory, handleUndoAction, handleChangeAction,
+        canLoadMore, loadingMore
       }}
     >
       {children}
