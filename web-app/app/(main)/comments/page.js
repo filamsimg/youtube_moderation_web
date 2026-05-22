@@ -13,7 +13,7 @@ export default function CommentsPage() {
     comments, commentsLoading, error, predictions, 
     isPolling, togglePolling, handleLoadSelected, 
     processingComment, handleAction,
-    fetchProgress, isFetchingMulti
+    fetchProgress, isFetchingMulti, hasLoaded
   } = useModeration();
 
   const { videosCache, selectedChannelId, loadingVideos } = useYouTube();
@@ -286,7 +286,7 @@ export default function CommentsPage() {
     }
 
     // 5. Sudah dipilih tapi belum dimuat (belum klik tombol)
-    if (comments.length === 0) {
+    if (!hasLoaded) {
       return (
         <div className="flex flex-col items-center justify-center h-full py-20 text-center">
           <div className="w-14 h-14 rounded-2xl flex items-center justify-center mb-4" style={{ background: 'var(--accent-ai-soft)' }}>
@@ -401,12 +401,31 @@ export default function CommentsPage() {
         {/* Comment list */}
         <div className="flex-1 overflow-y-auto">
           {filteredComments.length === 0 ? (
-            <div className="flex flex-col items-center justify-center py-16 text-center">
-              <svg className="w-10 h-10 text-muted mb-3" fill="none" viewBox="0 0 24 24" strokeWidth={1} stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" d="M2.25 12.76c0 1.6 1.123 2.994 2.707 3.227 1.068.157 2.148.279 3.238.364.466.037.893.281 1.153.671L12 21l2.652-3.978c.26-.39.687-.634 1.153-.67 1.09-.086 2.17-.208 3.238-.365 1.584-.233 2.707-1.626 2.707-3.228V6.741c0-1.602-1.123-2.995-2.707-3.228A48.394 48.394 0 0012 3c-2.392 0-4.744.175-7.043.513C3.373 3.746 2.25 5.14 2.25 6.741v6.018z" />
-              </svg>
-              <p className="text-sm text-secondary">Tidak ada komentar ditemukan</p>
-            </div>
+            comments.length === 0 ? (
+              <div className="flex flex-col items-center justify-center py-20 px-4 text-center max-w-md mx-auto animate-fade-in">
+                <div className="w-16 h-16 rounded-2xl flex items-center justify-center mb-5 bg-emerald-500/10 text-emerald-400">
+                  <svg className="w-8 h-8" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12c0 1.268-.63 2.39-1.593 3.068a3.745 3.745 0 01-1.043 3.296 3.745 3.745 0 01-3.296 1.043A3.745 3.745 0 0112 21c-1.268 0-2.39-.63-3.068-1.593a3.746 3.746 0 01-3.296-1.043 3.745 3.745 0 01-1.043-3.296A3.745 3.745 0 013 12c0-1.268.63-2.39 1.593-3.068a3.745 3.745 0 011.043-3.296 3.746 3.746 0 013.296-1.043A3.746 3.746 0 0112 3c1.268 0 2.39.63 3.068 1.593a3.746 3.746 0 013.296 1.043 3.746 3.746 0 011.043 3.296A3.745 3.745 0 0121 12z" />
+                  </svg>
+                </div>
+                <h3 className="text-sm font-semibold" style={{ color: 'var(--text-primary)' }}>Semua Komentar Bersih &amp; Aman!</h3>
+                <p className="text-xs mt-2 leading-relaxed" style={{ color: 'var(--text-muted)' }}>
+                  Seluruh komentar baru dari video yang dipilih telah berhasil dimoderasi atau memang tidak ada komentar baru yang masuk.
+                </p>
+              </div>
+            ) : (
+              <div className="flex flex-col items-center justify-center py-20 px-4 text-center max-w-md mx-auto animate-fade-in">
+                <div className="w-16 h-16 rounded-2xl flex items-center justify-center mb-5 bg-[var(--bg-card-hover)] text-amber-500">
+                  <svg className="w-8 h-8" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v3.75m9-.75a9 9 0 11-18 0 9 9 0 0118 0zm-9 3.75h.008v.008H12v-.008z" />
+                  </svg>
+                </div>
+                <h3 className="text-sm font-semibold" style={{ color: 'var(--text-primary)' }}>Tidak Ada Komentar Sesuai Filter</h3>
+                <p className="text-xs mt-2 leading-relaxed" style={{ color: 'var(--text-muted)' }}>
+                  Komentar terdeteksi ada, namun tidak memenuhi kriteria filter aktif Anda ({filter !== 'semua' ? `kategori ${filter}` : ''} {videoFilter !== 'all' ? 'video tertentu' : ''}). Coba ubah opsi filter di atas.
+                </p>
+              </div>
+            )
           ) : (
             <>
               {/* Desktop Table */}

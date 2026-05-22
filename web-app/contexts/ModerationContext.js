@@ -30,6 +30,7 @@ export function ModerationProvider({ children }) {
   const [processingComment, setProcessingComment] = useState(null);
   const [fetchProgress, setFetchProgress] = useState({ current: 0, total: 0 });
   const [isFetchingMulti, setIsFetchingMulti] = useState(false);
+  const [hasLoaded, setHasLoaded] = useState(false);
 
   const sessionRef = useRef(session);
   const predictionsRef = useRef({});
@@ -66,6 +67,8 @@ export function ModerationProvider({ children }) {
     const isCurrentlySelected = selectedVideoIds.has(videoId);
     const next = new Set(selectedVideoIds);
 
+    setHasLoaded(false);
+
     if (isCurrentlySelected) {
       next.delete(videoId);
       if (next.size > 0) {
@@ -89,6 +92,7 @@ export function ModerationProvider({ children }) {
     const currentVideos = videosCache[selectedChannelId] || [];
     const allIds = currentVideos.map(v => v.id.videoId);
     setSelectedVideoIds(new Set(allIds));
+    setHasLoaded(false);
     if (currentVideos.length > 0) {
       setPrimaryVideo({ id: currentVideos[0].id.videoId, title: currentVideos[0].snippet.title });
     }
@@ -103,6 +107,7 @@ export function ModerationProvider({ children }) {
     setPredictions({});
     setIsPolling(false);
     setError(null);
+    setHasLoaded(false);
   };
 
   const performInferenceBatch = async (commentsToAnalyze) => {
@@ -166,12 +171,16 @@ export function ModerationProvider({ children }) {
           const normalized = (data.items || []).map(item => ({
             id: item.id,
             ...item.snippet.topLevelComment.snippet,
-            videoId
+            videoId,
+            videoTitle
           }));
           const filtered = normalized.filter(c => !historyMap[c.id]);
           allNewComments.push(...filtered);
         } catch (err) {
           console.error(`Error loading comments for ${videoId}:`, err);
+          if (!isSilent) {
+            toast.error(`Gagal memuat komentar untuk video: ${videoTitle}`);
+          }
         }
         
         if (!isSilent) setFetchProgress({ current: i + 1, total: videoIds.length });
@@ -235,10 +244,17 @@ export function ModerationProvider({ children }) {
           if (pendingHold.length > 0 && tok) {
             await youtubeService.moderateCommentsBatch(pendingHold, 'heldForReview', tok);
             pendingHold.forEach(cid => {
-              historyService.saveActivity({
-                action: 'HOLD', comment_id: cid, author_name: 'Auto-Mod', text: 'Ditahan otomatis', 
-                confidence_score: newPredictions[cid].score, video_id: 'auto'
-              }, userEmail);
+              const commentObj = allNewComments.find(c => c.id === cid);
+              historyService.saveAction(userEmail, {
+                channelId: selectedChannelId,
+                commentId: cid,
+                action: 'heldForReview',
+                commentText: commentObj?.textOriginal || 'Ditahan otomatis',
+                author: commentObj?.authorDisplayName || 'Auto-Mod',
+                videoTitle: commentObj?.videoTitle || 'auto',
+                aiLabel: 'Spam',
+                aiConfidence: newPredictions[cid].score,
+              });
             });
             setComments(prev => prev.filter(c => !pendingHold.includes(c.id)));
           }
@@ -246,15 +262,26 @@ export function ModerationProvider({ children }) {
           if (pendingReject.length > 0 && tok) {
             await youtubeService.moderateCommentsBatch(pendingReject, 'rejected', tok);
             pendingReject.forEach(cid => {
-              historyService.saveActivity({
-                action: 'REJECT', comment_id: cid, author_name: 'Auto-Mod', text: 'Dihapus otomatis',
-                confidence_score: newPredictions[cid].score, video_id: 'auto'
-              }, userEmail);
+              const commentObj = allNewComments.find(c => c.id === cid);
+              historyService.saveAction(userEmail, {
+                channelId: selectedChannelId,
+                commentId: cid,
+                action: 'rejected',
+                commentText: commentObj?.textOriginal || 'Dihapus otomatis',
+                author: commentObj?.authorDisplayName || 'Auto-Mod',
+                videoTitle: commentObj?.videoTitle || 'auto',
+                aiLabel: 'Spam',
+                aiConfidence: newPredictions[cid].score,
+              });
             });
             setComments(prev => prev.filter(c => !pendingReject.includes(c.id)));
           }
         }
+      } else {
+        if (!isSilent) setComments([]);
       }
+
+      if (!isSilent) setHasLoaded(true);
     } catch (err) {
       console.error('handleLoadSelected error:', err);
       if (!isSilent) setError(err.message);
@@ -300,7 +327,12 @@ export function ModerationProvider({ children }) {
 
     setProcessingComment(commentId);
     try {
-      const statusMap = { 'approve': 'published', 'hold': 'heldForReview', 'reject': 'rejected' };
+      const statusMap = { 
+        'publish': 'published', 
+        'approve': 'published', 
+        'hold': 'heldForReview', 
+        'reject': 'rejected' 
+      };
       const ok = await deductQuota('TAKE_ACTION', `Aksi: ${action}`);
       if (!ok) return;
 
@@ -308,14 +340,18 @@ export function ModerationProvider({ children }) {
 
       const prediction = predictionsRef.current[commentId];
       if (sessionRef.current?.user?.email) {
-        await historyService.saveActivity({
-          action: action.toUpperCase(),
-          comment_id: comment.id,
-          author_name: comment.authorDisplayName,
-          text: comment.textOriginal,
-          confidence_score: prediction?.score || 0,
-          video_id: comment.videoId,
-        }, sessionRef.current.user.email);
+        await historyService.saveAction(sessionRef.current.user.email, {
+          channelId: selectedChannelId,
+          commentId: comment.id,
+          action: statusMap[action],
+          commentText: comment.textOriginal,
+          author: comment.authorDisplayName,
+          videoTitle: comment.videoTitle || 'unknown',
+          aiLabel: prediction?.label || 'Normal',
+          aiConfidence: prediction?.score || 0,
+          sentiment: prediction?.sentiment || null,
+          sentimentScore: prediction?.sentiment_score || null
+        });
       }
 
       setComments(prev => prev.filter(c => c.id !== commentId));
@@ -335,7 +371,7 @@ export function ModerationProvider({ children }) {
         comments, commentsLoading, error, predictions, 
         isPolling, togglePolling, handleLoadSelected, 
         processingComment, handleAction,
-        fetchProgress, isFetchingMulti
+        fetchProgress, isFetchingMulti, hasLoaded
       }}
     >
       {children}
