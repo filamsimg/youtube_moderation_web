@@ -3,6 +3,8 @@ import "./globals.css";
 import SessionProvider from "@/components/SessionProvider";
 import { ThemeProvider } from "@/components/ThemeProvider";
 
+import { GlobalProviders } from "@/contexts/GlobalProviders";
+
 const inter = Inter({ subsets: ["latin"] });
 
 export const metadata = {
@@ -18,7 +20,9 @@ export default function RootLayout({ children }) {
       <body className={inter.className}>
         <ThemeProvider>
           <SessionProvider>
-            {children}
+            <GlobalProviders>
+              {children}
+            </GlobalProviders>
           </SessionProvider>
         </ThemeProvider>
       </body>
