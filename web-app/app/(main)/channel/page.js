@@ -1,55 +1,32 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useEffect } from 'react';
 import { useSession } from 'next-auth/react';
-import { youtubeService } from '@/services/youtubeService';
 import { Tv, CheckCircle2, AlertCircle } from 'lucide-react';
 import { useRouter } from 'next/navigation';
+import { useYouTube } from '@/contexts/YouTubeContext';
 
 export default function ChannelPage() {
   const { data: session } = useSession();
   const router = useRouter();
-  const [channels, setChannels] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
+  
+  const { channels, fetchChannel, loadingChannel, updateSelectedChannelId } = useYouTube();
 
   useEffect(() => {
-    if (session?.accessToken) loadChannels(session.accessToken);
-  }, [session?.user?.email, session?.accessToken]);
-
-  const loadChannels = async (token) => {
-    try {
-      setLoading(true);
-      const data = await youtubeService.getUserChannel(token);
-      setChannels(data.items || []);
-    } catch (err) {
-      setError(err.message || 'Failed to fetch channels');
-    } finally {
-      setLoading(false);
+    if (session?.accessToken && channels.length === 0) {
+      fetchChannel();
     }
-  };
+  }, [session?.accessToken, fetchChannel, channels.length]);
 
-  const handleSelectChannel = (channelId) => {
-    localStorage.setItem('selectedChannelId', channelId);
+  const handleSelectChannel = (channel) => {
+    updateSelectedChannelId(channel.id);
     router.push('/comments');
   };
 
-  if (loading) {
+  if (loadingChannel) {
     return (
       <div className="flex justify-center items-center h-64">
         <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-amber-600"></div>
-      </div>
-    );
-  }
-
-  if (error) {
-    return (
-      <div className="bg-red-50 p-5 rounded-xl flex items-start gap-3 border border-red-100">
-        <AlertCircle className="w-5 h-5 text-red-600 flex-shrink-0 mt-0.5" />
-        <div>
-          <h3 className="text-sm font-semibold text-red-800">Gagal memuat kanal</h3>
-          <p className="text-xs text-red-600 mt-0.5">{error}</p>
-        </div>
       </div>
     );
   }

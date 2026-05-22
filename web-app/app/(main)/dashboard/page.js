@@ -11,8 +11,7 @@ import {
 } from 'recharts';
 import { historyService } from '@/services/historyService';
 
-// Variabel global sementara untuk mencegah alert bertumpuk
-let isSessionExpiredAlertShown = false;
+import { useYouTube } from '@/contexts/YouTubeContext';
 
 // ── Dark Tooltip untuk Pie Chart ─────────────────────────────
 const CustomPieTooltip = ({ active, payload }) => {
@@ -87,66 +86,46 @@ function StatCard({ label, value, sub, icon, color, delay = 0 }) {
 export default function DashboardPage() {
   const { data: session } = useSession();
   const router = useRouter();
-  const [channelInfo, setChannelInfo] = useState(null);
-  const [videos, setVideos] = useState([]);
+  
+  const { activeChannel: channelInfo, channels, fetchChannel, fetchVideos, videosCache } = useYouTube();
+  const videos = channelInfo ? (videosCache[channelInfo.id] || []).slice(0, 10) : [];
+  
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [history, setHistory] = useState([]);
   const [chartVideoFilter, setChartVideoFilter] = useState('all');
 
-  const handleApiError = (err) => {
-    if (err.isExpired) {
-      if (!isSessionExpiredAlertShown) {
-        isSessionExpiredAlertShown = true;
-        alert('Sesi Google Anda telah berakhir. Silakan Login kembali.');
-        signOut({ callbackUrl: '/login' });
-        setTimeout(() => { isSessionExpiredAlertShown = false; }, 5000);
-      }
-      return true;
-    }
-    return false;
-  };
-
-  const loadedTokenRef = useRef(null);
   useEffect(() => {
-    if (session?.accessToken && session.accessToken !== loadedTokenRef.current) {
-      loadedTokenRef.current = session.accessToken;
-      loadData(session.accessToken);
-    } else if (!session && !loading) {
-      setLoading(false);
+    if (session?.accessToken && channels.length === 0) {
+      fetchChannel();
     }
-  }, [session?.user?.email, session?.accessToken]);
+  }, [session?.accessToken, fetchChannel, channels.length]);
 
-  const loadData = async (token) => {
+  useEffect(() => {
+    if (channelInfo && session?.accessToken) {
+      loadHistoryAndVideos();
+    }
+  }, [channelInfo, session?.accessToken]);
+
+  const loadHistoryAndVideos = async () => {
     try {
       setLoading(true);
-      setError(null);
-      const channelData = await youtubeService.getUserChannel(token);
-      const channel = channelData.items?.[0];
-      setChannelInfo(channel);
+      await fetchVideos(channelInfo.id);
 
-      if (channel) {
-        localStorage.setItem('selectedChannelId', channel.id);
-        const videoData = await youtubeService.getVideosByChannel(channel.id, token);
-        const videoItems = (videoData.items || []).filter(item => item.id?.videoId).slice(0, 10);
-        setVideos(videoItems);
-
-        if (session?.user?.email) {
-          const dbHistory = await historyService.getHistory(session.user.email);
-          const mapped = dbHistory.map(item => ({
-            ...item,
-            commentText: item.comment_text,
-            videoTitle:  item.video_title,
-            aiLabel:     item.ai_label,
-            aiConfidence: item.ai_confidence,
-            sentimentScore: item.sentiment_score,
-            timestamp:   item.created_at,
-          }));
-          setHistory(mapped);
-        }
+      if (session?.user?.email) {
+        const dbHistory = await historyService.getHistory(session.user.email);
+        const mapped = dbHistory.map(item => ({
+          ...item,
+          commentText: item.comment_text,
+          videoTitle:  item.video_title,
+          aiLabel:     item.ai_label,
+          aiConfidence: item.ai_confidence,
+          sentimentScore: item.sentiment_score,
+          timestamp:   item.created_at,
+        }));
+        setHistory(mapped);
       }
     } catch (err) {
-      if (handleApiError(err)) return;
       console.error('Gagal memuat data dashboard:', err);
       setError(err.message || 'Terjadi kesalahan saat memuat data');
     } finally {
