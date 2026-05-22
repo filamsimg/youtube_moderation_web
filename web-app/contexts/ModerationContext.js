@@ -21,7 +21,7 @@ export function ModerationProvider({ children }) {
 
   const [selectedVideoIds, setSelectedVideoIds] = useState(new Set());
   const [primaryVideo, setPrimaryVideo] = useState(null);
-  
+
   const [comments, setComments] = useState([]);
   const [commentsLoading, setCommentsLoading] = useState(false);
   const [error, setError] = useState(null);
@@ -31,6 +31,8 @@ export function ModerationProvider({ children }) {
   const [fetchProgress, setFetchProgress] = useState({ current: 0, total: 0 });
   const [isFetchingMulti, setIsFetchingMulti] = useState(false);
   const [hasLoaded, setHasLoaded] = useState(false);
+  const [sessionHistory, setSessionHistory] = useState([]);
+  const [dbHistory, setDbHistory] = useState([]);
 
   const sessionRef = useRef(session);
   const predictionsRef = useRef({});
@@ -46,7 +48,7 @@ export function ModerationProvider({ children }) {
     if (!selectedChannelId || !videosCache[selectedChannelId]) return;
     const currentVideos = videosCache[selectedChannelId];
     if (currentVideos.length === 0) return;
-    
+
     try {
       const savedIds = JSON.parse(localStorage.getItem('selectedVideoIds') || '[]');
       if (savedIds.length > 0) {
@@ -105,6 +107,8 @@ export function ModerationProvider({ children }) {
     localStorage.removeItem('selectedVideoIds');
     setComments([]);
     setPredictions({});
+    setSessionHistory([]);
+    setDbHistory([]);
     setIsPolling(false);
     setError(null);
     setHasLoaded(false);
@@ -113,12 +117,18 @@ export function ModerationProvider({ children }) {
   const performInferenceBatch = async (commentsToAnalyze) => {
     try {
       const texts = commentsToAnalyze.map(c => c.textOriginal);
-      const res = await axios.post('/api/moderate/batch', { texts });
+      const res = await axios.post('/api/predict', { texts });
       const results = res.data.results || [];
       const newPredictions = {};
-      
+
       results.forEach((r, i) => {
-        newPredictions[commentsToAnalyze[i].id] = { label: r.label, score: r.score };
+        newPredictions[commentsToAnalyze[i].id] = {
+          label: r.label,
+          confidence: r.confidence,
+          score: r.confidence,
+          sentiment: r.sentiment,
+          sentiment_score: r.sentiment_score
+        };
       });
       return newPredictions;
     } catch (err) {
@@ -149,12 +159,15 @@ export function ModerationProvider({ children }) {
     try {
       const email = sessionRef.current?.user?.email;
       const historyMap = {};
+      let filteredDbHistory = [];
       if (email) {
         try {
           const history = await historyService.getHistory(email);
           history.forEach(h => { if (h.comment_id) historyMap[h.comment_id] = h.action; });
+          filteredDbHistory = history.filter(h => h.channel_id === selectedChannelId);
         } catch (e) { console.error('Gagal memuat history:', e); }
       }
+      setDbHistory(filteredDbHistory);
 
       const allNewComments = [];
 
@@ -182,26 +195,36 @@ export function ModerationProvider({ children }) {
             toast.error(`Gagal memuat komentar untuk video: ${videoTitle}`);
           }
         }
-        
+
         if (!isSilent) setFetchProgress({ current: i + 1, total: videoIds.length });
       }
 
       if (allNewComments.length > 0) {
         if (!isSilent) setComments(allNewComments);
-        
+
         let newPredictions = {};
         if (settings.batchModeration) {
+          // Kirim SEMUA teks komentar sekaligus ke Flask model
           const ok = await deductQuota('MODERATE_BATCH', `${allNewComments.length} Komentar`);
           if (ok) {
             newPredictions = await performInferenceBatch(allNewComments);
+            // Biaya: 50 unit SEKALI (bukan dikali jumlah komentar)
           }
         } else {
+          // Kirim satu-satu ke Flask model
+          // Biaya: 50 unit × jumlah komentar
           for (let i = 0; i < allNewComments.length; i++) {
             const ok = await deductQuota('MODERATE_SINGLE', '1 Komentar');
             if (!ok) break;
             try {
-              const res = await axios.post('/api/moderate', { text: allNewComments[i].textOriginal });
-              newPredictions[allNewComments[i].id] = { label: res.data.label, score: res.data.score };
+              const res = await axios.post('/api/predict', { text: allNewComments[i].textOriginal });
+              newPredictions[allNewComments[i].id] = {
+                label: res.data.label,
+                confidence: res.data.confidence,
+                score: res.data.confidence,
+                sentiment: res.data.sentiment,
+                sentiment_score: res.data.sentiment_score
+              };
             } catch (e) { }
           }
         }
@@ -211,7 +234,7 @@ export function ModerationProvider({ children }) {
           predictionsRef.current = merged;
           return merged;
         });
-        
+
         if (isSilent) {
           setComments(prev => {
             const existingIds = new Set(prev.map(c => c.id));
@@ -222,7 +245,7 @@ export function ModerationProvider({ children }) {
             return [...trulyNew, ...prev];
           });
         }
-        
+
         // Auto-Moderation Engine
         if (settings.autoTahan || settings.autoHapus) {
           const pendingHold = [];
@@ -243,6 +266,7 @@ export function ModerationProvider({ children }) {
 
           if (pendingHold.length > 0 && tok) {
             await youtubeService.moderateCommentsBatch(pendingHold, 'heldForReview', tok);
+            const heldComments = [];
             pendingHold.forEach(cid => {
               const commentObj = allNewComments.find(c => c.id === cid);
               historyService.saveAction(userEmail, {
@@ -255,12 +279,23 @@ export function ModerationProvider({ children }) {
                 aiLabel: 'Spam',
                 aiConfidence: newPredictions[cid].score,
               });
+              if (commentObj) {
+                heldComments.push({
+                  ...commentObj,
+                  status: 'heldForReview',
+                  action: 'heldForReview',
+                  createdAt: new Date().toISOString()
+                });
+              }
             });
+            setSessionHistory(prev => [...heldComments, ...prev]);
             setComments(prev => prev.filter(c => !pendingHold.includes(c.id)));
           }
 
           if (pendingReject.length > 0 && tok) {
+            // Biaya: 50 unit
             await youtubeService.moderateCommentsBatch(pendingReject, 'rejected', tok);
+            const rejectedComments = [];
             pendingReject.forEach(cid => {
               const commentObj = allNewComments.find(c => c.id === cid);
               historyService.saveAction(userEmail, {
@@ -273,7 +308,16 @@ export function ModerationProvider({ children }) {
                 aiLabel: 'Spam',
                 aiConfidence: newPredictions[cid].score,
               });
+              if (commentObj) {
+                rejectedComments.push({
+                  ...commentObj,
+                  status: 'rejected',
+                  action: 'rejected',
+                  createdAt: new Date().toISOString()
+                });
+              }
             });
+            setSessionHistory(prev => [...rejectedComments, ...prev]);
             setComments(prev => prev.filter(c => !pendingReject.includes(c.id)));
           }
         }
@@ -327,13 +371,13 @@ export function ModerationProvider({ children }) {
 
     setProcessingComment(commentId);
     try {
-      const statusMap = { 
-        'publish': 'published', 
-        'approve': 'published', 
-        'hold': 'heldForReview', 
-        'reject': 'rejected' 
+      const statusMap = {
+        'publish': 'published',
+        'approve': 'published',
+        'hold': 'heldForReview',
+        'reject': 'rejected'
       };
-      const ok = await deductQuota('TAKE_ACTION', `Aksi: ${action}`);
+      const ok = await deductQuota('MODERATE_SINGLE', `Aksi: ${action}`);
       if (!ok) return;
 
       await youtubeService.moderateComment(commentId, statusMap[action], sessionRef.current.accessToken);
@@ -354,6 +398,39 @@ export function ModerationProvider({ children }) {
         });
       }
 
+      setSessionHistory(prev => [
+        {
+          ...comment,
+          status: statusMap[action],
+          action: statusMap[action],
+          aiLabel: prediction?.label || 'Normal',
+          aiConfidence: prediction?.confidence || prediction?.score || 0,
+          sentiment: prediction?.sentiment || null,
+          sentimentScore: prediction?.sentiment_score || null,
+          createdAt: new Date().toISOString()
+        },
+        ...prev.filter(c => c.id !== commentId)
+      ]);
+
+      // Sync dbHistory state agar handleUndoAction bisa menemukan data AI
+      setDbHistory(prev => [
+        {
+          comment_id: comment.id,
+          user_email: sessionRef.current?.user?.email,
+          channel_id: selectedChannelId,
+          action: statusMap[action],
+          comment_text: comment.textOriginal,
+          author: comment.authorDisplayName,
+          video_title: comment.videoTitle || 'unknown',
+          ai_label: prediction?.label || 'Normal',
+          ai_confidence: prediction?.score || 0,
+          sentiment: prediction?.sentiment || null,
+          sentiment_score: prediction?.sentiment_score || null,
+          created_at: new Date().toISOString()
+        },
+        ...prev.filter(h => h.comment_id !== comment.id)
+      ]);
+
       setComments(prev => prev.filter(c => c.id !== commentId));
       toast.success(`Komentar berhasil di-${action}`);
     } catch (err) {
@@ -364,14 +441,282 @@ export function ModerationProvider({ children }) {
     }
   };
 
+  const handleBatchAction = async (commentIds, action) => {
+    if (!commentIds || commentIds.length === 0) return false;
+    
+    // Set processing untuk semua komentar yang termasuk dalam batch
+    commentIds.forEach(id => setProcessingComment(id));
+    
+    try {
+      const statusMap = {
+        'publish': 'published',
+        'approve': 'published',
+        'hold': 'heldForReview',
+        'reject': 'rejected'
+      };
+      
+      const targetStatus = statusMap[action];
+      if (!targetStatus) {
+        toast.error('Aksi batch tidak valid');
+        return false;
+      }
+
+      // Potong kuota MODERATE_BATCH (Hanya 50 unit sekali potong berapapun jumlah komentarnya!)
+      const ok = await deductQuota('MODERATE_BATCH', `${commentIds.length} Komentar`);
+      if (!ok) return false;
+
+      // Kirim request batch ke YouTube API
+      await youtubeService.moderateCommentsBatch(commentIds, targetStatus, sessionRef.current.accessToken);
+
+      // Cari semua objek komentar yang diproses dari state comments
+      const batchComments = comments.filter(c => commentIds.includes(c.id));
+      const nowString = new Date().toISOString();
+
+      // Siapkan item riwayat untuk Supabase
+      const historyItems = batchComments.map(comment => {
+        const prediction = predictionsRef.current[comment.id];
+        return {
+          channelId: selectedChannelId,
+          commentId: comment.id,
+          action: targetStatus,
+          commentText: comment.textOriginal,
+          author: comment.authorDisplayName,
+          videoTitle: comment.videoTitle || 'unknown',
+          aiLabel: prediction?.label || 'Normal',
+          aiConfidence: prediction?.score || 0,
+          sentiment: prediction?.sentiment || null,
+          sentimentScore: prediction?.sentiment_score || null
+        };
+      });
+
+      // Simpan batch ke Supabase
+      if (sessionRef.current?.user?.email && historyItems.length > 0) {
+        await historyService.saveBatchActions(sessionRef.current.user.email, historyItems);
+      }
+
+      // Update session history state dengan field AI utuh
+      const newSessionItems = batchComments.map(comment => {
+        const prediction = predictionsRef.current[comment.id];
+        return {
+          ...comment,
+          status: targetStatus,
+          action: targetStatus,
+          aiLabel: prediction?.label || 'Normal',
+          aiConfidence: prediction?.confidence || prediction?.score || 0,
+          sentiment: prediction?.sentiment || null,
+          sentimentScore: prediction?.sentiment_score || null,
+          createdAt: nowString
+        };
+      });
+      
+      setSessionHistory(prev => [
+        ...newSessionItems,
+        ...prev.filter(c => !commentIds.includes(c.id))
+      ]);
+
+      // Sync dbHistory state agar handleUndoAction bisa bekerja
+      const newDbItems = batchComments.map(comment => {
+        const prediction = predictionsRef.current[comment.id];
+        return {
+          comment_id: comment.id,
+          user_email: sessionRef.current?.user?.email,
+          channel_id: selectedChannelId,
+          action: targetStatus,
+          comment_text: comment.textOriginal,
+          author: comment.authorDisplayName,
+          video_title: comment.videoTitle || 'unknown',
+          ai_label: prediction?.label || 'Normal',
+          ai_confidence: prediction?.score || 0,
+          sentiment: prediction?.sentiment || null,
+          sentiment_score: prediction?.sentiment_score || null,
+          created_at: nowString
+        };
+      });
+
+      setDbHistory(prev => [
+        ...newDbItems,
+        ...prev.filter(h => !commentIds.includes(h.comment_id))
+      ]);
+
+      // Hapus komentar dari antrian utama
+      setComments(prev => prev.filter(c => !commentIds.includes(c.id)));
+      
+      toast.success(`${commentIds.length} komentar berhasil di-${action}`);
+      return true;
+    } catch (err) {
+      console.error(`Batch Action ${action} error:`, err);
+      toast.error(`Gagal melakukan aksi massal pada komentar`);
+      return false;
+    } finally {
+      setProcessingComment(null);
+    }
+  };
+
+  const handleUndoAction = async (commentId) => {
+    setProcessingComment(commentId);
+    try {
+      const okDb = await historyService.deleteAction(commentId);
+      if (!okDb) {
+        toast.error('Gagal membatalkan aksi di database');
+        return;
+      }
+
+      // Cari komentar asli di sessionHistory atau dbHistory
+      const sessionItem = sessionHistory.find(c => c.id === commentId);
+      const dbItem = dbHistory.find(h => h.comment_id === commentId);
+
+      let originalComment = sessionItem;
+
+      if (!originalComment && dbItem) {
+        originalComment = {
+          id: dbItem.comment_id,
+          textOriginal: dbItem.comment_text,
+          textDisplay: dbItem.comment_text,
+          authorDisplayName: dbItem.author,
+          authorProfileImageUrl: null,
+          videoId: null,
+          videoTitle: dbItem.video_title,
+          status: 'published',
+          publishedAt: dbItem.created_at
+        };
+      }
+
+      if (originalComment) {
+        // Restorasi prediksi AI dari berbagai sumber (fallback chain)
+        if (!predictionsRef.current[commentId]) {
+          // Sumber 1: dari dbHistory
+          // Sumber 2: dari sessionHistory (yang sekarang menyimpan data AI)
+          // Sumber 3: re-inference sebagai fallback terakhir
+          const aiLabel = dbItem?.ai_label || sessionItem?.aiLabel;
+          const aiConfidence = dbItem?.ai_confidence || sessionItem?.aiConfidence;
+          const sentiment = dbItem?.sentiment || sessionItem?.sentiment;
+          const sentimentScore = dbItem?.sentiment_score || sessionItem?.sentimentScore;
+
+          if (aiLabel) {
+            setPredictions(prev => ({
+              ...prev,
+              [commentId]: {
+                label: aiLabel,
+                confidence: aiConfidence,
+                score: aiConfidence,
+                sentiment: sentiment,
+                sentiment_score: sentimentScore
+              }
+            }));
+          } else {
+            // Fallback terakhir: jalankan ulang prediksi AI
+            try {
+              const textToPredict = originalComment.textOriginal || originalComment.textDisplay;
+              if (textToPredict) {
+                const res = await axios.post('/api/predict', { text: textToPredict });
+                setPredictions(prev => ({
+                  ...prev,
+                  [commentId]: {
+                    label: res.data.label,
+                    confidence: res.data.confidence,
+                    score: res.data.confidence,
+                    sentiment: res.data.sentiment,
+                    sentiment_score: res.data.sentiment_score
+                  }
+                }));
+              }
+            } catch (e) {
+              console.error('Re-inference saat undo gagal:', e);
+            }
+          }
+        }
+
+        setComments(prev => {
+          if (prev.some(c => c.id === commentId)) return prev;
+          return [originalComment, ...prev];
+        });
+      }
+
+      setSessionHistory(prev => prev.filter(c => c.id !== commentId));
+      setDbHistory(prev => prev.filter(h => h.comment_id !== commentId));
+
+      toast.success('Aksi berhasil dibatalkan dan komentar dikembalikan ke antrian');
+    } catch (err) {
+      console.error('handleUndoAction error:', err);
+      toast.error('Gagal membatalkan aksi moderasi');
+    } finally {
+      setProcessingComment(null);
+    }
+  };
+
+  const handleChangeAction = async (commentId, newAction) => {
+    setProcessingComment(commentId);
+    try {
+      const statusMap = {
+        'publish': 'published',
+        'approve': 'published',
+        'hold': 'heldForReview',
+        'reject': 'rejected'
+      };
+      const targetStatus = statusMap[newAction];
+
+      const ok = await deductQuota('MODERATE_SINGLE', `Ubah Aksi: ${newAction}`);
+      if (!ok) return;
+
+      await youtubeService.moderateComment(commentId, targetStatus, sessionRef.current.accessToken);
+
+      let originalComment = sessionHistory.find(c => c.id === commentId);
+      let dbItem = dbHistory.find(h => h.comment_id === commentId);
+
+      const commentText = originalComment?.textOriginal || dbItem?.comment_text || '';
+      const author = originalComment?.authorDisplayName || dbItem?.author || '';
+      const videoTitle = originalComment?.videoTitle || dbItem?.video_title || 'unknown';
+      const prediction = predictionsRef.current[commentId];
+
+      const historyItem = {
+        channelId: selectedChannelId,
+        commentId: commentId,
+        action: targetStatus,
+        commentText: commentText,
+        author: author,
+        videoTitle: videoTitle,
+        aiLabel: prediction?.label || dbItem?.ai_label || 'Normal',
+        aiConfidence: prediction?.score || dbItem?.ai_confidence || 0,
+        sentiment: prediction?.sentiment || dbItem?.sentiment || null,
+        sentimentScore: prediction?.sentiment_score || dbItem?.sentiment_score || null
+      };
+
+      if (sessionRef.current?.user?.email) {
+        await historyService.saveAction(sessionRef.current.user.email, historyItem);
+      }
+
+      setSessionHistory(prev => prev.map(c => {
+        if (c.id === commentId) {
+          return { ...c, status: targetStatus, action: targetStatus };
+        }
+        return c;
+      }));
+
+      setDbHistory(prev => prev.map(h => {
+        if (h.comment_id === commentId) {
+          return { ...h, action: targetStatus };
+        }
+        return h;
+      }));
+
+      toast.success(`Aksi berhasil diubah menjadi ${newAction}`);
+    } catch (err) {
+      console.error('handleChangeAction error:', err);
+      toast.error('Gagal mengubah aksi moderasi');
+    } finally {
+      setProcessingComment(null);
+    }
+  };
+
   return (
-    <ModerationContext.Provider 
+    <ModerationContext.Provider
       value={{
         selectedVideoIds, primaryVideo, handleToggleVideo, handleSelectAll, handleDeselectAll,
-        comments, commentsLoading, error, predictions, 
-        isPolling, togglePolling, handleLoadSelected, 
-        processingComment, handleAction,
-        fetchProgress, isFetchingMulti, hasLoaded
+        comments, commentsLoading, error, predictions,
+        isPolling, togglePolling, handleLoadSelected,
+        processingComment, handleAction, handleBatchAction,
+        fetchProgress, isFetchingMulti, hasLoaded,
+        sessionHistory, dbHistory, handleUndoAction, handleChangeAction
       }}
     >
       {children}
