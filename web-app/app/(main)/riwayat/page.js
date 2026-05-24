@@ -55,7 +55,7 @@ export default function RiwayatPage() {
 
     // Map activities to CSV Row Arrays
     const rows = filtered.map(item => [
-      new Date(item.timestamp).toLocaleString('id-ID'),
+      `"${new Date(item.timestamp).toLocaleString('id-ID').replace(/"/g, '""')}"`,
       getActionLabel(item.action),
       `"${(item.commentText || '').replace(/"/g, '""')}"`,
       item.aiLabel === 'Spam' ? 'Spam Judol' : 'Normal',
