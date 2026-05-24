@@ -27,6 +27,9 @@ model_judol_indobertweet/
 /*.docx
 /*.txt
 /*.md
+/*.png
+/*.jpg
+/*.jpeg
 !README.md
 implementation_plan_*
 walkthrough_*
