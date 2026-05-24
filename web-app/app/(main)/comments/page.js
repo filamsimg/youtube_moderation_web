@@ -628,7 +628,7 @@ export default function CommentsPage() {
                 }`}
               style={filter !== f ? { color: 'var(--text-secondary)' } : {}}
             >
-              {f === 'semua' ? 'Semua' : f}
+              {f === 'semua' ? 'Semua' : f === 'spam' ? 'Spam Judol' : f === 'normal' ? 'Normal' : f}
             </button>
           ))}
 
