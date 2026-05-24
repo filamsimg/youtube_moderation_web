@@ -59,7 +59,9 @@ export default function RiwayatPage() {
       getActionLabel(item.action),
       `"${(item.commentText || '').replace(/"/g, '""')}"`,
       item.aiLabel === 'Spam' ? 'Spam Judol' : 'Normal',
-      item.sentiment === 'positive' ? 'Positif' : item.sentiment === 'negative' ? 'Negatif' : item.sentiment === 'neutral' ? 'Netral' : '-',
+      item.aiLabel !== 'Spam' && item.sentiment === 'positive' ? 'Positif' :
+      item.aiLabel !== 'Spam' && item.sentiment === 'negative' ? 'Negatif' :
+      item.aiLabel !== 'Spam' && item.sentiment === 'neutral' ? 'Netral' : '-',
       `"${(item.author || '').replace(/"/g, '""')}"`,
       `"${(item.videoTitle || '').replace(/"/g, '""')}"`
     ]);
