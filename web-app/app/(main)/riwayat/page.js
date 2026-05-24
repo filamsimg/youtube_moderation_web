@@ -4,9 +4,11 @@ import { useState, useEffect } from 'react';
 import { useSession } from 'next-auth/react';
 import { historyService } from '@/services/historyService';
 import PaginationControls from '@/components/PaginationControls';
+import { useToast } from '@/contexts/ToastContext';
 
 export default function RiwayatPage() {
   const { data: session } = useSession();
+  const toast = useToast();
   const [searchQuery, setSearchQuery] = useState('');
   const [filterAction, setFilterAction] = useState('semua');
   const [activities, setActivities] = useState([]);
@@ -40,6 +42,46 @@ export default function RiwayatPage() {
     }));
     setActivities(mapped);
     setLoading(false);
+  };
+
+  const handleExportCSV = () => {
+    if (filtered.length === 0) {
+      toast.error('Tidak ada data riwayat yang dapat diekspor!');
+      return;
+    }
+
+    // Define CSV Headers
+    const headers = ['Waktu', 'Tindakan', 'Isi Komentar', 'AI Analisis', 'Sentimen', 'Pengguna', 'Judul Video'];
+
+    // Map activities to CSV Row Arrays
+    const rows = filtered.map(item => [
+      new Date(item.timestamp).toLocaleString('id-ID'),
+      getActionLabel(item.action),
+      `"${(item.commentText || '').replace(/"/g, '""')}"`,
+      item.aiLabel === 'Spam' ? 'Spam Judol' : 'Normal',
+      item.sentiment === 'positive' ? 'Positif' : item.sentiment === 'negative' ? 'Negatif' : item.sentiment === 'neutral' ? 'Netral' : '-',
+      `"${(item.author || '').replace(/"/g, '""')}"`,
+      `"${(item.videoTitle || '').replace(/"/g, '""')}"`
+    ]);
+
+    // Construct CSV String with UTF-8 BOM
+    const csvContent = [
+      headers.join(','),
+      ...rows.map(row => row.join(','))
+    ].join('\n');
+
+    // Create a Blob and trigger download
+    const blob = new Blob([new Uint8Array([0xEF, 0xBB, 0xBF]), csvContent], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.setAttribute('href', url);
+    link.setAttribute('download', `riwayat_moderasi_athena_${new Date().toISOString().split('T')[0]}.csv`);
+    link.style.visibility = 'hidden';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+
+    toast.success(`Berhasil mengekspor ${filtered.length} riwayat komentar ke berkas CSV!`);
   };
 
   const getActionLabel = (action) => {
@@ -100,7 +142,9 @@ export default function RiwayatPage() {
           </p>
         </div>
         <button
-          className="flex items-center gap-2 px-3 py-2 rounded-xl text-xs font-medium border transition-all self-start sm:self-auto bento-card"
+          onClick={handleExportCSV}
+          disabled={filtered.length === 0}
+          className="flex items-center gap-2 px-3 py-2 rounded-xl text-xs font-medium border transition-all self-start sm:self-auto bento-card disabled:opacity-50 disabled:cursor-not-allowed select-none cursor-pointer"
           style={{ color: 'var(--text-secondary)' }}
         >
           <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
