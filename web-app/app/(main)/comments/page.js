@@ -1015,49 +1015,46 @@ export default function CommentsPage() {
                                 {/* Ubah Status Cepat */}
                                 <div className="flex items-center gap-1 border-l pl-2.5" style={{ borderColor: 'var(--border-default)' }}>
                                   {/* Publish */}
-                                  <button
-                                    disabled={isProcessing}
-                                    onClick={() => handleChangeAction(comment.id, 'publish')}
-                                    title="Ubah ke Diterbitkan"
-                                    className={`p-1.5 rounded-md transition-all active:scale-90 ${comment.status === 'published'
-                                      ? 'bg-emerald-50 border border-emerald-200 text-emerald-600 dark:bg-emerald-500/20 dark:text-emerald-400 scale-110 shadow-sm font-bold'
-                                      : 'hover:bg-emerald-500/10 text-emerald-500/30 hover:text-emerald-500 disabled:opacity-30'
-                                      }`}
-                                  >
-                                    <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" strokeWidth={2.5} stroke="currentColor">
-                                      <path strokeLinecap="round" strokeLinejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                                    </svg>
-                                  </button>
+                                  {comment.status !== 'published' && (
+                                    <button
+                                      disabled={isProcessing}
+                                      onClick={() => handleChangeAction(comment.id, 'publish')}
+                                      title="Ubah ke Diterbitkan"
+                                      className="p-1.5 rounded-md hover:bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 disabled:opacity-30 transition-all active:scale-95 hover:scale-105"
+                                    >
+                                      <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" strokeWidth={2.5} stroke="currentColor">
+                                        <path strokeLinecap="round" strokeLinejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                      </svg>
+                                    </button>
+                                  )}
 
                                   {/* Hold */}
-                                  <button
-                                    disabled={isProcessing}
-                                    onClick={() => handleChangeAction(comment.id, 'hold')}
-                                    title="Ubah ke Ditahan"
-                                    className={`p-1.5 rounded-md transition-all active:scale-90 ${comment.status === 'heldForReview'
-                                      ? 'bg-amber-50 border border-amber-200 text-amber-700 dark:bg-amber-500/20 dark:text-amber-400 scale-110 shadow-sm font-bold'
-                                      : 'hover:bg-amber-500/10 text-amber-500/30 hover:text-amber-500 disabled:opacity-30'
-                                      }`}
-                                  >
-                                    <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" strokeWidth={2.5} stroke="currentColor">
-                                      <path strokeLinecap="round" strokeLinejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 11-18 0 9 9 0 0118 0z" />
-                                    </svg>
-                                  </button>
+                                  {comment.status !== 'heldForReview' && (
+                                    <button
+                                      disabled={isProcessing}
+                                      onClick={() => handleChangeAction(comment.id, 'hold')}
+                                      title="Ubah ke Ditahan"
+                                      className="p-1.5 rounded-md hover:bg-amber-500/10 text-amber-600 dark:text-amber-400 disabled:opacity-30 transition-all active:scale-95 hover:scale-105"
+                                    >
+                                      <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" strokeWidth={2.5} stroke="currentColor">
+                                        <path strokeLinecap="round" strokeLinejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                      </svg>
+                                    </button>
+                                  )}
 
                                   {/* Reject */}
-                                  <button
-                                    disabled={isProcessing}
-                                    onClick={() => handleChangeAction(comment.id, 'reject')}
-                                    title="Ubah ke Ditolak"
-                                    className={`p-1.5 rounded-md transition-all active:scale-90 ${comment.status === 'rejected'
-                                      ? 'bg-rose-50 border border-rose-200 text-rose-600 dark:bg-rose-500/20 dark:text-rose-400 scale-110 shadow-sm font-bold'
-                                      : 'hover:bg-rose-500/10 text-rose-500/30 hover:text-rose-500 disabled:opacity-30'
-                                      }`}
-                                  >
-                                    <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" strokeWidth={2.5} stroke="currentColor">
-                                      <path strokeLinecap="round" strokeLinejoin="round" d="M9.75 9.75l4.5 4.5m0-4.5l-4.5 4.5M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                                    </svg>
-                                  </button>
+                                  {comment.status !== 'rejected' && (
+                                    <button
+                                      disabled={isProcessing}
+                                      onClick={() => handleChangeAction(comment.id, 'reject')}
+                                      title="Ubah ke Ditolak"
+                                      className="p-1.5 rounded-md hover:bg-rose-500/10 text-rose-600 dark:text-rose-400 disabled:opacity-30 transition-all active:scale-95 hover:scale-105"
+                                    >
+                                      <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" strokeWidth={2.5} stroke="currentColor">
+                                        <path strokeLinecap="round" strokeLinejoin="round" d="M9.75 9.75l4.5 4.5m0-4.5l-4.5 4.5M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                      </svg>
+                                    </button>
+                                  )}
                                 </div>
                               </div>
                             </td>
@@ -1146,33 +1143,33 @@ export default function CommentsPage() {
 
                             {/* Mobile Change Action Button Row */}
                             <div className="flex items-center gap-0.5 border-l pl-2" style={{ borderColor: 'var(--border-default)' }}>
-                              <button
+                              {comment.status !== 'published' && (
+                                <button
                                   disabled={isProcessing}
                                   onClick={() => handleChangeAction(comment.id, 'publish')}
-                                  className={`p-1.5 rounded-md transition-all active:scale-90 ${comment.status === 'published' ? 'bg-emerald-50 border border-emerald-200 text-emerald-600 dark:bg-emerald-500/20 dark:text-emerald-400 scale-110 shadow-sm font-bold' : 'text-emerald-500/30 disabled:opacity-30 hover:text-emerald-500'
-                                    }`}
-                                style={comment.status === 'published' ? { color: 'unset' } : {}}
-                              >
-                                <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" strokeWidth={2.5} stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
-                              </button>
-                              <button
-                                disabled={isProcessing}
-                                onClick={() => handleChangeAction(comment.id, 'hold')}
-                                className={`p-1.5 rounded-md transition-all active:scale-90 ${comment.status === 'heldForReview' ? 'bg-amber-50 border border-amber-200 text-amber-700 dark:bg-amber-500/20 dark:text-amber-400 scale-110 shadow-sm font-bold' : 'text-amber-500/30 disabled:opacity-30 hover:text-amber-500'
-                                  }`}
-                                style={comment.status === 'heldForReview' ? { color: 'unset' } : {}}
-                              >
-                                <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" strokeWidth={2.5} stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
-                              </button>
-                              <button
-                                disabled={isProcessing}
-                                onClick={() => handleChangeAction(comment.id, 'reject')}
-                                className={`p-1.5 rounded-md transition-all active:scale-90 ${comment.status === 'rejected' ? 'bg-rose-50 border border-rose-200 text-rose-600 dark:bg-rose-500/20 dark:text-rose-400 scale-110 shadow-sm font-bold' : 'text-rose-500/30 disabled:opacity-30 hover:text-rose-500'
-                                  }`}
-                                style={comment.status === 'rejected' ? { color: 'unset' } : {}}
-                              >
-                                <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" strokeWidth={2.5} stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" d="M9.75 9.75l4.5 4.5m0-4.5l-4.5 4.5M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
-                              </button>
+                                  className="p-1.5 rounded-md transition-all active:scale-90 text-emerald-500 hover:bg-emerald-500/10 disabled:opacity-30"
+                                >
+                                  <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" strokeWidth={2.5} stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+                                </button>
+                              )}
+                              {comment.status !== 'heldForReview' && (
+                                <button
+                                  disabled={isProcessing}
+                                  onClick={() => handleChangeAction(comment.id, 'hold')}
+                                  className="p-1.5 rounded-md transition-all active:scale-90 text-amber-500 hover:bg-amber-500/10 disabled:opacity-30"
+                                >
+                                  <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" strokeWidth={2.5} stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+                                </button>
+                              )}
+                              {comment.status !== 'rejected' && (
+                                <button
+                                  disabled={isProcessing}
+                                  onClick={() => handleChangeAction(comment.id, 'reject')}
+                                  className="p-1.5 rounded-md transition-all active:scale-90 text-rose-500 hover:bg-rose-500/10 disabled:opacity-30"
+                                >
+                                  <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" strokeWidth={2.5} stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" d="M9.75 9.75l4.5 4.5m0-4.5l-4.5 4.5M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+                                </button>
+                              )}
                             </div>
                           </div>
                         </div>
