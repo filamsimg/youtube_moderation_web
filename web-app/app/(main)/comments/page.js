@@ -746,7 +746,7 @@ export default function CommentsPage() {
                               ) : (
                                 <div>
                                   <span className={`badge ${isSpam ? 'badge-danger' : 'badge-success'}`}>
-                                    {isSpam ? '🚨 Spam' : '✅ Normal'}
+                                    {isSpam ? '🚨 Spam Judol' : '✅ Normal'}
                                   </span>
                                   {!isSpam && prediction.sentiment && (
                                     <span className={`ml-1 badge ${prediction.sentiment === 'positive' ? 'badge-success'
@@ -840,7 +840,7 @@ export default function CommentsPage() {
                               <div className="flex flex-col gap-1">
                                 <div className="flex items-center gap-1.5">
                                   <span className={`text-[11px] font-semibold px-2 py-0.5 rounded-full ${isSpam ? 'bg-red-100 text-red-700' : 'bg-green-100 text-green-700'}`}>
-                                    {isSpam ? '🚨 Spam' : '✅ Normal'}
+                                    {isSpam ? '🚨 Spam Judol' : '✅ Normal'}
                                   </span>
                                   <span className="text-[10px] text-muted">{Math.round(prediction.confidence * 100)}%</span>
                                 </div>
@@ -971,7 +971,7 @@ export default function CommentsPage() {
                               {comment.aiLabel ? (
                                 <div>
                                   <span className={`badge ${comment.aiLabel.toLowerCase() === 'spam' ? 'badge-danger' : 'badge-success'}`}>
-                                    {comment.aiLabel.toLowerCase() === 'spam' ? '🚨 Spam' : '✅ Normal'}
+                                    {comment.aiLabel.toLowerCase() === 'spam' ? '🚨 Spam Judol' : '✅ Normal'}
                                   </span>
                                   {comment.sentiment && (
                                     <span className={`ml-1 badge ${comment.sentiment === 'positive' ? 'badge-success'
@@ -1108,7 +1108,7 @@ export default function CommentsPage() {
                               <div className="flex flex-col gap-1">
                                 <div className="flex items-center gap-1.5">
                                   <span className={`text-[11px] font-semibold px-2 py-0.5 rounded-full ${comment.aiLabel.toLowerCase() === 'spam' ? 'bg-red-100 text-red-700' : 'bg-green-100 text-green-700'}`}>
-                                    {comment.aiLabel.toLowerCase() === 'spam' ? '🚨 Spam' : '✅ Normal'}
+                                    {comment.aiLabel.toLowerCase() === 'spam' ? '🚨 Spam Judol' : '✅ Normal'}
                                   </span>
                                   <span className="text-[10px] text-muted">{Math.round(comment.aiConfidence * 100)}%</span>
                                 </div>
