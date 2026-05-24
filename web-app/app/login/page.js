@@ -4,6 +4,7 @@ import { signIn, useSession } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
+import KineticGrid from '@/components/KineticGrid';
 
 export default function LoginPage() {
   const { data: session, status } = useSession();
@@ -43,7 +44,7 @@ export default function LoginPage() {
       {/* ── Background Effects ── */}
       <div className="absolute inset-0 z-0">
         <div className="absolute inset-0 bg-mesh-dark opacity-40 mix-blend-screen" />
-        <div className="absolute inset-0 bg-[url('/grid.svg')] bg-center [mask-image:linear-gradient(180deg,white,rgba(255,255,255,0))]" />
+        <KineticGrid />
       </div>
 
       {/* ── Back Button ── */}

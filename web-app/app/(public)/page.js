@@ -4,6 +4,7 @@ import Link from 'next/link';
 import { useSession } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
 import { useEffect } from 'react';
+import KineticGrid from '@/components/KineticGrid';
 
 const FEATURES = [
   {
@@ -108,56 +109,60 @@ export default function LandingPage() {
 
       {/* ── HERO SECTION ──────────────────────────────────────────── */}
       <section className="relative pt-20 pb-24 px-4 text-center overflow-hidden">
-        {/* Background gradient blobs */}
-        <div className="absolute inset-0 -z-10 overflow-hidden">
-          <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[600px] h-[400px] bg-amber-100/60 rounded-full blur-3xl" />
-          <div className="absolute top-20 right-0 w-[300px] h-[300px] bg-purple-100/40 rounded-full blur-3xl" />
+        {/* Background gradient blobs & Kinetic Grid */}
+        <div className="absolute inset-0 z-0 pointer-events-none overflow-hidden">
+          <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[600px] h-[400px] bg-amber-100/60 dark:bg-amber-950/10 rounded-full blur-3xl" />
+          <div className="absolute top-20 right-0 w-[300px] h-[300px] bg-purple-100/40 dark:bg-purple-950/10 rounded-full blur-3xl" />
+          <KineticGrid />
         </div>
 
-        {/* Badge */}
-        <div className="inline-flex items-center gap-2 px-3 py-1.5 bg-amber-50 border border-amber-100 rounded-full text-xs font-medium text-amber-700 mb-6">
-          <span className="w-1.5 h-1.5 bg-amber-500 rounded-full animate-pulse" />
-          Powered by IndoBERT AI
-        </div>
+        {/* Hero Content Wrapper */}
+        <div className="relative z-10 pointer-events-none">
+          {/* Badge */}
+          <div className="inline-flex items-center gap-2 px-3 py-1.5 bg-amber-50 border border-amber-100 rounded-full text-xs font-medium text-amber-700 mb-6 pointer-events-auto">
+            <span className="w-1.5 h-1.5 bg-amber-500 rounded-full animate-pulse" />
+            Powered by IndoBERT AI
+          </div>
 
-        <h1 className="text-4xl sm:text-5xl font-bold text-primary leading-tight mb-4 max-w-3xl mx-auto">
-          Moderasi Komentar{' '}
-          <span className="text-amber-500">Judi Online</span>{' '}
-          di YouTube secara Otomatis
-        </h1>
-        <p className="text-base text-secondary max-w-xl mx-auto mb-8 leading-relaxed">
-          Sistem AI berbasis IndoBERT untuk mendeteksi dan memoderasi komentar spam judol
-          di kanal YouTube Anda — cepat, akurat, dan tanpa batas manual.
-        </p>
+          <h1 className="text-4xl sm:text-5xl font-bold text-primary leading-tight mb-4 max-w-3xl mx-auto pointer-events-auto">
+            Moderasi Komentar{' '}
+            <span className="text-amber-500">Judi Online</span>{' '}
+            di YouTube secara Otomatis
+          </h1>
+          <p className="text-base text-secondary max-w-xl mx-auto mb-8 leading-relaxed pointer-events-auto">
+            Sistem AI berbasis IndoBERT untuk mendeteksi dan memoderasi komentar spam judol
+            di kanal YouTube Anda — cepat, akurat, dan tanpa batas manual.
+          </p>
 
-        {/* CTAs */}
-        <div className="flex items-center justify-center gap-3 flex-wrap">
-          <Link
-            href={session ? '/dashboard' : '/login'}
-            className="px-6 py-3 bg-amber-600 hover:bg-amber-700 text-white text-sm font-semibold rounded-xl shadow-md shadow-amber-200 transition-all hover:shadow-lg hover:shadow-amber-200 active:scale-95 flex items-center gap-2"
-          >
-            {session ? 'Buka Dashboard' : 'Mulai Gratis'}
-            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" strokeWidth={2.5} stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" d="M8.25 4.5l7.5 7.5-7.5 7.5" />
-            </svg>
-          </Link>
-          <Link
-            href="/pricing"
-            className="px-6 py-3 bg-card border hover:bg-card-hover text-primary text-sm font-semibold rounded-xl transition-all hover:shadow-sm active:scale-95"
-            style={{ borderColor: 'var(--border-default)' }}
-          >
-            Lihat Harga
-          </Link>
-        </div>
+          {/* CTAs */}
+          <div className="flex items-center justify-center gap-3 flex-wrap pointer-events-auto">
+            <Link
+              href={session ? '/dashboard' : '/login'}
+              className="px-6 py-3 bg-amber-600 hover:bg-amber-700 text-white text-sm font-semibold rounded-xl shadow-md shadow-amber-200 transition-all hover:shadow-lg hover:shadow-amber-200 active:scale-95 flex items-center gap-2"
+            >
+              {session ? 'Buka Dashboard' : 'Mulai Gratis'}
+              <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" strokeWidth={2.5} stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" d="M8.25 4.5l7.5 7.5-7.5 7.5" />
+              </svg>
+            </Link>
+            <Link
+              href="/pricing"
+              className="px-6 py-3 bg-card border hover:bg-card-hover text-primary text-sm font-semibold rounded-xl transition-all hover:shadow-sm active:scale-95"
+              style={{ borderColor: 'var(--border-default)' }}
+            >
+              Lihat Harga
+            </Link>
+          </div>
 
-        {/* Stats */}
-        <div className="flex items-center justify-center gap-8 mt-12 flex-wrap">
-          {STATS.map(s => (
-            <div key={s.label} className="text-center">
-              <p className="text-2xl font-bold text-primary">{s.value}</p>
-              <p className="text-xs text-muted mt-0.5">{s.label}</p>
-            </div>
-          ))}
+          {/* Stats */}
+          <div className="flex items-center justify-center gap-8 mt-12 flex-wrap pointer-events-auto">
+            {STATS.map(s => (
+              <div key={s.label} className="text-center">
+                <p className="text-2xl font-bold text-primary">{s.value}</p>
+                <p className="text-xs text-muted mt-0.5">{s.label}</p>
+              </div>
+            ))}
+          </div>
         </div>
       </section>
 
@@ -209,7 +214,7 @@ export default function LandingPage() {
       <section className="py-20 px-4 bg-amber-600">
         <div className="max-w-2xl mx-auto text-center">
           <h2 className="text-2xl font-bold text-white mb-3">Siap Membersihkan Komentar Anda?</h2>
-          <p className="text-sm text-amber-200 mb-8">Mulai gratis sekarang. Tidak perlu kartu kredit.</p>
+          <p className="text-sm text-amber-100 mb-8">Mulai gratis sekarang. Tidak perlu kartu kredit.</p>
           <Link
             href={session ? '/dashboard' : '/login'}
             className="inline-flex items-center gap-2 px-8 py-3.5 bg-white text-amber-700 text-sm font-bold rounded-xl shadow-lg hover:shadow-xl transition-all hover:-translate-y-0.5 active:scale-95"
