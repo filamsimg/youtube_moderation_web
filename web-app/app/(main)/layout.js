@@ -2,7 +2,6 @@
 
 import Sidebar from '@/components/Sidebar';
 import QuotaIndicator from '@/components/QuotaIndicator';
-import ThemeToggle from '@/components/ThemeToggle';
 import { useSession } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
 import { useEffect } from 'react';
@@ -70,12 +69,6 @@ export default function MainLayout({ children }) {
             <div className="hidden sm:block">
               <QuotaIndicator compact />
             </div>
-
-            {/* Divider */}
-            <div className="hidden sm:block w-px h-5" style={{ background: 'var(--border-default)' }} />
-
-            {/* Theme Toggle */}
-            <ThemeToggle />
 
             {/* Divider */}
             <div className="hidden sm:block w-px h-5" style={{ background: 'var(--border-default)' }} />
