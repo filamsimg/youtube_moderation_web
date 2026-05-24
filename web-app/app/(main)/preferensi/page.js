@@ -142,7 +142,7 @@ export default function PreferensiPage() {
   const iconStyle = { color: 'var(--text-muted)' };
 
   return (
-    <div className="animate-fade-in-up max-w-3xl w-full space-y-5 lg:space-y-6 pb-10">
+    <div className="animate-fade-in-up w-full space-y-5 lg:space-y-6 pb-10">
 
       {/* ── Header ────────────────────────────────────────────── */}
       <div>
