@@ -6,6 +6,7 @@ import { useSession, signOut } from 'next-auth/react';
 import { useState, useEffect, useRef } from 'react';
 import QuotaIndicator from '@/components/QuotaIndicator';
 import { useSidebar } from '@/contexts/SidebarContext';
+import { useToast } from '@/contexts/ToastContext';
 
 export default function Sidebar() {
   const pathname = usePathname();
@@ -14,6 +15,8 @@ export default function Sidebar() {
   const { sidebarMode, setSidebarMode, isHovered, setIsHovered } = useSidebar();
   const [showControlPanel, setShowControlPanel] = useState(false);
   const popoverRef = useRef(null);
+  const toast = useToast();
+  const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
 
   // Close sidebar on route change (mobile)
   useEffect(() => {
@@ -333,7 +336,7 @@ export default function Sidebar() {
 
           {/* Sign Out */}
           <button
-            onClick={() => signOut({ callbackUrl: '/login' })}
+            onClick={() => setShowLogoutConfirm(true)}
             className={`btn-danger text-[13px] ${isCollapsed ? 'justify-center p-2.5 mx-2 w-10 h-10 group relative' : 'w-full'}`}
           >
             <svg className="w-5 h-5 flex-shrink-0" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
@@ -407,6 +410,62 @@ export default function Sidebar() {
               </button>
             </div>
             <SidebarContent isMobile={true} />
+          </div>
+        </div>
+      )}
+
+      {/* Logout Confirmation Modal */}
+      {showLogoutConfirm && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
+          {/* Backdrop */}
+          <div
+            className="fixed inset-0 bg-black/60 dark:bg-black/80 backdrop-blur-sm transition-opacity"
+            onClick={() => setShowLogoutConfirm(false)}
+          />
+
+          {/* Modal Card */}
+          <div
+            className="relative w-full max-w-sm rounded-2xl border p-5 shadow-2xl animate-fade-in-up bg-white border-slate-200 text-slate-800 dark:bg-slate-950 dark:border-slate-800 dark:text-slate-100"
+            onClick={(e) => e.stopPropagation()}
+          >
+            {/* Header / Warning Icon */}
+            <div className="flex items-center gap-3 mb-3.5">
+              <div className="w-10 h-10 rounded-xl bg-rose-500/10 text-rose-500 flex items-center justify-center flex-shrink-0">
+                <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 9V5.25A2.25 2.25 0 0013.5 3h-6a2.25 2.25 0 00-2.25 2.25v13.5A2.25 2.25 0 007.5 21h6a2.25 2.25 0 002.25-2.25V15m3 0l3-3m0 0l-3-3m3 3H9" />
+                </svg>
+              </div>
+              <div>
+                <h3 className="text-sm font-bold tracking-tight">Keluar Sesi</h3>
+                <p className="text-[11px] text-slate-400 dark:text-slate-500 font-medium">Konfirmasi Tindakan</p>
+              </div>
+            </div>
+
+            {/* Content */}
+            <p className="text-xs leading-relaxed text-slate-600 dark:text-slate-400 mb-5">
+              Apakah Anda yakin ingin keluar dari **Athena Shield**? Anda perlu melakukan login kembali untuk mengakses panel moderasi komentar YouTube Anda.
+            </p>
+
+            {/* Buttons */}
+            <div className="flex gap-2.5">
+              <button
+                onClick={() => setShowLogoutConfirm(false)}
+                className="flex-1 py-2.5 px-3 bg-slate-100 hover:bg-slate-200 dark:bg-slate-900 dark:hover:bg-slate-800/80 text-[12px] font-semibold rounded-xl transition-all active:scale-95 text-slate-700 dark:text-slate-300 border border-slate-200/50 dark:border-slate-800/50"
+              >
+                Batal
+              </button>
+              <button
+                onClick={() => {
+                  toast.success('Berhasil keluar. Mengalihkan ke halaman login...');
+                  setTimeout(() => {
+                    signOut({ callbackUrl: '/login' });
+                  }, 1200);
+                }}
+                className="flex-1 py-2.5 px-3 bg-rose-600 hover:bg-rose-500 text-[12px] font-semibold rounded-xl transition-all active:scale-95 text-white shadow-md shadow-rose-900/20"
+              >
+                Keluar
+              </button>
+            </div>
           </div>
         </div>
       )}
