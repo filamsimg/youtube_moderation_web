@@ -31,15 +31,15 @@ export default function QuotaIndicator({ compact = false }) {
     '0 0 8px rgba(244, 63, 94, 0.60)';
 
   const textColor =
-    pct > 50 ? 'text-emerald-400' :
-    pct > 20 ? 'text-amber-400' :
-    'text-rose-400';
+    pct > 50 ? 'text-emerald-600 dark:text-emerald-400' :
+    pct > 20 ? 'text-amber-600 dark:text-amber-400' :
+    'text-rose-600 dark:text-rose-400';
 
   const tierBadgeClass =
     profile.tier === 'PRO'
-      ? 'bg-amber-500/10 text-amber-400 border border-amber-500/20'
+      ? 'bg-amber-50 border-amber-200 text-amber-700 dark:bg-amber-500/10 dark:text-amber-400 dark:border-amber-500/20'
       : profile.tier === 'ENTERPRISE'
-      ? 'bg-violet-500/10 text-violet-400 border border-violet-500/20'
+      ? 'bg-violet-50 border-violet-200 text-violet-700 dark:bg-violet-500/10 dark:text-violet-400 dark:border-violet-500/20'
       : 'bg-card-hover text-muted border border-[var(--border-default)]';
 
   // ── Compact Mode (untuk Header) ──────────────────────────────
@@ -109,7 +109,7 @@ export default function QuotaIndicator({ compact = false }) {
       {pct <= 20 && (
         <Link
           href="/pricing"
-          className="block w-full text-center py-1.5 rounded-lg bg-rose-500/10 border border-rose-500/20 text-[11px] font-medium text-rose-400 hover:bg-rose-500/15 transition-colors"
+          className="block w-full text-center py-1.5 rounded-lg bg-rose-50 border border-rose-200 text-[11px] font-medium text-rose-700 hover:bg-rose-100/50 dark:bg-rose-500/10 dark:border-rose-500/20 dark:text-rose-400 dark:hover:bg-rose-500/15 transition-colors"
         >
           ⚡ Top-up Kuota
         </Link>

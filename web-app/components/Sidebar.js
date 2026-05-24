@@ -120,13 +120,13 @@ export default function Sidebar() {
               href={link.href}
               className={`flex items-center gap-3 px-3 py-2.5 rounded-xl text-[13px] font-medium transition-all duration-200 group relative border ${
                 isActive
-                  ? 'bg-indigo-500/10 border-indigo-500/30 text-indigo-300'
-                  : 'border-transparent hover:bg-indigo-500/5 hover:border-indigo-500/10'
+                  ? 'bg-indigo-50 border-indigo-100 text-indigo-600 dark:bg-indigo-500/10 dark:border-indigo-500/30 dark:text-indigo-300'
+                  : 'border-transparent hover:bg-indigo-50/50 hover:border-indigo-100/50 dark:hover:bg-indigo-500/5 dark:hover:border-indigo-500/10'
               }`}
             style={!isActive ? { color: 'var(--text-secondary)' } : {}}
             >
               <span
-                className={isActive ? 'text-indigo-400' : ''}
+                className={isActive ? 'text-indigo-600 dark:text-indigo-400' : ''}
                 style={!isActive ? { color: 'var(--text-muted)' } : {}}
               >
                 {link.icon}
@@ -137,7 +137,7 @@ export default function Sidebar() {
               )}
               {/* Active indicator line */}
               {isActive && (
-                <span className="absolute right-3 w-1 h-1 rounded-full bg-indigo-400" />
+                <span className="absolute right-3 w-1 h-1 rounded-full bg-indigo-600 dark:bg-indigo-400" />
               )}
             </Link>
           );
@@ -154,7 +154,7 @@ export default function Sidebar() {
         {/* Online Status */}
         <div className="flex items-center gap-2 px-3">
           <span className="dot-online" />
-          <span className="text-xs text-emerald-400 font-medium">Model API Terhubung</span>
+          <span className="text-xs text-emerald-600 dark:text-emerald-400 font-medium">Model API Terhubung</span>
         </div>
 
         {/* User Info */}

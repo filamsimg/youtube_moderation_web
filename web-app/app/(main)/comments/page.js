@@ -543,13 +543,13 @@ export default function CommentsPage() {
             <button
               onClick={togglePolling}
               className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs font-medium border transition-all ${isPolling
-                ? 'bg-emerald-500/10 border-emerald-500/20 text-emerald-400'
+                ? 'bg-emerald-50 border-emerald-200 text-emerald-600 dark:bg-emerald-500/10 dark:border-emerald-500/20 dark:text-emerald-400'
                 : 'border-[var(--border-default)] hover:bg-[var(--bg-card-hover)]'
                 }`}
               style={!isPolling ? { color: 'var(--text-secondary)' } : {}}
             >
               <svg
-                className={`w-3.5 h-3.5 ${isPolling ? 'animate-spin text-emerald-400' : ''}`}
+                className={`w-3.5 h-3.5 ${isPolling ? 'animate-spin text-emerald-600 dark:text-emerald-400' : ''}`}
                 style={!isPolling ? { color: 'var(--text-muted)' } : {}}
                 fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor"
               >
@@ -651,7 +651,7 @@ export default function CommentsPage() {
             filteredComments.length === 0 ? (
               comments.length === 0 ? (
                 <div className="flex flex-col items-center justify-center py-20 px-4 text-center max-w-md mx-auto animate-fade-in">
-                  <div className="w-16 h-16 rounded-2xl flex items-center justify-center mb-5 bg-emerald-500/10 text-emerald-400">
+                  <div className="w-16 h-16 rounded-2xl flex items-center justify-center mb-5 bg-emerald-50 border border-emerald-200 text-emerald-600 dark:bg-emerald-500/10 dark:text-emerald-400 dark:border-transparent">
                     <svg className="w-8 h-8" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
                       <path strokeLinecap="round" strokeLinejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12c0 1.268-.63 2.39-1.593 3.068a3.745 3.745 0 01-1.043 3.296 3.745 3.745 0 01-3.296 1.043A3.745 3.745 0 0112 21c-1.268 0-2.39-.63-3.068-1.593a3.746 3.746 0 01-3.296-1.043 3.745 3.745 0 01-1.043-3.296A3.745 3.745 0 013 12c0-1.268.63-2.39 1.593-3.068a3.745 3.745 0 011.043-3.296 3.746 3.746 0 013.296-1.043A3.746 3.746 0 0112 3c1.268 0 2.39.63 3.068 1.593a3.746 3.746 0 013.296 1.043 3.746 3.746 0 011.043 3.296A3.745 3.745 0 0121 12z" />
                     </svg>
@@ -1009,7 +1009,7 @@ export default function CommentsPage() {
                                     onClick={() => handleChangeAction(comment.id, 'publish')}
                                     title="Ubah ke Diterbitkan"
                                     className={`p-1.5 rounded-md transition-all active:scale-90 ${comment.status === 'published'
-                                      ? 'bg-emerald-500/20 text-emerald-400 scale-110 shadow-sm font-bold'
+                                      ? 'bg-emerald-50 border border-emerald-200 text-emerald-600 dark:bg-emerald-500/20 dark:text-emerald-400 scale-110 shadow-sm font-bold'
                                       : 'hover:bg-emerald-500/10 text-emerald-500/30 hover:text-emerald-500 disabled:opacity-30'
                                       }`}
                                   >
@@ -1024,7 +1024,7 @@ export default function CommentsPage() {
                                     onClick={() => handleChangeAction(comment.id, 'hold')}
                                     title="Ubah ke Ditahan"
                                     className={`p-1.5 rounded-md transition-all active:scale-90 ${comment.status === 'heldForReview'
-                                      ? 'bg-amber-500/20 text-amber-400 scale-110 shadow-sm font-bold'
+                                      ? 'bg-amber-50 border border-amber-200 text-amber-700 dark:bg-amber-500/20 dark:text-amber-400 scale-110 shadow-sm font-bold'
                                       : 'hover:bg-amber-500/10 text-amber-500/30 hover:text-amber-500 disabled:opacity-30'
                                       }`}
                                   >
@@ -1039,7 +1039,7 @@ export default function CommentsPage() {
                                     onClick={() => handleChangeAction(comment.id, 'reject')}
                                     title="Ubah ke Ditolak"
                                     className={`p-1.5 rounded-md transition-all active:scale-90 ${comment.status === 'rejected'
-                                      ? 'bg-rose-500/20 text-rose-400 scale-110 shadow-sm font-bold'
+                                      ? 'bg-rose-50 border border-rose-200 text-rose-600 dark:bg-rose-500/20 dark:text-rose-400 scale-110 shadow-sm font-bold'
                                       : 'hover:bg-rose-500/10 text-rose-500/30 hover:text-rose-500 disabled:opacity-30'
                                       }`}
                                   >
@@ -1136,26 +1136,29 @@ export default function CommentsPage() {
                             {/* Mobile Change Action Button Row */}
                             <div className="flex items-center gap-0.5 border-l pl-2" style={{ borderColor: 'var(--border-default)' }}>
                               <button
-                                disabled={isProcessing}
-                                onClick={() => handleChangeAction(comment.id, 'publish')}
-                                className={`p-1.5 rounded-md transition-all active:scale-90 ${comment.status === 'published' ? 'bg-emerald-500/20 text-emerald-400 scale-110 shadow-sm font-bold' : 'text-emerald-500/30 disabled:opacity-30 hover:text-emerald-500'
-                                  }`}
+                                  disabled={isProcessing}
+                                  onClick={() => handleChangeAction(comment.id, 'publish')}
+                                  className={`p-1.5 rounded-md transition-all active:scale-90 ${comment.status === 'published' ? 'bg-emerald-50 border border-emerald-200 text-emerald-600 dark:bg-emerald-500/20 dark:text-emerald-400 scale-110 shadow-sm font-bold' : 'text-emerald-500/30 disabled:opacity-30 hover:text-emerald-500'
+                                    }`}
+                                style={comment.status === 'published' ? { color: 'unset' } : {}}
                               >
                                 <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" strokeWidth={2.5} stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
                               </button>
                               <button
                                 disabled={isProcessing}
                                 onClick={() => handleChangeAction(comment.id, 'hold')}
-                                className={`p-1.5 rounded-md transition-all active:scale-90 ${comment.status === 'heldForReview' ? 'bg-amber-500/20 text-amber-400 scale-110 shadow-sm font-bold' : 'text-amber-500/30 disabled:opacity-30 hover:text-amber-500'
+                                className={`p-1.5 rounded-md transition-all active:scale-90 ${comment.status === 'heldForReview' ? 'bg-amber-50 border border-amber-200 text-amber-700 dark:bg-amber-500/20 dark:text-amber-400 scale-110 shadow-sm font-bold' : 'text-amber-500/30 disabled:opacity-30 hover:text-amber-500'
                                   }`}
+                                style={comment.status === 'heldForReview' ? { color: 'unset' } : {}}
                               >
                                 <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" strokeWidth={2.5} stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
                               </button>
                               <button
                                 disabled={isProcessing}
                                 onClick={() => handleChangeAction(comment.id, 'reject')}
-                                className={`p-1.5 rounded-md transition-all active:scale-90 ${comment.status === 'rejected' ? 'bg-rose-500/20 text-rose-400 scale-110 shadow-sm font-bold' : 'text-rose-500/30 disabled:opacity-30 hover:text-rose-500'
+                                className={`p-1.5 rounded-md transition-all active:scale-90 ${comment.status === 'rejected' ? 'bg-rose-50 border border-rose-200 text-rose-600 dark:bg-rose-500/20 dark:text-rose-400 scale-110 shadow-sm font-bold' : 'text-rose-500/30 disabled:opacity-30 hover:text-rose-500'
                                   }`}
+                                style={comment.status === 'rejected' ? { color: 'unset' } : {}}
                               >
                                 <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" strokeWidth={2.5} stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" d="M9.75 9.75l4.5 4.5m0-4.5l-4.5 4.5M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
                               </button>

@@ -85,18 +85,18 @@ const COST_TABLE = [
 const topupColorMap = {
   emerald: {
     btn: 'bg-gradient-to-r from-emerald-600 to-teal-600 text-white hover:shadow-[0_0_20px_rgba(16,185,129,0.4)]',
-    badge: 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20',
-    icon: 'text-emerald-400',
+    badge: 'bg-emerald-50 border border-emerald-200 text-emerald-700 dark:bg-emerald-500/10 dark:text-emerald-400 dark:border-emerald-500/20',
+    icon: 'text-emerald-600 dark:text-emerald-400',
   },
   blue: {
     btn: 'bg-gradient-to-r from-blue-600 to-indigo-600 text-white hover:shadow-[0_0_20px_rgba(59,130,246,0.4)]',
-    badge: 'bg-blue-500/10 text-blue-400 border border-blue-500/20',
-    icon: 'text-blue-400',
+    badge: 'bg-blue-50 border border-blue-200 text-blue-700 dark:bg-blue-500/10 dark:text-blue-400 dark:border-blue-500/20',
+    icon: 'text-blue-600 dark:text-blue-400',
   },
   violet: {
     btn: 'bg-gradient-to-r from-violet-600 to-purple-600 text-white hover:shadow-[0_0_20px_rgba(124,58,237,0.4)]',
-    badge: 'bg-violet-500/10 text-violet-400 border border-violet-500/20',
-    icon: 'text-violet-400',
+    badge: 'bg-violet-50 border border-violet-200 text-violet-700 dark:bg-violet-500/10 dark:text-violet-400 dark:border-violet-500/20',
+    icon: 'text-violet-600 dark:text-violet-400',
   },
 };
 
@@ -154,8 +154,8 @@ export default function PricingPage() {
               />
             </div>
             <span className={`text-[10px] font-semibold px-2 py-0.5 rounded-full ${
-              profile.tier === 'PRO'        ? 'bg-amber-500/10 text-amber-400 border border-amber-500/20' :
-              profile.tier === 'ENTERPRISE' ? 'bg-violet-500/10 text-violet-400 border border-violet-500/20' :
+              profile.tier === 'PRO'        ? 'bg-amber-50 border border-amber-200 text-amber-700 dark:bg-amber-500/10 dark:text-amber-400 dark:border-amber-500/20' :
+              profile.tier === 'ENTERPRISE' ? 'bg-violet-50 border border-violet-200 text-violet-700 dark:bg-violet-500/10 dark:text-violet-400 dark:border-violet-500/20' :
               'bg-card-hover text-muted border border-[var(--border-default)]'
             }`}>
               {profile.tier}
@@ -206,8 +206,8 @@ export default function PricingPage() {
                 {plan.badge && (
                   <div className={`absolute -top-3 left-1/2 -translate-x-1/2 px-3 py-1 rounded-full text-[11px] font-semibold whitespace-nowrap border bg-card ${
                     isPro
-                      ? 'text-amber-400 border-amber-500/30'
-                      : 'text-violet-400 border-violet-500/30'
+                      ? 'text-amber-600 border-amber-200 dark:text-amber-400 dark:border-amber-500/30'
+                      : 'text-violet-600 border-violet-200 dark:text-violet-400 dark:border-violet-500/30'
                   }`}>
                     {plan.badge}
                   </div>
@@ -234,7 +234,7 @@ export default function PricingPage() {
                     <span className="text-2xl font-bold text-primary">{plan.price}</span>
                     <span className="text-xs text-secondary">{plan.period}</span>
                   </div>
-                  <p className="text-[11px] text-amber-400 font-medium mt-1.5">
+                  <p className="text-[11px] text-amber-600 dark:text-amber-400 font-medium mt-1.5">
                     ⚡ {plan.quota} unit API
                   </p>
                 </div>
@@ -243,7 +243,7 @@ export default function PricingPage() {
                 <ul className="space-y-2 flex-1">
                   {plan.features.map(f => (
                     <li key={f} className="flex items-start gap-2 text-xs text-secondary">
-                      <svg className="w-3.5 h-3.5 mt-0.5 flex-shrink-0 text-emerald-400" fill="none" viewBox="0 0 24 24" strokeWidth={2.5} stroke="currentColor">
+                      <svg className="w-3.5 h-3.5 mt-0.5 flex-shrink-0 text-emerald-600 dark:text-emerald-400" fill="none" viewBox="0 0 24 24" strokeWidth={2.5} stroke="currentColor">
                         <path strokeLinecap="round" strokeLinejoin="round" d="M4.5 12.75l6 6 9-13.5" />
                       </svg>
                       {f}
@@ -322,15 +322,15 @@ export default function PricingPage() {
           </div>
 
           {/* Sandbox Info */}
-          <div className="bento-card border-blue-500/20 bg-blue-500/[0.05] p-4 flex items-start gap-3">
-            <svg className="w-4 h-4 text-blue-400 flex-shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
+          <div className="bento-card border-blue-200 bg-blue-50 p-4 flex items-start gap-3 dark:border-blue-500/20 dark:bg-blue-500/[0.05]">
+            <svg className="w-4 h-4 text-blue-600 flex-shrink-0 mt-0.5 dark:text-blue-400" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" d="M11.25 11.25l.041-.02a.75.75 0 011.063.852l-.708 2.836a.75.75 0 001.063.853l.041-.021M21 12a9 9 0 11-18 0 9 9 0 0118 0zm-9-3.75h.008v.008H12V8.25z" />
             </svg>
             <div>
-              <p className="text-xs font-semibold text-blue-300">Mode Sandbox (Demo)</p>
-              <p className="text-xs text-blue-400/70 mt-0.5">
+              <p className="text-xs font-semibold text-blue-800 dark:text-blue-300">Mode Sandbox (Demo)</p>
+              <p className="text-xs text-blue-600/80 mt-0.5 dark:text-blue-400/70">
                 Pembayaran menggunakan simulasi Midtrans Sandbox. Tidak ada uang nyata yang dipotong.
-                Gunakan nomor kartu <strong className="text-blue-300">4811 1111 1111 1114</strong> untuk simulasi berhasil.
+                Gunakan nomor kartu <strong className="text-blue-800 dark:text-blue-300">4811 1111 1111 1114</strong> untuk simulasi berhasil.
               </p>
             </div>
           </div>
@@ -358,7 +358,7 @@ export default function PricingPage() {
                   <td className="py-2.5 text-primary font-medium">{row.action}</td>
                   <td className="py-2.5 text-secondary font-mono text-[10px]">{row.api}</td>
                   <td className="py-2.5 text-right">
-                    <span className={`font-semibold ${row.cost >= 50 ? 'text-rose-400' : 'text-emerald-400'}`}>
+                    <span className={`font-semibold ${row.cost >= 50 ? 'text-rose-600 dark:text-rose-400' : 'text-emerald-600 dark:text-emerald-400'}`}>
                       {row.cost} unit
                     </span>
                   </td>

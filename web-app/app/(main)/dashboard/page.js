@@ -12,6 +12,7 @@ import {
 import { historyService } from '@/services/historyService';
 
 import { useYouTube } from '@/contexts/YouTubeContext';
+import { useTheme } from '@/components/ThemeProvider';
 
 // ── Dark Tooltip untuk Pie Chart ─────────────────────────────
 const CustomPieTooltip = ({ active, payload }) => {
@@ -53,11 +54,11 @@ function StatCard({ label, value, sub, icon, color, delay = 0 }) {
   }[color] || 'rgba(99, 102, 241, 0.12)';
 
   const iconBg = {
-    blue: 'bg-blue-500/10 border-blue-500/20 text-blue-400',
-    emerald: 'bg-emerald-500/10 border-emerald-500/20 text-emerald-400',
-    amber: 'bg-amber-500/10 border-amber-500/20 text-amber-400',
-    rose: 'bg-rose-500/10 border-rose-500/20 text-rose-400',
-  }[color] || 'bg-indigo-500/10 border-indigo-500/20 text-indigo-400';
+    blue: 'bg-blue-50 border-blue-200 text-blue-600 dark:bg-blue-500/10 dark:border-blue-500/20 dark:text-blue-400',
+    emerald: 'bg-emerald-50 border-emerald-200 text-emerald-600 dark:bg-emerald-500/10 dark:border-emerald-500/20 dark:text-emerald-400',
+    amber: 'bg-amber-50 border-amber-200 text-amber-600 dark:bg-amber-500/10 dark:border-amber-500/20 dark:text-amber-400',
+    rose: 'bg-rose-50 border-rose-200 text-rose-600 dark:bg-rose-500/10 dark:border-rose-500/20 dark:text-rose-400',
+  }[color] || 'bg-indigo-50 border-indigo-200 text-indigo-600 dark:bg-indigo-500/10 dark:border-indigo-500/20 dark:text-indigo-400';
 
   return (
     <div
@@ -86,6 +87,7 @@ function StatCard({ label, value, sub, icon, color, delay = 0 }) {
 export default function DashboardPage() {
   const { data: session } = useSession();
   const router = useRouter();
+  const { theme } = useTheme();
 
   const { activeChannel: channelInfo, channels, fetchChannel, fetchVideos, videosCache } = useYouTube();
   const videos = channelInfo ? (videosCache[channelInfo.id] || []).slice(0, 10) : [];
@@ -224,14 +226,14 @@ export default function DashboardPage() {
             </p>
           </div>
           {/* Live indicator */}
-          <div className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-emerald-500/10 border border-emerald-500/20">
+          <div className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-emerald-50 border border-emerald-200 dark:bg-emerald-500/10 dark:border-emerald-500/20">
             <span className="dot-online" />
-            <span className="text-[11px] text-emerald-400 font-medium">Live</span>
+            <span className="text-[11px] text-emerald-600 dark:text-emerald-400 font-medium">Live</span>
           </div>
         </div>
 
         {/* Info notice */}
-        <div className="mt-3 inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-amber-500/[0.07] border border-amber-500/20 text-amber-400 text-[10px] font-medium">
+        <div className="mt-3 inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-amber-50 border border-amber-200 text-amber-700 dark:bg-amber-500/[0.07] dark:border-amber-500/20 dark:text-amber-400 text-[10px] font-medium">
           <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor">
             <path strokeLinecap="round" strokeLinejoin="round" d="M11.25 11.25l.041-.02a.75.75 0 011.063.852l-.708 2.836a.75.75 0 001.063.853l.041-.021M21 12a9 9 0 11-18 0 9 9 0 0118 0zm-9-3.75h.008v.008H12V8.25z" />
           </svg>
@@ -241,13 +243,13 @@ export default function DashboardPage() {
 
       {/* ── Error Alert ─────────────────────────────────────── */}
       {error && (
-        <div className="bento-card border-rose-500/20 bg-rose-500/[0.05] p-4 flex items-start gap-3">
-          <svg className="w-5 h-5 text-rose-400 mt-0.5 flex-shrink-0" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
+        <div className="bento-card border-rose-200 bg-rose-50 p-4 flex items-start gap-3 dark:border-rose-500/20 dark:bg-rose-500/[0.05]">
+          <svg className="w-5 h-5 text-rose-600 mt-0.5 flex-shrink-0 dark:text-rose-400" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
             <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126zM12 15.75h.007v.008H12v-.008z" />
           </svg>
           <div>
-            <p className="text-sm font-semibold text-rose-300">Gagal Memuat Data YouTube</p>
-            <p className="text-xs text-rose-400/70 mt-0.5">{error}</p>
+            <p className="text-sm font-semibold text-rose-800 dark:text-rose-300">Gagal Memuat Data YouTube</p>
+            <p className="text-xs text-rose-600/80 mt-0.5 dark:text-rose-400/70">{error}</p>
           </div>
         </div>
       )}
@@ -382,11 +384,11 @@ export default function DashboardPage() {
                   </Pie>
                   <Tooltip content={<CustomPieTooltip />} />
                   <text x="50%" y="47%" textAnchor="middle" dominantBaseline="middle"
-                    style={{ fontSize: 20, fontWeight: 700, fill: '#f1f5f9' }}>
+                    style={{ fontSize: 20, fontWeight: 700, fill: theme === 'dark' ? '#f1f5f9' : '#0f172a' }}>
                     {Math.round((spamCount / (normalCount + spamCount || 1)) * 100)}%
                   </text>
                   <text x="50%" y="57%" textAnchor="middle" dominantBaseline="middle"
-                    style={{ fontSize: 10, fill: '#f43f5e' }}>
+                    style={{ fontSize: 10, fill: theme === 'dark' ? '#fb7185' : '#e11d48' }}>
                     Spam Judol
                   </text>
                 </PieChart>
@@ -402,12 +404,12 @@ export default function DashboardPage() {
           {filteredHistory.length > 0 && (
             <div className="flex items-center justify-center gap-6 mt-4 pt-4 border-t" style={{ borderColor: 'var(--border-default)' }}>
               <div className="text-center">
-                <p className="text-lg font-bold text-emerald-400">{normalCount}</p>
+                <p className="text-lg font-bold text-emerald-600 dark:text-emerald-400">{normalCount}</p>
                 <p className="text-[10px] text-muted">Normal</p>
               </div>
               <div className="w-px h-8 bg-border-default" style={{ background: 'var(--border-default)' }} />
               <div className="text-center">
-                <p className="text-lg font-bold text-rose-400">{spamCount}</p>
+                <p className="text-lg font-bold text-rose-600 dark:text-rose-400">{spamCount}</p>
                 <p className="text-[10px] text-muted">Spam Judol</p>
               </div>
               <div className="w-px h-8" style={{ background: 'var(--border-default)' }} />
@@ -499,14 +501,14 @@ export default function DashboardPage() {
             <p className="text-xs text-secondary mb-4">
               Analisis emosi penonton dari komentar yang bukan spam.
               {chartVideoFilter !== 'all' && (
-                <span className="block mt-1 text-amber-400 font-medium">Video terpilih saja</span>
+                <span className="block mt-1 text-amber-600 dark:text-amber-400 font-medium">Video terpilih saja</span>
               )}
             </p>
 
             <div className="grid grid-cols-1 gap-2.5">
               {[
-                { emoji: '😊', label: 'Positif', count: positiveCount, total: positiveCount + negativeCount + neutralCount, colorClass: 'bg-emerald-500/10 border-emerald-500/20', textColor: 'text-emerald-400' },
-                { emoji: '😠', label: 'Negatif', count: negativeCount, total: positiveCount + negativeCount + neutralCount, colorClass: 'bg-rose-500/10 border-rose-500/20', textColor: 'text-rose-400' },
+                { emoji: '😊', label: 'Positif', count: positiveCount, total: positiveCount + negativeCount + neutralCount, colorClass: 'bg-emerald-50 border-emerald-200 dark:bg-emerald-500/10 dark:border-emerald-500/20', textColor: 'text-emerald-600 dark:text-emerald-400' },
+                { emoji: '😠', label: 'Negatif', count: negativeCount, total: positiveCount + negativeCount + neutralCount, colorClass: 'bg-rose-50 border-rose-200 dark:bg-rose-500/10 dark:border-rose-500/20', textColor: 'text-rose-600 dark:text-rose-400' },
                 { emoji: '😐', label: 'Netral', count: neutralCount, total: positiveCount + negativeCount + neutralCount, colorClass: 'bg-card-hover border-[var(--border-default)]', textColor: 'text-secondary' },
               ].map(item => (
                 <div key={item.label} className={`flex items-center justify-between p-3 rounded-xl border ${item.colorClass}`}>
@@ -545,11 +547,11 @@ export default function DashboardPage() {
                   </Pie>
                   <Tooltip content={<CustomPieTooltip />} />
                   <text x="50%" y="47%" textAnchor="middle" dominantBaseline="middle"
-                    style={{ fontSize: 22, fontWeight: 700, fill: '#f1f5f9' }}>
+                    style={{ fontSize: 22, fontWeight: 700, fill: theme === 'dark' ? '#f1f5f9' : '#0f172a' }}>
                     {Math.round((positiveCount / (positiveCount + negativeCount + neutralCount || 1)) * 100)}%
                   </text>
                   <text x="50%" y="57%" textAnchor="middle" dominantBaseline="middle"
-                    style={{ fontSize: 10, fill: '#10b981' }}>
+                    style={{ fontSize: 10, fill: theme === 'dark' ? '#34d399' : '#059669' }}>
                     Sentimen Positif
                   </text>
                 </PieChart>

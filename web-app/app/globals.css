@@ -57,9 +57,9 @@
 
   /* Typography */
   --text-primary:       #0f172a;
-  --text-secondary:     #475569;
-  --text-muted:         #94a3b8;
-  --text-dimmed:        #cbd5e1;
+  --text-secondary:     #334155;
+  --text-muted:         #475569;
+  --text-dimmed:        #64748b;
 
   /* Scrollbar */
   --scrollbar-thumb:    #cbd5e1;
@@ -112,9 +112,9 @@
 
   /* Typography */
   --text-primary:       #f1f5f9;
-  --text-secondary:     #94a3b8;
-  --text-muted:         #475569;
-  --text-dimmed:        #334155;
+  --text-secondary:     #cbd5e1; /* slate-200 */
+  --text-muted:         #94a3b8; /* slate-400 */
+  --text-dimmed:        #64748b; /* slate-500 */
 
   /* Scrollbar */
   --scrollbar-thumb:    #1e293b;
@@ -289,7 +289,10 @@ body {
 .nav-item-active {
   background: var(--accent-ai-soft);
   border-color: var(--border-accent);
-  color: #a5b4fc; /* indigo-300 — tetap sama di kedua mode */
+  color: #4f46e5; /* indigo-600 for light mode */
+}
+.dark .nav-item-active {
+  color: #a5b4fc; /* indigo-300 for dark mode */
 }
 
 /* ═══════════════════════════════════════════════════════════
@@ -329,8 +332,11 @@ body {
 }
 .badge-ai {
   background: var(--accent-ai-soft);
-  color: #a5b4fc;
+  color: #4f46e5; /* indigo-600 */
   border-color: var(--border-accent);
+}
+.dark .badge-ai {
+  color: #a5b4fc; /* indigo-300 */
 }
 .badge-muted {
   background: var(--bg-card-hover);
@@ -339,8 +345,11 @@ body {
 }
 .badge-amber {
   background: var(--accent-action-soft);
-  color: #fbbf24;
+  color: #b45309; /* amber-700 */
   border-color: var(--accent-action-glow);
+}
+.dark .badge-amber {
+  color: #fbbf24; /* amber-400 */
 }
 
 /* ═══════════════════════════════════════════════════════════
