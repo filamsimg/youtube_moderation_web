@@ -500,16 +500,27 @@ export default function CommentsPage() {
           <p className="text-xs mt-1 mb-4" style={{ color: 'var(--text-muted)' }}>
             Klik tombol di bawah untuk memuat komentar dari semua video yang dipilih
           </p>
-          <button
-            onClick={() => handleLoadSelected(false)}
-            disabled={isFetchingMulti}
-            className="px-5 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-semibold rounded-xl transition-all active:scale-95 flex items-center gap-2 disabled:opacity-50"
-          >
-            <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5M16.5 12L12 16.5m0 0L7.5 12m4.5 4.5V3" />
-            </svg>
-            Muat {selectedVideoIds.size} Video
-          </button>
+          <div className="flex flex-col sm:flex-row items-center justify-center gap-3 w-full max-w-xs sm:max-w-none px-4 animate-fade-in">
+            <button
+              onClick={() => handleLoadSelected(false)}
+              disabled={isFetchingMulti}
+              className="w-full sm:w-auto px-5 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-semibold rounded-xl transition-all active:scale-95 flex items-center justify-center gap-2 disabled:opacity-50"
+            >
+              <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5M16.5 12L12 16.5m0 0L7.5 12m4.5 4.5V3" />
+              </svg>
+              Muat {selectedVideoIds.size} Video
+            </button>
+            <button
+              onClick={() => setShowVideoPanel(true)}
+              className="lg:hidden w-full sm:w-auto px-5 py-2.5 bg-[var(--bg-card-hover)] hover:bg-[var(--border-default)] border border-[var(--border-default)] text-[var(--text-secondary)] text-xs font-semibold rounded-xl transition-all active:scale-95 flex items-center justify-center gap-2"
+            >
+              <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" d="M3.75 6A2.25 2.25 0 016 3.75h2.25A2.25 2.25 0 0110.5 6v2.25a2.25 2.25 0 01-2.25 2.25H6a2.25 2.25 0 01-2.25-2.25V15.75z" />
+              </svg>
+              Pilih / Ganti Video
+            </button>
+          </div>
         </div>
       );
     }
@@ -1188,13 +1199,12 @@ export default function CommentsPage() {
         </div>
         <button
           onClick={() => setShowVideoPanel(true)}
-          className="lg:hidden flex items-center gap-2 px-3 py-1.5 rounded-lg border text-xs font-medium transition-all bento-card"
-          style={{ color: 'var(--text-secondary)' }}
+          className="lg:hidden flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold transition-all active:scale-95 bg-indigo-500/10 border border-indigo-500/30 text-indigo-600 dark:text-indigo-400 shadow-sm"
         >
-          <svg className="w-4 h-4" style={{ color: 'var(--text-muted)' }} fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
-            <path strokeLinecap="round" strokeLinejoin="round" d="M5.25 5.653c0-.856.917-1.398 1.667-.986l11.54 6.348a1.125 1.125 0 010 1.971l-11.54 6.347a1.125 1.125 0 01-1.667-.985V5.653z" />
+          <svg className="w-4 h-4 flex-shrink-0" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
+            <path strokeLinecap="round" strokeLinejoin="round" d="M6 20.25h12A2.25 2.25 0 0020.25 18V6A2.25 2.25 0 0018 3.75H6A2.25 2.25 0 003.75 6v12A2.25 2.25 0 006 20.25z" />
           </svg>
-          {selectedVideoIds.size > 0 ? `${selectedVideoIds.size} dipilih` : 'Pilih Video'}
+          <span>{selectedVideoIds.size > 0 ? `${selectedVideoIds.size} Video` : 'Pilih Video'}</span>
         </button>
       </div>
 
