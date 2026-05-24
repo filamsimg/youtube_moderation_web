@@ -19,21 +19,52 @@ export default function MainLayout({ children }) {
 
   if (status === 'loading') {
     return (
-      <div className="flex min-h-screen items-center justify-center" style={{ background: 'var(--bg-screen)' }}>
-        <div className="flex flex-col items-center gap-4">
-          {/* Animated logo */}
+      <div className="flex min-h-screen items-center justify-center transition-colors duration-300" style={{ background: 'var(--bg-page)' }}>
+        {/* Background radial glow */}
+        <div className="absolute w-[300px] h-[300px] rounded-full bg-indigo-500/10 dark:bg-indigo-500/5 blur-[80px]" />
+
+        <div className="relative flex flex-col items-center max-w-xs text-center space-y-6">
+          {/* Glowing Pulsing Logo Container */}
           <div className="relative">
-            <div className="absolute inset-0 rounded-full bg-indigo-500/20 blur-xl animate-pulse" />
+            <div className="absolute inset-0 rounded-full bg-indigo-500/25 blur-xl animate-pulse" />
             <div className="relative animate-float">
-              <img src="/logo.webp" alt="Athena Shield" className="w-14 h-14 object-contain drop-shadow-2xl" />
+              <img
+                src="/logo.webp"
+                alt="Athena Shield Logo"
+                className="w-16 h-16 object-contain drop-shadow-2xl"
+              />
             </div>
           </div>
-          {/* Loading bar */}
-          <div className="w-36 h-1 rounded-full overflow-hidden" style={{ background: 'var(--border-default)' }}>
-            <div className="h-full w-3/5 bg-gradient-to-r from-indigo-500 to-violet-500 rounded-full animate-pulse" />
+
+          {/* Text Details */}
+          <div className="space-y-1 z-10">
+            <h2 className="text-sm font-bold tracking-widest" style={{ color: 'var(--text-primary)' }}>
+              ATHENA SHIELD
+            </h2>
+            <p className="text-[10px] uppercase font-bold tracking-widest text-indigo-600 dark:text-indigo-400">
+              Perisai Moderasi AI YouTube
+            </p>
           </div>
-          <p className="text-xs font-medium" style={{ color: 'var(--text-muted)' }}>Memuat Athena Shield...</p>
+
+          {/* Loading Indicator Progress Bar */}
+          <div className="w-40 h-1 rounded-full overflow-hidden relative" style={{ background: 'var(--border-default)' }}>
+            <div className="absolute top-0 bottom-0 left-0 bg-indigo-600 dark:bg-indigo-500 rounded-full w-1/3 animate-[loading_1.5s_infinite_ease-in-out]" />
+          </div>
+          
+          {/* Status Text */}
+          <p className="text-[10px] animate-pulse" style={{ color: 'var(--text-muted)' }}>
+            Menginisialisasi sistem moderasi spam judol...
+          </p>
         </div>
+
+        {/* CSS keyframe for smooth infinite slide loader */}
+        <style jsx global>{`
+          @keyframes loading {
+            0% { left: -30%; width: 30%; }
+            50% { width: 40%; }
+            100% { left: 100%; width: 30%; }
+          }
+        `}</style>
       </div>
     );
   }
