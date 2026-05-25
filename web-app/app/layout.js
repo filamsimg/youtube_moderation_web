@@ -17,6 +17,24 @@ export default function RootLayout({ children }) {
     // suppressHydrationWarning mencegah React error saat class 'dark' 
     // ditambahkan client-side (berbeda dari HTML awal server)
     <html lang="id" suppressHydrationWarning>
+      <head>
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `
+              (function() {
+                try {
+                  var isDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+                  if (isDark) {
+                    document.documentElement.classList.add('dark');
+                  } else {
+                    document.documentElement.classList.remove('dark');
+                  }
+                } catch (e) {}
+              })();
+            `
+          }}
+        />
+      </head>
       <body className={inter.className}>
         <ThemeProvider>
           <SessionProvider>
@@ -29,3 +47,4 @@ export default function RootLayout({ children }) {
     </html>
   );
 }
+
