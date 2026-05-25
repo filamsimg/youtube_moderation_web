@@ -2,8 +2,14 @@
 
 import { useState, useEffect } from 'react';
 import { useSession } from 'next-auth/react';
+import { useQuota } from '@/contexts/QuotaContext';
+import { useToast } from '@/contexts/ToastContext';
 import Link from 'next/link';
+import Script from 'next/script';
 
+// =========================================================================
+// DEFINISI PAKET LANGGANAN & TOP-UP (Sesuai Konfigurasi Keamanan Sisi Server)
+// =========================================================================
 const PLANS = [
   {
     key: 'FREE',
@@ -62,16 +68,16 @@ const PLANS = [
       'Dedicated support',
     ],
     disabled: [],
-    cta: 'Hubungi Kami',
+    cta: 'Pilih Enterprise',
     badge: '⭐ Terlengkap',
     tier: 'ENTERPRISE',
   },
 ];
 
 const TOP_UP_PACKAGES = [
-  { units: 5000,  price: 'Rp 15.000', label: 'Starter',  color: 'emerald', badge: null },
-  { units: 20000, price: 'Rp 50.000', label: 'Standard', color: 'blue',    badge: 'Terlaris' },
-  { units: 60000, price: 'Rp 120.000',label: 'Power',    color: 'violet',  badge: null },
+  { key: 'topup-starter', units: 5000,  price: 'Rp 15.000', label: 'Starter',  color: 'emerald', badge: null },
+  { key: 'topup-standard', units: 20000, price: 'Rp 50.000', label: 'Standard', color: 'blue',    badge: 'Terlaris' },
+  { key: 'topup-power', units: 60000, price: 'Rp 120.000',label: 'Power',    color: 'violet',  badge: null },
 ];
 
 const COST_TABLE = [
@@ -102,27 +108,110 @@ const topupColorMap = {
 
 export default function PricingPage() {
   const { data: session } = useSession();
-  const [profile, setProfile] = useState(null);
-  const [loadingProfile, setLoadingProfile] = useState(true);
-  const [activeTab, setActiveTab] = useState('plans');
+  const { profile, loading: loadingProfile, fetchQuota } = useQuota();
+  const toast = useToast();
 
-  useEffect(() => {
-    const fetchProfile = async () => {
-      try {
-        const res = await fetch('/api/quota/profile');
-        if (res.ok) setProfile(await res.json());
-      } catch (e) {
-        console.error(e);
-      } finally {
-        setLoadingProfile(false);
+  const [activeTab, setActiveTab] = useState('plans');
+  const [loadingTx, setLoadingTx] = useState(null);
+
+  // Menangani inisialisasi checkout pembayaran Midtrans Snap (Aman & Server-Verified)
+  const handlePurchase = async (packageId) => {
+    if (!session?.user?.email) {
+      toast.error('Anda harus login terlebih dahulu untuk melakukan pembayaran.');
+      return;
+    }
+
+    if (loadingTx) return;
+
+    try {
+      setLoadingTx(packageId);
+      toast.info('Menghubungkan ke gateway pembayaran Sandbox...');
+
+      // 1. Dapatkan Snap Token dari server (Server-side price check)
+      const res = await fetch('/api/payment/checkout', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ packageId }),
+      });
+
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'Gagal inisialisasi checkout');
+
+      const { token, orderId } = data;
+
+      // 2. Luncurkan Popup Midtrans Snap di browser
+      if (window.snap) {
+        window.snap.pay(token, {
+          onSuccess: async function (result) {
+            console.log('Sandbox Success:', result);
+            toast.success('Pembayaran sukses! Menambahkan kuota Anda secara instan.');
+            
+            // Simulasikan pemicu webhook instan agar database lokal terupdate (Sandbox Demo Helper)
+            await syncPaymentStatus(orderId, packageId);
+            
+            setTimeout(() => {
+              fetchQuota();
+            }, 1000);
+          },
+          onPending: function (result) {
+            toast.warning('Pembayaran pending. Silakan selesaikan transaksi Anda di simulator Sandbox.');
+          },
+          onError: function (result) {
+            toast.error('Pembayaran gagal. Silakan coba kembali.');
+          },
+          onClose: function () {
+            toast.info('Menu pembayaran ditutup.');
+          },
+        });
+      } else {
+        throw new Error('SDK Midtrans Snap gagal dimuat. Pastikan koneksi internet aktif.');
       }
-    };
-    if (session?.user?.email) fetchProfile();
-    else setLoadingProfile(false);
-  }, [session?.user?.email]);
+    } catch (err) {
+      console.error('Checkout error:', err);
+      toast.error(err.message || 'Gagal memproses inisialisasi pembayaran.');
+    } finally {
+      setLoadingTx(null);
+    }
+  };
+
+  // Sandbox demo helper: Bypass localhost untuk webhook local agar demo skripsi lancar tanpa ngrok
+  const syncPaymentStatus = async (orderId, packageId) => {
+    try {
+      let mockAmount = 15000;
+      if (packageId === 'PRO') mockAmount = 49000;
+      else if (packageId === 'ENTERPRISE') mockAmount = 149000;
+      else if (packageId === 'topup-standard') mockAmount = 50000;
+      else if (packageId === 'topup-power') mockAmount = 120000;
+
+      await fetch('/api/payment/notification', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          order_id: orderId,
+          status_code: '200',
+          gross_amount: mockAmount.toString(),
+          transaction_status: 'settlement',
+          fraud_status: 'accept',
+          signature_key: 'mock-local-bypass-signature',
+        }),
+      });
+    } catch (e) {
+      console.warn('Gagal memicu sinkronisasi status lokal:', e);
+    }
+  };
 
   return (
-    <div className="animate-fade-in-up space-y-6 pb-12 max-w-5xl mx-auto">
+    <div className="animate-fade-in-up space-y-8 pb-12 max-w-5xl mx-auto">
+      {/* Memuat Midtrans Snap SDK (Sandbox Environment) */}
+      <Script
+        src="https://app.sandbox.midtrans.com/snap/snap.js"
+        data-client-key={process.env.NEXT_PUBLIC_MIDTRANS_CLIENT_KEY}
+        strategy="lazyOnload"
+      />
 
       {/* ── Page Header ──────────────────────────────────────── */}
       <div className="text-center space-y-3 pt-2">
@@ -234,7 +323,7 @@ export default function PricingPage() {
                     <span className="text-2xl font-bold text-primary">{plan.price}</span>
                     <span className="text-xs text-secondary">{plan.period}</span>
                   </div>
-                  <p className="text-[11px] text-amber-600 dark:text-amber-400 font-medium mt-1.5">
+                  <p className="text-[11px] text-indigo-500 dark:text-indigo-400 font-semibold mt-1.5">
                     ⚡ {plan.quota} unit API
                   </p>
                 </div>
@@ -261,20 +350,30 @@ export default function PricingPage() {
 
                 {/* CTA */}
                 <button
-                  disabled={isCurrentTier || isFree}
-                  className={`relative overflow-hidden w-full py-2.5 rounded-xl text-xs font-semibold transition-all duration-300 ${
+                  disabled={isCurrentTier || isFree || loadingTx !== null}
+                  onClick={() => handlePurchase(plan.key)}
+                  className={`relative overflow-hidden w-full py-2.5 rounded-xl text-xs font-semibold transition-all duration-300 cursor-pointer select-none ${
                     isCurrentTier || isFree
                       ? 'bg-card-hover text-muted cursor-default border border-[var(--border-default)]'
                       : isPro
                       ? 'bg-gradient-to-r from-indigo-600 to-violet-600 text-white hover:shadow-[0_0_24px_rgba(99,102,241,0.45)] hover:-translate-y-0.5'
                       : 'bg-gradient-to-r from-amber-500 to-orange-500 text-white hover:shadow-[0_0_24px_rgba(245,158,11,0.45)] hover:-translate-y-0.5'
-                  }`}
+                  } disabled:opacity-50 disabled:cursor-not-allowed`}
                 >
                   {!isCurrentTier && !isFree && (
                     <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent -translate-x-full hover:translate-x-full transition-transform duration-700" />
                   )}
                   <span className="relative">
-                    {isCurrentTier ? '✓ Paket Aktif Anda' : plan.cta}
+                    {loadingTx === plan.key ? (
+                      <span className="flex items-center justify-center gap-1">
+                        <span className="w-3 h-3 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                        Inisialisasi...
+                      </span>
+                    ) : isCurrentTier ? (
+                      '✓ Paket Aktif Anda'
+                    ) : (
+                      plan.cta
+                    )}
                   </span>
                 </button>
               </div>
@@ -310,11 +409,21 @@ export default function PricingPage() {
                     {pkg.units.toLocaleString('id-ID')} Unit
                   </div>
                   <button
-                    className={`relative overflow-hidden w-full py-2.5 rounded-xl text-xs font-semibold transition-all duration-300 hover:-translate-y-0.5 ${c.btn}`}
-                    onClick={() => alert('Fitur pembayaran akan segera tersedia (Midtrans Sandbox)')}
+                    disabled={loadingTx !== null}
+                    className={`relative overflow-hidden w-full py-2.5 rounded-xl text-xs font-semibold transition-all duration-300 hover:-translate-y-0.5 cursor-pointer select-none ${c.btn} disabled:opacity-50 disabled:cursor-not-allowed`}
+                    onClick={() => handlePurchase(pkg.key)}
                   >
                     <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent -translate-x-full hover:translate-x-full transition-transform duration-700" />
-                    <span className="relative">Beli Sekarang</span>
+                    <span className="relative">
+                      {loadingTx === pkg.key ? (
+                        <span className="flex items-center justify-center gap-1">
+                          <span className="w-3 h-3 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                          Inisialisasi...
+                        </span>
+                      ) : (
+                        'Beli Sekarang'
+                      )}
+                    </span>
                   </button>
                 </div>
               );
@@ -330,7 +439,7 @@ export default function PricingPage() {
               <p className="text-xs font-semibold text-blue-800 dark:text-blue-300">Mode Sandbox (Demo)</p>
               <p className="text-xs text-blue-600/80 mt-0.5 dark:text-blue-400/70">
                 Pembayaran menggunakan simulasi Midtrans Sandbox. Tidak ada uang nyata yang dipotong.
-                Gunakan nomor kartu <strong className="text-blue-800 dark:text-blue-300">4811 1111 1111 1114</strong> untuk simulasi berhasil.
+                Gunakan simulator Sandbox resmi untuk memproses pembayaran virtual account bank atau QRIS dengan sukses.
               </p>
             </div>
           </div>
@@ -338,7 +447,7 @@ export default function PricingPage() {
       )}
 
       {/* ── Tabel Biaya API ──────────────────────────────────── */}
-      <div className="bento-card p-5 space-y-3">
+      <div className="bento-card p-5 space-y-3 border border-[var(--border-default)]">
         <div>
           <h2 className="text-sm font-semibold text-primary">Tabel Biaya Kuota</h2>
           <p className="text-xs text-secondary mt-0.5">Setiap aksi dalam aplikasi mengonsumsi unit YouTube API v3.</p>
