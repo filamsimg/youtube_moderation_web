@@ -14,6 +14,8 @@ const PRIVATE_PREFIXES = [
   '/preferensi',
   '/channel',
   '/video',
+  '/pricing',
+  '/profile',
 ];
 
 // Route yang BOLEH diakses tanpa login (public)
