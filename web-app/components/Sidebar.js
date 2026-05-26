@@ -65,7 +65,7 @@ export default function Sidebar() {
       ),
     },
     {
-      name: 'Antrian Moderasi',
+      name: 'Pemeriksaan Komentar',
       href: '/comments',
       icon: (
         <svg className="w-5 h-5 flex-shrink-0" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
@@ -142,7 +142,7 @@ export default function Sidebar() {
             <p className="text-sm font-semibold leading-none tracking-tight" style={{ color: 'var(--text-primary)' }}>
               Athena Shield
             </p>
-            <p className="text-[11px] mt-0.5" style={{ color: 'var(--text-muted)' }}>Moderasi AI</p>
+            <p className="text-[11px] mt-0.5" style={{ color: 'var(--text-muted)' }}>Perlindungan Komentar</p>
           </div>
         </div>
 
@@ -164,13 +164,11 @@ export default function Sidebar() {
               <Link
                 key={link.name}
                 href={link.href}
-                className={`flex items-center rounded-xl text-[13px] font-medium transition-all duration-200 group relative border ${
-                  isCollapsed ? 'justify-center p-2.5 mx-2 w-10 h-10' : 'gap-3 px-3 py-2.5 mx-0'
-                } ${
-                  isActive
+                className={`flex items-center rounded-xl text-[13px] font-medium transition-all duration-200 group relative border ${isCollapsed ? 'justify-center p-2.5 mx-2 w-10 h-10' : 'gap-3 px-3 py-2.5 mx-0'
+                  } ${isActive
                     ? 'bg-indigo-50 border-indigo-100 text-indigo-600 dark:bg-indigo-500/10 dark:border-indigo-500/30 dark:text-indigo-300'
                     : 'border-transparent hover:bg-indigo-50/50 hover:border-indigo-100/50 dark:hover:bg-indigo-500/5 dark:hover:border-indigo-500/10'
-                }`}
+                  }`}
                 style={!isActive ? { color: 'var(--text-secondary)' } : {}}
               >
                 <span
@@ -212,13 +210,13 @@ export default function Sidebar() {
             <div className="flex justify-center group relative py-1">
               <span className="dot-online animate-pulse" />
               <div className="absolute left-16 invisible opacity-0 group-hover:visible group-hover:opacity-100 transition-all duration-200 z-50 bg-slate-900 dark:bg-slate-800 text-slate-100 text-xs rounded-lg py-1.5 px-3 shadow-xl whitespace-nowrap border border-slate-700/50 pointer-events-none">
-                Model API Terhubung
+                Sistem AI Aktif
               </div>
             </div>
           ) : (
             <div className="flex items-center gap-2 px-3">
               <span className="dot-online animate-pulse" />
-              <span className="text-xs text-emerald-600 dark:text-emerald-400 font-medium">Model API Terhubung</span>
+              <span className="text-xs text-emerald-600 dark:text-emerald-400 font-medium">Sistem AI Aktif</span>
             </div>
           )}
 
@@ -226,11 +224,10 @@ export default function Sidebar() {
           <div className="relative" ref={popoverRef}>
             <button
               onClick={() => setShowControlPanel(!showControlPanel)}
-              className={`flex items-center gap-3 p-2.5 rounded-xl text-[13px] font-medium transition-all duration-200 border cursor-pointer group relative ${
-                showControlPanel
-                  ? 'bg-indigo-50 border-indigo-100 text-indigo-600 dark:bg-indigo-500/10 dark:border-indigo-500/30 dark:text-indigo-300'
-                  : 'border-transparent hover:bg-indigo-50/50 hover:border-indigo-100/50 dark:hover:bg-indigo-500/5 dark:hover:border-indigo-500/10'
-              } ${isCollapsed ? 'justify-center w-10 h-10 mx-2' : 'w-full'}`}
+              className={`flex items-center gap-3 p-2.5 rounded-xl text-[13px] font-medium transition-all duration-200 border cursor-pointer group relative ${showControlPanel
+                ? 'bg-indigo-50 border-indigo-100 text-indigo-600 dark:bg-indigo-500/10 dark:border-indigo-500/30 dark:text-indigo-300'
+                : 'border-transparent hover:bg-indigo-50/50 hover:border-indigo-100/50 dark:hover:bg-indigo-500/5 dark:hover:border-indigo-500/10'
+                } ${isCollapsed ? 'justify-center w-10 h-10 mx-2' : 'w-full'}`}
               style={{ color: 'var(--text-secondary)' }}
               aria-label="Kontrol Sidebar"
             >
@@ -248,9 +245,8 @@ export default function Sidebar() {
             {/* Floating Popover Panel - Responsive Dual Mode */}
             {showControlPanel && (
               <div
-                className={`absolute bottom-12 rounded-xl border p-2 shadow-2xl backdrop-blur-xl animate-fade-in z-50 flex flex-col gap-0.5 w-[200px] ${
-                  isCollapsed ? 'left-14' : 'left-0 right-0'
-                } bg-white/95 border-slate-200 text-slate-800 dark:bg-slate-950/95 dark:border-slate-800 dark:text-slate-100`}
+                className={`absolute bottom-12 rounded-xl border p-2 shadow-2xl backdrop-blur-xl animate-fade-in z-50 flex flex-col gap-0.5 w-[200px] ${isCollapsed ? 'left-14' : 'left-0 right-0'
+                  } bg-white/95 border-slate-200 text-slate-800 dark:bg-slate-950/95 dark:border-slate-800 dark:text-slate-100`}
               >
                 {/* Header */}
                 <div className="px-3 py-1.5 border-b mb-1 border-slate-100 dark:border-slate-800">
@@ -435,7 +431,7 @@ export default function Sidebar() {
           }, 1200);
         }}
         title="Keluar Sesi"
-        description="Apakah Anda yakin ingin keluar dari Athena Shield? Anda perlu melakukan login kembali untuk mengakses panel moderasi komentar YouTube Anda."
+        description="Apakah Anda yakin ingin keluar dari Athena Shield? Anda perlu masuk kembali untuk mengakses panel pemeriksaan komentar YouTube Anda."
         confirmText="Keluar"
         variant="danger"
       />
