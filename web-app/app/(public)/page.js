@@ -13,8 +13,8 @@ const FEATURES = [
         <path strokeLinecap="round" strokeLinejoin="round" d="M9.813 15.904L9 18.75l-.813-2.846a4.5 4.5 0 00-3.09-3.09L2.25 12l2.846-.813a4.5 4.5 0 003.09-3.09L9 5.25l.813 2.846a4.5 4.5 0 003.09 3.09L15.75 12l-2.846.813a4.5 4.5 0 00-3.09 3.09z" />
       </svg>
     ),
-    title: 'Deteksi AI (IndoBERT)',
-    desc: 'Model NLP berbasis IndoBERT yang dilatih khusus untuk mengenali komentar judi online (judol) di YouTube.',
+    title: 'Pendeteksi AI Pintar',
+    desc: 'Sistem kecerdasan buatan (AI) yang dilatih khusus untuk mengenali bahasa iklan judi online di kolom komentar YouTube.',
     color: 'amber',
   },
   {
@@ -23,8 +23,8 @@ const FEATURES = [
         <path strokeLinecap="round" strokeLinejoin="round" d="M3.75 13.5l10.5-11.25L12 10.5h8.25L9.75 21.75 12 13.5H3.75z" />
       </svg>
     ),
-    title: 'Auto-Moderasi Cepat',
-    desc: 'Tahan atau hapus komentar spam secara otomatis berdasarkan skor kepercayaan AI tanpa perlu klik satu-satu.',
+    title: 'Pembersihan Otomatis',
+    desc: 'Hapus atau tahan komentar mencurigakan secara otomatis berdasarkan tingkat keyakinan AI tanpa repot memeriksa satu-satu.',
     color: 'emerald',
   },
   {
@@ -33,8 +33,8 @@ const FEATURES = [
         <path strokeLinecap="round" strokeLinejoin="round" d="M7.5 14.25v2.25m3-4.5v4.5m3-6.75v6.75m3-9v9M6 20.25h12A2.25 2.25 0 0020.25 18V6A2.25 2.25 0 0018 3.75H6A2.25 2.25 0 003.75 6v12A2.25 2.25 0 006 20.25z" />
       </svg>
     ),
-    title: 'Analisis Sentimen',
-    desc: 'Tidak hanya spam — sistem juga menganalisis sentimen komentar normal: Positif, Negatif, atau Netral.',
+    title: 'Deteksi Sikap Penonton',
+    desc: 'Pahami emosi penonton—AI mendeteksi komentar yang mendukung (positif), tidak suka (negatif), atau biasa saja (netral).',
     color: 'amber',
   },
   {
@@ -43,8 +43,8 @@ const FEATURES = [
         <path strokeLinecap="round" strokeLinejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 11-18 0 9 9 0 0118 0z" />
       </svg>
     ),
-    title: 'Polling Real-time',
-    desc: 'Aktifkan polling otomatis agar komentar baru dianalisis secara berkala tanpa perlu refresh manual.',
+    title: 'Pemeriksaan Otomatis',
+    desc: 'Pengecekan berjalan berkala di latar belakang untuk menyaring komentar baru tanpa perlu memuat ulang halaman.',
     color: 'amber',
   },
   {
@@ -53,8 +53,8 @@ const FEATURES = [
         <path strokeLinecap="round" strokeLinejoin="round" d="M9 12.75L11.25 15 15 9.75m-3-7.036A11.959 11.959 0 013.598 6 11.99 11.99 0 003 9.749c0 5.592 3.824 10.29 9 11.623 5.176-1.332 9-6.03 9-11.622 0-1.31-.21-2.571-.598-3.751h-.152c-3.196 0-6.1-1.248-8.25-3.285z" />
       </svg>
     ),
-    title: 'Sistem Kuota Aman',
-    desc: 'Penggunaan YouTube API dipantau dan dibatasi per user sehingga layanan tetap stabil untuk semua.',
+    title: 'Jatah Kuota Harian Aman',
+    desc: 'Pembagian jatah penggunaan harian dari YouTube diatur adil agar layanan tetap lancar untuk seluruh pengguna.',
     color: 'rose',
   },
   {
@@ -63,8 +63,8 @@ const FEATURES = [
         <path strokeLinecap="round" strokeLinejoin="round" d="M19.5 14.25v-2.625a3.375 3.375 0 00-3.375-3.375h-1.5A1.125 1.125 0 0113.5 7.125v-1.5a3.375 3.375 0 00-3.375-3.375H8.25m0 12.75h7.5m-7.5 3H12M10.5 2.25H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 00-9-9z" />
       </svg>
     ),
-    title: 'Riwayat Moderasi',
-    desc: 'Semua aksi tersimpan di database. Lacak kapan, komentar apa, dan keputusan AI apa yang diambil.',
+    title: 'Riwayat Tindakan',
+    desc: 'Seluruh komentar yang disetujui atau dihapus tersimpan aman untuk memudahkan Anda melihat hasil penyaringan.',
     color: 'violet',
   },
 ];
@@ -125,12 +125,12 @@ export default function LandingPage() {
           </div>
 
           <h1 className="text-4xl sm:text-5xl font-bold text-primary leading-tight mb-4 max-w-3xl mx-auto pointer-events-auto">
-            Moderasi Komentar{' '}
+            Penyaringan Komentar{' '}
             <span className="text-amber-500">Judi Online</span>{' '}
             di YouTube secara Otomatis
           </h1>
           <p className="text-base text-secondary max-w-xl mx-auto mb-8 leading-relaxed pointer-events-auto">
-            Sistem AI berbasis IndoBERT untuk mendeteksi dan memoderasi komentar spam judol
+            Sistem Kecerdasan Buatan (AI) untuk menyaring dan membersihkan komentar promosi judi
             di kanal YouTube Anda — cepat, akurat, dan tanpa batas manual.
           </p>
 
@@ -192,13 +192,13 @@ export default function LandingPage() {
         <div className="max-w-4xl mx-auto">
           <div className="text-center mb-12">
             <h2 className="text-2xl font-bold text-primary mb-2">Cara Kerja Sistem</h2>
-            <p className="text-sm text-muted">Tiga langkah sederhana untuk moderasi otomatis</p>
+            <p className="text-sm text-muted">Tiga langkah sederhana untuk penyaringan otomatis</p>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             {[
               { step: '01', title: 'Login dengan Google', desc: 'Hubungkan akun YouTube Anda menggunakan OAuth Google. Aman dan tidak menyimpan password.' },
               { step: '02', title: 'Pilih Video', desc: 'Pilih satu atau beberapa video dari kanal Anda. Sistem akan mengambil semua komentar.' },
-              { step: '03', title: 'AI Bekerja', desc: 'IndoBERT menganalisis setiap komentar. Spam judol ditandai dan dapat dimoderasi otomatis.' },
+              { step: '03', title: 'AI Bekerja', desc: 'Sistem AI menganalisis setiap komentar. Iklan judi ditandai dan dapat disaring otomatis.' },
             ].map((item) => (
               <div key={item.step} className="relative">
                 <div className="text-5xl font-black mb-3" style={{ color: 'var(--border-default)' }}>{item.step}</div>
