@@ -140,7 +140,7 @@ export default function RiwayatPage() {
             Riwayat Aktivitas
           </h1>
           <p className="text-sm mt-0.5" style={{ color: 'var(--text-muted)' }}>
-            Riwayat membantu meninjau konsistensi keputusan moderasi
+            Riwayat membantu Anda meninjau kembali tindakan penyaringan komentar yang telah diambil
           </p>
         </div>
         <button
@@ -242,9 +242,9 @@ export default function RiwayatPage() {
           <svg className="w-12 h-12 mb-3" style={{ color: 'var(--border-hover)' }} fill="none" viewBox="0 0 24 24" strokeWidth={1} stroke="currentColor">
             <path strokeLinecap="round" strokeLinejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 11-18 0 9 9 0 0118 0z" />
           </svg>
-          <p className="text-sm font-medium" style={{ color: 'var(--text-secondary)' }}>Belum ada riwayat moderasi</p>
+          <p className="text-sm font-medium" style={{ color: 'var(--text-secondary)' }}>Belum ada tindakan penyaringan</p>
           <p className="text-xs mt-1" style={{ color: 'var(--text-muted)' }}>
-            Riwayat akan muncul saat Anda mulai memoderasi komentar
+            Riwayat tindakan Anda akan otomatis muncul di sini setelah Anda memeriksa komentar.
           </p>
         </div>
       ) : (
@@ -285,7 +285,7 @@ export default function RiwayatPage() {
                       <td className="px-5 py-3">
                         <div className="flex flex-col gap-1">
                           <span className={`badge ${item.aiLabel?.toLowerCase() === 'spam' ? 'badge-danger' : 'badge-success'}`}>
-                            {item.aiLabel === 'Spam' ? '🚨 Spam Judol' : '✅ Normal'}
+                            {item.aiLabel === 'Spam' ? '🚨 Terdeteksi Judi' : '✅ Komentar Bersih'}
                           </span>
                           {item.aiLabel !== 'Spam' && item.sentiment && (
                             <span className={`badge ${
@@ -293,8 +293,8 @@ export default function RiwayatPage() {
                               item.sentiment === 'negative' ? 'badge-danger' :
                               'badge-muted'
                             }`}>
-                              {item.sentiment === 'positive' ? '😊 Positif' :
-                               item.sentiment === 'negative' ? '😠 Negatif' : '😐 Netral'}
+                              {item.sentiment === 'positive' ? '😊 Mendukung' :
+                               item.sentiment === 'negative' ? '😠 Mengkritik' : '😐 Biasa Saja'}
                             </span>
                           )}
                         </div>
@@ -329,15 +329,15 @@ export default function RiwayatPage() {
                 </p>
                 <div className="flex items-center gap-2 flex-wrap">
                   <span className={`badge ${item.aiLabel?.toLowerCase() === 'spam' ? 'badge-danger' : 'badge-success'}`}>
-                    {item.aiLabel === 'Spam' ? '🚨 Spam Judol' : '✅ Normal'}
+                    {item.aiLabel === 'Spam' ? '🚨 Terdeteksi Judi' : '✅ Komentar Bersih'}
                   </span>
                   {item.aiLabel !== 'Spam' && item.sentiment && (
                     <span className={`badge ${
                       item.sentiment === 'positive' ? 'badge-success' :
                       item.sentiment === 'negative' ? 'badge-danger' : 'badge-muted'
                     }`}>
-                      {item.sentiment === 'positive' ? '😊 Positif' :
-                       item.sentiment === 'negative' ? '😠 Negatif' : '😐 Netral'}
+                      {item.sentiment === 'positive' ? '😊 Mendukung' :
+                       item.sentiment === 'negative' ? '😠 Mengkritik' : '😐 Biasa Saja'}
                     </span>
                   )}
                 </div>
