@@ -20,12 +20,12 @@ const PLANS = [
     quotaNum: 1000,
     description: 'Untuk percobaan & penggunaan pribadi ringan.',
     features: [
-      '1.000 unit API / hari (auto-reset)',
-      'Moderasi manual komentar',
-      'Analisis AI (Spam & Sentimen)',
-      'Riwayat moderasi',
+      'Jatah 1.000 poin harian (diisi ulang otomatis tiap hari)',
+      'Penyaringan komentar manual',
+      'Analisis AI (Iklan Judi & Emosi Penonton)',
+      'Riwayat tindakan penyaringan',
     ],
-    disabled: ['Auto-moderasi (Tahan/Hapus)', 'Polling otomatis', 'Multi-video filter'],
+    disabled: ['Penyaringan Otomatis', 'Pengecekan berkala otomatis', 'Pilihan banyak video sekaligus'],
     cta: 'Paket Saat Ini',
     badge: null,
     tier: 'FREE',
@@ -39,12 +39,12 @@ const PLANS = [
     quotaNum: 50000,
     description: 'Untuk content creator aktif dengan video yang sering ramai komentar.',
     features: [
-      '50.000 unit API / bulan',
+      'Jatah 50.000 poin harian / bulan',
       'Semua fitur Free',
-      'Auto-moderasi (Tahan & Hapus)',
-      'Polling otomatis tiap 2 menit',
-      'Multi-video filter & batch moderasi',
-      'Prioritas support',
+      'Penyaringan Otomatis (Tahan & Hapus)',
+      'Pemeriksaan otomatis tiap 2 menit',
+      'Pilih banyak video & hapus massal sekaligus',
+      'Layanan bantuan prioritas',
     ],
     disabled: [],
     cta: 'Pilih Pro',
@@ -56,16 +56,16 @@ const PLANS = [
     name: 'Enterprise',
     price: 'Rp 149.000',
     period: '/ bulan',
-    quota: 'Tak Terbatas*',
+    quota: 'Bebas Kuota YouTube*',
     quotaNum: 999999,
     description: 'Untuk agency atau channel dengan volume komentar sangat tinggi.',
     features: [
-      'Quota tak terbatas (BYOK)*',
+      'Bebas dari batasan kuota YouTube*',
       'Semua fitur Pro',
-      'Bring Your Own API Key (BYOK)',
-      'Dashboard analitik lanjutan',
-      'Ekspor data CSV',
-      'Dedicated support',
+      'Gunakan Kunci Akses YouTube Sendiri (Gratis)',
+      'Grafik laporan statistik lengkap',
+      'Unduh laporan ke Excel (CSV)',
+      'Layanan bantuan khusus',
     ],
     disabled: [],
     cta: 'Pilih Enterprise',
@@ -75,17 +75,17 @@ const PLANS = [
 ];
 
 const TOP_UP_PACKAGES = [
-  { key: 'topup-starter', units: 5000,  price: 'Rp 15.000', label: 'Starter',  color: 'emerald', badge: null },
-  { key: 'topup-standard', units: 20000, price: 'Rp 50.000', label: 'Standard', color: 'blue',    badge: 'Terlaris' },
-  { key: 'topup-power', units: 60000, price: 'Rp 120.000',label: 'Power',    color: 'violet',  badge: null },
+  { key: 'topup-starter', units: 5000, price: 'Rp 15.000', label: 'Starter', color: 'emerald', badge: null },
+  { key: 'topup-standard', units: 20000, price: 'Rp 50.000', label: 'Standard', color: 'blue', badge: 'Terlaris' },
+  { key: 'topup-power', units: 60000, price: 'Rp 120.000', label: 'Power', color: 'violet', badge: null },
 ];
 
 const COST_TABLE = [
-  { action: 'Ambil Daftar Video',            api: 'playlistItems.list',          cost: 1 },
-  { action: 'Ambil Komentar (100 komentar)', api: 'commentThreads.list',         cost: 1 },
-  { action: 'Moderasi Komentar (Single)',    api: 'setModerationStatus',         cost: 50 },
-  { action: 'Moderasi Batch',               api: 'setModerationStatus (batch)', cost: 50 },
-  { action: 'Polling Auto-refresh',         api: 'List call per siklus',        cost: 1 },
+  { action: 'Ambil Daftar Video', api: 'playlistItems.list', cost: 1 },
+  { action: 'Ambil Komentar (100 komentar)', api: 'commentThreads.list', cost: 1 },
+  { action: 'Moderasi Komentar (Single)', api: 'setModerationStatus', cost: 50 },
+  { action: 'Moderasi Batch', api: 'setModerationStatus (batch)', cost: 50 },
+  { action: 'Polling Auto-refresh', api: 'List call per siklus', cost: 1 },
 ];
 
 const topupColorMap = {
@@ -125,7 +125,7 @@ export default function PricingPage() {
 
     try {
       setLoadingTx(packageId);
-      toast.info('Menghubungkan ke gateway pembayaran Sandbox...');
+      toast.info('Menghubungkan ke sistem pembayaran simulasi (Uji Coba)...');
 
       // 1. Dapatkan Snap Token dari server (Server-side price check)
       const res = await fetch('/api/payment/checkout', {
@@ -147,16 +147,16 @@ export default function PricingPage() {
           onSuccess: async function (result) {
             console.log('Sandbox Success:', result);
             toast.success('Pembayaran sukses! Menambahkan kuota Anda secara instan.');
-            
+
             // Simulasikan pemicu webhook instan agar database lokal terupdate (Sandbox Demo Helper)
             await syncPaymentStatus(orderId, packageId);
-            
+
             setTimeout(() => {
               fetchQuota();
             }, 1000);
           },
           onPending: function (result) {
-            toast.warning('Pembayaran pending. Silakan selesaikan transaksi Anda di simulator Sandbox.');
+            toast.warning('Pembayaran ditunda. Silakan selesaikan transaksi Anda di halaman simulasi pembayaran (gratis/uji coba).');
           },
           onError: function (result) {
             toast.error('Pembayaran gagal. Silakan coba kembali.');
@@ -218,9 +218,9 @@ export default function PricingPage() {
         <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full badge badge-ai text-[11px] mb-2">
           ⚡ Kelola Kuota API
         </div>
-        <h1 className="text-2xl font-bold text-primary tracking-tight">Paket &amp; Kuota API</h1>
+        <h1 className="text-2xl font-bold text-primary tracking-tight">Paket &amp; Jatah Poin Harian</h1>
         <p className="text-sm text-secondary">
-          Kelola penggunaan YouTube API Anda. Setiap aksi mengonsumsi unit kuota.
+          Kelola kuota sistem Anda. Setiap tindakan pemeriksaan atau penghapusan komentar akan mengurangi jatah poin harian dari YouTube.
         </p>
 
         {/* Current Quota Status Badge */}
@@ -235,18 +235,16 @@ export default function PricingPage() {
             </div>
             <div className="w-20 h-1.5 rounded-full overflow-hidden" style={{ background: 'var(--border-default)' }}>
               <div
-                className={`h-full rounded-full transition-all ${
-                  profile.percentage > 50 ? 'bg-emerald-500' :
-                  profile.percentage > 20 ? 'bg-amber-400' : 'bg-rose-500'
-                }`}
+                className={`h-full rounded-full transition-all ${profile.percentage > 50 ? 'bg-emerald-500' :
+                    profile.percentage > 20 ? 'bg-amber-400' : 'bg-rose-500'
+                  }`}
                 style={{ width: `${profile.percentage}%` }}
               />
             </div>
-            <span className={`text-[10px] font-semibold px-2 py-0.5 rounded-full ${
-              profile.tier === 'PRO'        ? 'bg-amber-50 border border-amber-200 text-amber-700 dark:bg-amber-500/10 dark:text-amber-400 dark:border-amber-500/20' :
-              profile.tier === 'ENTERPRISE' ? 'bg-violet-50 border border-violet-200 text-violet-700 dark:bg-violet-500/10 dark:text-violet-400 dark:border-violet-500/20' :
-              'bg-card-hover text-muted border border-[var(--border-default)]'
-            }`}>
+            <span className={`text-[10px] font-semibold px-2 py-0.5 rounded-full ${profile.tier === 'PRO' ? 'bg-amber-50 border border-amber-200 text-amber-700 dark:bg-amber-500/10 dark:text-amber-400 dark:border-amber-500/20' :
+                profile.tier === 'ENTERPRISE' ? 'bg-violet-50 border border-violet-200 text-violet-700 dark:bg-violet-500/10 dark:text-violet-400 dark:border-violet-500/20' :
+                  'bg-card-hover text-muted border border-[var(--border-default)]'
+              }`}>
               {profile.tier}
             </span>
           </div>
@@ -257,17 +255,16 @@ export default function PricingPage() {
       <div className="flex justify-center">
         <div className="flex bg-card border border-[var(--border-default)] rounded-xl p-1 gap-1">
           {[
-            { key: 'plans',  label: 'Langganan Bulanan' },
-            { key: 'topup',  label: 'Top-up Kredit' },
+            { key: 'plans', label: 'Langganan Bulanan' },
+            { key: 'topup', label: 'Top-up Kredit' },
           ].map(tab => (
             <button
               key={tab.key}
               onClick={() => setActiveTab(tab.key)}
-              className={`px-4 py-1.5 rounded-lg text-xs font-medium transition-all duration-200 ${
-                activeTab === tab.key
+              className={`px-4 py-1.5 rounded-lg text-xs font-medium transition-all duration-200 ${activeTab === tab.key
                   ? 'bg-indigo-500/10 text-indigo-300 border border-indigo-500/30'
                   : 'text-secondary hover:text-primary hover:bg-card-hover'
-              }`}
+                }`}
             >
               {tab.label}
             </button>
@@ -287,17 +284,15 @@ export default function PricingPage() {
             return (
               <div
                 key={plan.key}
-                className={`relative bento-card flex flex-col gap-4 p-5 transition-all duration-300 ${
-                  isPro ? 'bento-card-glow' : ''
-                } ${isCurrentTier ? 'border-indigo-500/30 shadow-[0_0_30px_rgba(99,102,241,0.10)]' : ''}`}
+                className={`relative bento-card flex flex-col gap-4 p-5 transition-all duration-300 ${isPro ? 'bento-card-glow' : ''
+                  } ${isCurrentTier ? 'border-indigo-500/30 shadow-[0_0_30px_rgba(99,102,241,0.10)]' : ''}`}
               >
                 {/* Popular Badge */}
                 {plan.badge && (
-                  <div className={`absolute -top-3 left-1/2 -translate-x-1/2 px-3 py-1 rounded-full text-[11px] font-semibold whitespace-nowrap border bg-card ${
-                    isPro
+                  <div className={`absolute -top-3 left-1/2 -translate-x-1/2 px-3 py-1 rounded-full text-[11px] font-semibold whitespace-nowrap border bg-card ${isPro
                       ? 'text-amber-600 border-amber-200 dark:text-amber-400 dark:border-amber-500/30'
                       : 'text-violet-600 border-violet-200 dark:text-violet-400 dark:border-violet-500/30'
-                  }`}>
+                    }`}>
                     {plan.badge}
                   </div>
                 )}
@@ -305,9 +300,8 @@ export default function PricingPage() {
                 {/* Plan Header */}
                 <div>
                   <div className="flex items-center justify-between mb-1">
-                    <span className={`text-sm font-bold ${
-                      isPro ? 'text-amber-300' : isEnterprise ? 'text-violet-300' : 'text-primary'
-                    }`}>
+                    <span className={`text-sm font-bold ${isPro ? 'text-amber-300' : isEnterprise ? 'text-violet-300' : 'text-primary'
+                      }`}>
                       {plan.name}
                     </span>
                     {isCurrentTier && (
@@ -352,13 +346,12 @@ export default function PricingPage() {
                 <button
                   disabled={isCurrentTier || isFree || loadingTx !== null}
                   onClick={() => handlePurchase(plan.key)}
-                  className={`relative overflow-hidden w-full py-2.5 rounded-xl text-xs font-semibold transition-all duration-300 cursor-pointer select-none ${
-                    isCurrentTier || isFree
+                  className={`relative overflow-hidden w-full py-2.5 rounded-xl text-xs font-semibold transition-all duration-300 cursor-pointer select-none ${isCurrentTier || isFree
                       ? 'bg-card-hover text-muted cursor-default border border-[var(--border-default)]'
                       : isPro
-                      ? 'bg-gradient-to-r from-indigo-600 to-violet-600 text-white hover:shadow-[0_0_24px_rgba(99,102,241,0.45)] hover:-translate-y-0.5'
-                      : 'bg-gradient-to-r from-amber-500 to-orange-500 text-white hover:shadow-[0_0_24px_rgba(245,158,11,0.45)] hover:-translate-y-0.5'
-                  } disabled:opacity-50 disabled:cursor-not-allowed`}
+                        ? 'bg-gradient-to-r from-indigo-600 to-violet-600 text-white hover:shadow-[0_0_24px_rgba(99,102,241,0.45)] hover:-translate-y-0.5'
+                        : 'bg-gradient-to-r from-amber-500 to-orange-500 text-white hover:shadow-[0_0_24px_rgba(245,158,11,0.45)] hover:-translate-y-0.5'
+                    } disabled:opacity-50 disabled:cursor-not-allowed`}
                 >
                   {!isCurrentTier && !isFree && (
                     <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent -translate-x-full hover:translate-x-full transition-transform duration-700" />
@@ -404,7 +397,7 @@ export default function PricingPage() {
                   </div>
                   <div className={`flex items-center gap-1.5 text-sm font-semibold ${c.icon}`}>
                     <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
-                      <path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/>
+                      <path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z" />
                     </svg>
                     {pkg.units.toLocaleString('id-ID')} Unit
                   </div>
@@ -429,36 +422,22 @@ export default function PricingPage() {
               );
             })}
           </div>
-
-          {/* Sandbox Info */}
-          <div className="bento-card border-blue-200 bg-blue-50 p-4 flex items-start gap-3 dark:border-blue-500/20 dark:bg-blue-500/[0.05]">
-            <svg className="w-4 h-4 text-blue-600 flex-shrink-0 mt-0.5 dark:text-blue-400" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" d="M11.25 11.25l.041-.02a.75.75 0 011.063.852l-.708 2.836a.75.75 0 001.063.853l.041-.021M21 12a9 9 0 11-18 0 9 9 0 0118 0zm-9-3.75h.008v.008H12V8.25z" />
-            </svg>
-            <div>
-              <p className="text-xs font-semibold text-blue-800 dark:text-blue-300">Mode Sandbox (Demo)</p>
-              <p className="text-xs text-blue-600/80 mt-0.5 dark:text-blue-400/70">
-                Pembayaran menggunakan simulasi Midtrans Sandbox. Tidak ada uang nyata yang dipotong.
-                Gunakan simulator Sandbox resmi untuk memproses pembayaran virtual account bank atau QRIS dengan sukses.
-              </p>
-            </div>
-          </div>
         </div>
       )}
 
       {/* ── Tabel Biaya API ──────────────────────────────────── */}
       <div className="bento-card p-5 space-y-3 border border-[var(--border-default)]">
         <div>
-          <h2 className="text-sm font-semibold text-primary">Tabel Biaya Kuota</h2>
-          <p className="text-xs text-secondary mt-0.5">Setiap aksi dalam aplikasi mengonsumsi unit YouTube API v3.</p>
+          <h2 className="text-sm font-semibold text-primary">Panduan Konsumsi Jatah Poin</h2>
+          <p className="text-xs text-secondary mt-0.5">Setiap tindakan pemeriksaan atau penghapusan komentar akan memotong jatah poin Anda.</p>
         </div>
         <div className="overflow-x-auto">
           <table className="w-full text-xs">
             <thead>
               <tr className="border-b" style={{ borderColor: 'var(--border-default)' }}>
-                <th className="py-2 text-left font-semibold text-secondary uppercase tracking-wider text-[10px]">Aksi</th>
-                <th className="py-2 text-left font-semibold text-secondary uppercase tracking-wider text-[10px]">YouTube API</th>
-                <th className="py-2 text-right font-semibold text-secondary uppercase tracking-wider text-[10px]">Biaya</th>
+                <th className="py-2 text-left font-semibold text-secondary uppercase tracking-wider text-[10px]">Tindakan</th>
+                <th className="py-2 text-left font-semibold text-secondary uppercase tracking-wider text-[10px]">Nama Teknis YouTube (Abaikan saja)</th>
+                <th className="py-2 text-right font-semibold text-secondary uppercase tracking-wider text-[10px]">Konsumsi Poin</th>
               </tr>
             </thead>
             <tbody className="divide-y" style={{ borderColor: 'var(--border-default)' }}>
@@ -481,7 +460,7 @@ export default function PricingPage() {
 
       {/* Footer Note */}
       <p className="text-center text-[11px] text-muted">
-        *BYOK (Bring Your Own Key): Gunakan API Key YouTube Anda sendiri untuk kuota tak terbatas. Dapat dikonfigurasi di{' '}
+        *Gunakan Kunci Akses Sendiri (Gratis): Anda bisa membuat dan menggunakan Kunci Akses YouTube (API Key) milik Anda sendiri dari Google untuk menikmati penyaringan tanpa batasan. Dapat dikonfigurasi di{' '}
         <Link href="/preferensi" className="text-indigo-400 hover:text-indigo-300 hover:underline">
           Preferensi
         </Link>.
