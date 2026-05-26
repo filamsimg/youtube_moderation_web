@@ -57,9 +57,8 @@ export default function PreferensiPage() {
       style={!checked ? { background: 'var(--border-hover)' } : {}}
     >
       <span
-        className={`absolute top-0.5 w-4 h-4 bg-white rounded-full shadow transition-transform ${
-          checked ? 'left-[22px]' : 'left-0.5'
-        }`}
+        className={`absolute top-0.5 w-4 h-4 bg-white rounded-full shadow transition-transform ${checked ? 'left-[22px]' : 'left-0.5'
+          }`}
       />
     </button>
   );
@@ -151,10 +150,10 @@ export default function PreferensiPage() {
       {/* ── Header ────────────────────────────────────────────── */}
       <div>
         <h1 className="text-lg lg:text-xl font-bold tracking-tight" style={{ color: 'var(--text-primary)' }}>
-          Preferensi &amp; Pengaturan
+          Pengaturan Penyaringan AI
         </h1>
         <p className="text-sm mt-0.5" style={{ color: 'var(--text-muted)' }}>
-          Sesuaikan pengalaman moderasi Anda
+          Sesuaikan kepekaan pendeteksi AI dan aturan otomatisasi
         </p>
       </div>
 
@@ -198,68 +197,6 @@ export default function PreferensiPage() {
         </button>
       </div>
 
-      {/* ── Tampilan ──────────────────────────────────────────── */}
-      <div className="bento-card p-6">
-        <div className="flex items-center gap-2 mb-1">
-          <svg className="w-5 h-5 text-amber-400" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
-            <path strokeLinecap="round" strokeLinejoin="round" d="M9.53 16.122a3 3 0 00-5.78 1.128 2.25 2.25 0 01-2.4 2.245 4.5 4.5 0 008.4-2.245c0-.399-.078-.78-.22-1.128zm0 0a15.998 15.998 0 003.388-1.62m-5.043-.025a15.994 15.994 0 011.622-3.395m3.42 3.42a15.995 15.995 0 004.764-4.648l3.876-5.814a1.151 1.151 0 00-1.597-1.597L14.146 6.32a15.996 15.996 0 00-4.649 4.763m3.42 3.42a6.776 6.776 0 00-3.42-3.42" />
-          </svg>
-          <h2 className="text-sm font-semibold" style={{ color: 'var(--text-primary)' }}>Tampilan</h2>
-        </div>
-        <p className="text-xs mb-2" style={{ color: 'var(--text-muted)' }}>Sesuaikan tampilan antarmuka</p>
-
-        {/* ── Tema Toggle — Sambung ke ThemeContext ─────────── */}
-        <div className="py-4 border-t" style={{ borderColor: 'var(--border-default)' }}>
-          <p className="text-sm font-medium mb-1" style={{ color: 'var(--text-secondary)' }}>Tema Warna</p>
-          <p className="text-[11px] mb-3" style={{ color: 'var(--text-muted)' }}>
-            Pilih tema terang atau gelap untuk kenyamanan mata
-          </p>
-          <div className="flex gap-3">
-            {[
-              {
-                value: 'light',
-                label: 'Terang',
-                icon: (
-                  <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M12 3v2.25m6.364.386l-1.591 1.591M21 12h-2.25m-.386 6.364l-1.591-1.591M12 18.75V21m-4.773-4.227l-1.591 1.591M5.25 12H3m4.227-4.773L5.636 5.636M15.75 12a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0z" />
-                  </svg>
-                ),
-              },
-              {
-                value: 'dark',
-                label: 'Gelap',
-                icon: (
-                  <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M21.752 15.002A9.718 9.718 0 0118 15.75c-5.385 0-9.75-4.365-9.75-9.75 0-1.33.266-2.597.748-3.752A9.753 9.753 0 003 11.25C3 16.635 7.365 21 12.75 21a9.753 9.753 0 009.002-5.998z" />
-                  </svg>
-                ),
-              },
-            ].map(opt => {
-              const isSelected = theme === opt.value;
-              return (
-                <button
-                  key={opt.value}
-                  onClick={() => setTheme(opt.value)}
-                  className={`flex-1 flex items-center justify-center gap-2 py-2.5 rounded-xl border text-sm font-medium transition-all ${
-                    isSelected
-                      ? 'bg-indigo-500/10 border-indigo-500/40 text-indigo-400'
-                      : ''
-                  }`}
-                  style={!isSelected ? {
-                    background: 'var(--bg-card-hover)',
-                    borderColor: 'var(--border-default)',
-                    color: 'var(--text-muted)',
-                  } : {}}
-                >
-                  {opt.icon}
-                  {opt.label}
-                </button>
-              );
-            })}
-          </div>
-        </div>
-      </div>
-
       {/* ── Notifikasi & Otomasi ──────────────────────────────── */}
       <div className="bento-card p-6">
         <div className="flex items-center gap-2 mb-1">
@@ -282,30 +219,30 @@ export default function PreferensiPage() {
           <div className="space-y-4 pt-2">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm font-medium" style={{ color: 'var(--text-secondary)' }}>Karantina Otomatis (Mencurigakan)</p>
+                <p className="text-sm font-medium" style={{ color: 'var(--text-secondary)' }}>Penahanan Otomatis</p>
                 <p className="text-[11px] mt-0.5" style={{ color: 'var(--text-muted)' }}>
-                  Tahan komentar jika skor AI melebihi ambang batas karantina.
+                  Amankan komentar ke folder tinjauan jika tingkat kecurigaan AI melewati batas kepekaan.
                 </p>
               </div>
               <Toggle checked={autoTahan} onChange={setAutoTahan} />
             </div>
             {autoTahan && (
-              <Slider label="Ambang Batas Karantina" value={thresholdHold} onChange={setThresholdHold} min={50} max={95} />
+              <Slider label="Sensitivitas Penahanan Komentar (Mencurigakan)" value={thresholdHold} onChange={setThresholdHold} min={50} max={95} />
             )}
           </div>
 
           <div className="space-y-4 pt-2 border-t" style={{ borderColor: 'var(--border-default)' }}>
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm font-medium" style={{ color: 'var(--text-secondary)' }}>Hapus Otomatis (Sangat Yakin)</p>
+                <p className="text-sm font-medium" style={{ color: 'var(--text-secondary)' }}>Penghapusan Otomatis</p>
                 <p className="text-[11px] mt-0.5" style={{ color: 'var(--text-muted)' }}>
-                  Langsung Reject komentar jika skor AI melebihi ambang batas hapus.
+                  Langsung hapus komentar dari YouTube jika AI sangat yakin komentar tersebut berisi iklan judi.
                 </p>
               </div>
               <Toggle checked={autoHapus} onChange={setAutoHapus} />
             </div>
             {autoHapus && (
-              <Slider label="Ambang Batas Hapus (Reject)" value={thresholdReject} onChange={setThresholdReject} min={70} max={99} />
+              <Slider label="Sensitivitas Penghapusan Otomatis (Sangat Yakin)" value={thresholdReject} onChange={setThresholdReject} min={70} max={99} />
             )}
           </div>
         </div>
@@ -317,21 +254,21 @@ export default function PreferensiPage() {
           <svg className="w-5 h-5 text-amber-400" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
             <path strokeLinecap="round" strokeLinejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 11-18 0 9 9 0 0118 0z" />
           </svg>
-          <h2 className="text-sm font-semibold" style={{ color: 'var(--text-primary)' }}>Pengaturan Kuota &amp; Polling</h2>
+          <h2 className="text-sm font-semibold" style={{ color: 'var(--text-primary)' }}>Hemat Jatah Poin YouTube</h2>
         </div>
         <p className="text-xs mb-4" style={{ color: 'var(--text-muted)' }}>
-          Optimalkan penggunaan kuota YouTube API harian Anda (10k unit/hari)
+          Optimalkan jatah harian akun Anda yang dibatasi oleh pihak YouTube (10.000 poin/hari)
         </p>
 
         <div className="space-y-6">
           <SelectField
-            label="Interval Polling Komentar"
-            desc="Semakin lama intervalnya, semakin hemat kuota Anda. Direkomendasikan 2-5 menit."
+            label="Jeda Pemeriksaan Otomatis"
+            desc="Semakin lama jeda pemeriksaan, jatah poin harian YouTube Anda akan semakin hemat. (Disarankan 2-5 menit)."
             value={pollingInterval}
             onChange={(val) => setPollingInterval(parseInt(val))}
             options={[
-              { value: 30,  label: '30 Detik (Boros Kuota)' },
-              { value: 60,  label: '1 Menit' },
+              { value: 30, label: '30 Detik (Boros Kuota)' },
+              { value: 60, label: '1 Menit' },
               { value: 120, label: '2 Menit (Rekomendasi)' },
               { value: 300, label: '5 Menit (Sangat Hemat)' },
               { value: 600, label: '10 Menit' },
@@ -339,9 +276,9 @@ export default function PreferensiPage() {
           />
           <div className="flex items-center justify-between py-2 border-t" style={{ borderColor: 'var(--border-default)' }}>
             <div>
-              <p className="text-sm font-medium" style={{ color: 'var(--text-secondary)' }}>Moderasi Massal (Batching)</p>
+              <p className="text-sm font-medium" style={{ color: 'var(--text-secondary)' }}>Pembersihan Massal Sekaligus</p>
               <p className="text-[11px] mt-0.5" style={{ color: 'var(--text-muted)' }}>
-                Kirim banyak perintah moderasi dalam 1 request. Menghemat 50x hingga 100x kuota.
+                Kirim instruksi penghapusan untuk banyak komentar sekaligus agar sangat menghemat jatah kuota YouTube.
               </p>
             </div>
             <Toggle checked={batchModeration} onChange={setBatchModeration} />
@@ -357,7 +294,7 @@ export default function PreferensiPage() {
             <svg className="w-4 h-4" style={{ color: 'var(--color-info-text)' }} fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" d="M11.25 11.25l.041-.02a.75.75 0 011.063.852l-.708 2.836a.75.75 0 001.063.853l.041-.021M21 12a9 9 0 11-18 0 9 9 0 0118 0zm-9-3.75h.008v.008H12V8.25z" />
             </svg>
-            <span className="text-xs font-semibold" style={{ color: 'var(--color-info-text)' }}>Panduan Biaya Kuota</span>
+            <span className="text-xs font-semibold" style={{ color: 'var(--color-info-text)' }}>Panduan Konsumsi Jatah Poin</span>
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
