@@ -219,10 +219,10 @@ export default function DashboardPage() {
         <div className="flex items-start justify-between">
           <div>
             <h1 className="text-lg lg:text-xl font-bold text-primary tracking-tight">
-              Ringkasan Moderasi
+              Laporan Pembersihan Komentar
             </h1>
             <p className="text-sm text-secondary mt-0.5">
-              Pantau aktivitas komentar dan metrik moderasi Anda
+              Pantau kebersihan komentar dan tindakan penyaringan yang telah diambil
             </p>
           </div>
           {/* Live indicator */}
@@ -348,9 +348,9 @@ export default function DashboardPage() {
         <div className="bento-card p-5 lg:p-6">
           <div className="flex items-center justify-between mb-4">
             <div>
-              <h2 className="text-sm font-semibold text-primary">Distribusi Konten</h2>
+              <h2 className="text-sm font-semibold text-primary">Hasil Pemeriksaan Komentar</h2>
               <p className="text-xs text-secondary mt-0.5">
-                {chartVideoFilter === 'all' ? 'Semua video' : 'Video terpilih'} — Normal vs Spam Judol
+                {chartVideoFilter === 'all' ? 'Semua video' : 'Video terpilih'} — Komentar Bersih vs Iklan Judi
               </p>
             </div>
             <div className="flex items-center gap-3">
@@ -389,7 +389,7 @@ export default function DashboardPage() {
                   </text>
                   <text x="50%" y="57%" textAnchor="middle" dominantBaseline="middle"
                     style={{ fontSize: 10, fill: theme === 'dark' ? '#fb7185' : '#e11d48' }}>
-                    Spam Judol
+                    Iklan Judi
                   </text>
                 </PieChart>
               </ResponsiveContainer>
@@ -410,7 +410,7 @@ export default function DashboardPage() {
               <div className="w-px h-8 bg-border-default" style={{ background: 'var(--border-default)' }} />
               <div className="text-center">
                 <p className="text-lg font-bold text-rose-600 dark:text-rose-400">{spamCount}</p>
-                <p className="text-[10px] text-muted">Spam Judol</p>
+                <p className="text-[10px] text-muted">Iklan Judi</p>
               </div>
               <div className="w-px h-8" style={{ background: 'var(--border-default)' }} />
               <div className="text-center">
@@ -423,8 +423,8 @@ export default function DashboardPage() {
 
         {/* Bar: Aktivitas Moderasi */}
         <div className="bento-card p-5 lg:p-6">
-          <h2 className="text-sm font-semibold text-primary mb-1">Aktivitas Moderasi</h2>
-          <p className="text-xs text-secondary mb-4 lg:mb-5">Kumulatif aksi yang telah dilakukan</p>
+          <h2 className="text-sm font-semibold text-primary mb-1">Total Tindakan Penyaringan</h2>
+          <p className="text-xs text-secondary mb-4 lg:mb-5">Jumlah komentar yang telah ditindaklanjuti</p>
           <div className="h-[200px] lg:h-[240px] w-full">
             {history.length > 0 ? (
               <ResponsiveContainer width="100%" height="100%">
@@ -455,13 +455,13 @@ export default function DashboardPage() {
         <div className="bento-card p-5 lg:p-6">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-5">
             <div>
-              <h2 className="text-sm font-semibold text-primary">Spam Judol per Video</h2>
-              <p className="text-xs text-secondary">Perbandingan komentar normal dan spam per video</p>
+              <h2 className="text-sm font-semibold text-primary">Iklan Judi per Video</h2>
+              <p className="text-xs text-secondary">Perbandingan komentar bersih dan iklan judi per video</p>
             </div>
             <div className="flex items-center gap-3 text-[10px]">
               <div className="flex items-center gap-1.5">
                 <div className="w-2.5 h-2.5 rounded-sm bg-rose-500" />
-                <span className="text-secondary">Spam Judol</span>
+                <span className="text-secondary">Iklan Judi</span>
               </div>
               <div className="flex items-center gap-1.5">
                 <div className="w-2.5 h-2.5 rounded-sm bg-emerald-500" />
@@ -485,7 +485,7 @@ export default function DashboardPage() {
                 />
                 <YAxis axisLine={false} tickLine={false} tick={axisTick} />
                 <Tooltip content={<CustomBarTooltip />} cursor={{ fill: 'rgba(255,255,255,0.03)' }} />
-                <Bar dataKey="judol" name="Spam Judol" fill="#f43f5e" radius={[4, 4, 0, 0]} />
+                <Bar dataKey="judol" name="Iklan Judi" fill="#f43f5e" radius={[4, 4, 0, 0]} />
                 <Bar dataKey="normal" name="Normal" fill="#10b981" radius={[4, 4, 0, 0]} />
               </BarChart>
             </ResponsiveContainer>
@@ -497,9 +497,9 @@ export default function DashboardPage() {
       <div className="bento-card p-5 lg:p-6">
         <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6">
           <div className="lg:w-1/3">
-            <h2 className="text-base font-bold text-primary mb-1">Kualitas Komunitas</h2>
+            <h2 className="text-base font-bold text-primary mb-1">Tanggapan &amp; Sikap Penonton</h2>
             <p className="text-xs text-secondary mb-4">
-              Analisis emosi penonton dari komentar yang bukan spam.
+              Mendeteksi suasana hati penonton dari komentar yang masuk di kolom komentar.
               {chartVideoFilter !== 'all' && (
                 <span className="block mt-1 text-amber-600 dark:text-amber-400 font-medium">Video terpilih saja</span>
               )}
@@ -507,9 +507,9 @@ export default function DashboardPage() {
 
             <div className="grid grid-cols-1 gap-2.5">
               {[
-                { emoji: '😊', label: 'Positif', count: positiveCount, total: positiveCount + negativeCount + neutralCount, colorClass: 'bg-emerald-50 border-emerald-200 dark:bg-emerald-500/10 dark:border-emerald-500/20', textColor: 'text-emerald-600 dark:text-emerald-400' },
-                { emoji: '😠', label: 'Negatif', count: negativeCount, total: positiveCount + negativeCount + neutralCount, colorClass: 'bg-rose-50 border-rose-200 dark:bg-rose-500/10 dark:border-rose-500/20', textColor: 'text-rose-600 dark:text-rose-400' },
-                { emoji: '😐', label: 'Netral', count: neutralCount, total: positiveCount + negativeCount + neutralCount, colorClass: 'bg-card-hover border-[var(--border-default)]', textColor: 'text-secondary' },
+                { emoji: '😊', label: 'Mendukung (Positif)', count: positiveCount, total: positiveCount + negativeCount + neutralCount, colorClass: 'bg-emerald-50 border-emerald-200 dark:bg-emerald-500/10 dark:border-emerald-500/20', textColor: 'text-emerald-600 dark:text-emerald-400' },
+                { emoji: '😠', label: 'Tidak Suka (Negatif)', count: negativeCount, total: positiveCount + negativeCount + neutralCount, colorClass: 'bg-rose-50 border-rose-200 dark:bg-rose-500/10 dark:border-rose-500/20', textColor: 'text-rose-600 dark:text-rose-400' },
+                { emoji: '😐', label: 'Biasa Saja (Netral)', count: neutralCount, total: positiveCount + negativeCount + neutralCount, colorClass: 'bg-card-hover border-[var(--border-default)]', textColor: 'text-secondary' },
               ].map(item => (
                 <div key={item.label} className={`flex items-center justify-between p-3 rounded-xl border ${item.colorClass}`}>
                   <div className="flex items-center gap-2">
@@ -583,7 +583,7 @@ export default function DashboardPage() {
               },
               {
                 href: '/preferensi',
-                label: 'Kelola Filter & Threshold AI',
+                label: 'Atur Kepekaan Pendeteksi AI',
                 icon: <path strokeLinecap="round" strokeLinejoin="round" d="M12 3c2.755 0 5.455.232 8.083.678.533.09.917.556.917 1.096v1.044a2.25 2.25 0 01-.659 1.591l-5.432 5.432a2.25 2.25 0 00-.659 1.591v2.927a2.25 2.25 0 01-1.244 2.013L9.75 21v-6.568a2.25 2.25 0 00-.659-1.591L3.659 7.409A2.25 2.25 0 013 5.818V4.774c0-.54.384-1.006.917-1.096A48.32 48.32 0 0112 3z" />,
               },
               {
