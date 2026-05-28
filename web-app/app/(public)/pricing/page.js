@@ -10,69 +10,7 @@ import Script from 'next/script';
 // =========================================================================
 // DEFINISI PAKET LANGGANAN & TOP-UP (Sesuai Konfigurasi Keamanan Sisi Server)
 // =========================================================================
-const PLANS = [
-  {
-    key: 'FREE',
-    name: 'Free',
-    price: 'Rp 0',
-    period: 'Selamanya',
-    quota: '1.000',
-    quotaNum: 1000,
-    description: 'Untuk percobaan & penggunaan pribadi ringan.',
-    features: [
-      'Jatah 1.000 poin harian (diisi ulang otomatis tiap hari)',
-      'Penyaringan komentar manual',
-      'Analisis AI (Iklan Judi & Emosi Penonton)',
-      'Riwayat tindakan penyaringan',
-    ],
-    disabled: ['Penyaringan Otomatis', 'Pengecekan berkala otomatis', 'Pilihan banyak video sekaligus'],
-    cta: 'Paket Saat Ini',
-    badge: null,
-    tier: 'FREE',
-  },
-  {
-    key: 'PRO',
-    name: 'Pro',
-    price: 'Rp 49.000',
-    period: '/ bulan',
-    quota: '50.000',
-    quotaNum: 50000,
-    description: 'Untuk content creator aktif dengan video yang sering ramai komentar.',
-    features: [
-      'Jatah 50.000 poin harian / bulan',
-      'Semua fitur Free',
-      'Penyaringan Otomatis (Tahan & Hapus)',
-      'Pemeriksaan otomatis tiap 2 menit',
-      'Pilih banyak video & hapus massal sekaligus',
-      'Layanan bantuan prioritas',
-    ],
-    disabled: [],
-    cta: 'Pilih Pro',
-    badge: '🔥 Paling Populer',
-    tier: 'PRO',
-  },
-  {
-    key: 'ENTERPRISE',
-    name: 'Enterprise',
-    price: 'Rp 149.000',
-    period: '/ bulan',
-    quota: 'Bebas Kuota YouTube*',
-    quotaNum: 999999,
-    description: 'Untuk agency atau channel dengan volume komentar sangat tinggi.',
-    features: [
-      'Bebas dari batasan kuota YouTube*',
-      'Semua fitur Pro',
-      'Gunakan Kunci Akses YouTube Sendiri (Gratis)',
-      'Grafik laporan statistik lengkap',
-      'Unduh laporan ke Excel (CSV)',
-      'Layanan bantuan khusus',
-    ],
-    disabled: [],
-    cta: 'Pilih Enterprise',
-    badge: '⭐ Terlengkap',
-    tier: 'ENTERPRISE',
-  },
-];
+// DEFINISI PAKET LANGGANAN SECARA DINAMIS (Sesuai Konfigurasi Keamanan Sisi Server)
 
 const TOP_UP_PACKAGES = [
   { key: 'topup-starter', units: 5000, price: 'Rp 15.000', label: 'Starter', color: 'emerald', badge: null },
@@ -112,7 +50,97 @@ export default function PricingPage() {
   const toast = useToast();
 
   const [activeTab, setActiveTab] = useState('plans');
+  const [billingCycle, setBillingCycle] = useState('1M'); // '1M' | '3M' | '6M' | '12M'
   const [loadingTx, setLoadingTx] = useState(null);
+
+  const getDynamicPlans = () => {
+    const multipliers = {
+      '1M': { label: 'bulan', days: 30, discount: 0, textSuffix: '/ bulan' },
+      '3M': { label: '3 bulan', days: 90, discount: 5, textSuffix: '/ 3 bulan' },
+      '6M': { label: '6 bulan', days: 180, discount: 10, textSuffix: '/ 6 bulan' },
+      '12M': { label: 'tahun', days: 360, discount: 20, textSuffix: '/ tahun' }
+    };
+
+    const cycleInfo = multipliers[billingCycle];
+
+    return [
+      {
+        key: 'FREE',
+        name: 'Free Trial',
+        price: 'Rp 0',
+        period: 'Sekali Pakai',
+        quota: '1.000',
+        quotaNum: 1000,
+        description: 'Untuk percobaan & penggunaan pribadi ringan awal.',
+        features: [
+          'Jatah 1.000 poin trial awal (sekali pakai saat pertama kali daftar)',
+          'Penyaringan komentar manual',
+          'Analisis AI (Iklan Judi & Emosi Penonton)',
+          'Riwayat tindakan penyaringan',
+        ],
+        disabled: ['Penyaringan Otomatis', 'Pengecekan berkala otomatis', 'Pilihan banyak video sekaligus'],
+        cta: 'Paket Saat Ini',
+        badge: null,
+        tier: 'FREE',
+      },
+      {
+        key: `PRO_${billingCycle}`,
+        name: 'Pro',
+        price: billingCycle === '1M' ? 'Rp 49.000' :
+               billingCycle === '3M' ? 'Rp 139.000' :
+               billingCycle === '6M' ? 'Rp 264.000' : 'Rp 470.000',
+        period: cycleInfo.textSuffix,
+        quota: billingCycle === '1M' ? '50.000' :
+               billingCycle === '3M' ? '150.000' :
+               billingCycle === '6M' ? '300.000' : '600.000',
+        quotaNum: billingCycle === '1M' ? 50000 :
+                  billingCycle === '3M' ? 150000 :
+                  billingCycle === '6M' ? 300000 : 600000,
+        description: 'Untuk content creator aktif dengan video yang sering ramai komentar.',
+        features: [
+          `Jatah ${billingCycle === '1M' ? '50.000' : billingCycle === '3M' ? '150.000' : billingCycle === '6M' ? '300.000' : '600.000'} poin untuk ${cycleInfo.label}`,
+          'Semua fitur Free',
+          'Penyaringan Otomatis (Tahan & Hapus)',
+          'Pemeriksaan otomatis tiap 2 menit',
+          'Pilih banyak video & hapus massal sekaligus',
+          'Layanan bantuan prioritas',
+        ],
+        disabled: [],
+        cta: `Pilih Pro (${cycleInfo.label === 'bulan' ? '1 Bulan' : cycleInfo.label === 'tahun' ? '1 Tahun' : billingCycle.replace('M', ' Bulan')})`,
+        badge: billingCycle === '1M' ? '🔥 Paling Populer' : 
+               billingCycle === '3M' ? '💡 Hemat 5%' : 
+               billingCycle === '6M' ? '💎 Hemat 10%' : '🚀 Hemat 20%',
+        tier: 'PRO',
+      },
+      {
+        key: `ENTERPRISE_${billingCycle}`,
+        name: 'Enterprise',
+        price: billingCycle === '1M' ? 'Rp 149.000' :
+               billingCycle === '3M' ? 'Rp 424.000' :
+               billingCycle === '6M' ? 'Rp 804.000' : 'Rp 1.430.000',
+        period: cycleInfo.textSuffix,
+        quota: 'Bebas Kuota YouTube*',
+        quotaNum: 999999,
+        description: 'Untuk agency atau channel dengan volume komentar sangat tinggi.',
+        features: [
+          'Bebas dari batasan kuota YouTube*',
+          'Semua fitur Pro',
+          'Gunakan Kunci Akses YouTube Sendiri (Gratis)',
+          'Grafik laporan statistik lengkap',
+          'Unduh laporan ke Excel (CSV)',
+          'Layanan bantuan khusus',
+        ],
+        disabled: [],
+        cta: `Pilih Enterprise (${cycleInfo.label === 'bulan' ? '1 Bulan' : cycleInfo.label === 'tahun' ? '1 Tahun' : billingCycle.replace('M', ' Bulan')})`,
+        badge: billingCycle === '1M' ? '⭐ Terlengkap' : 
+               billingCycle === '3M' ? '💡 Hemat 5%' : 
+               billingCycle === '6M' ? '💎 Hemat 10%' : '👑 Hemat 20%',
+        tier: 'ENTERPRISE',
+      },
+    ];
+  };
+
+  const PLANS = getDynamicPlans();
 
   // Menangani inisialisasi checkout pembayaran Midtrans Snap (Aman & Server-Verified)
   const handlePurchase = async (packageId) => {
@@ -177,13 +205,17 @@ export default function PricingPage() {
   };
 
   // Sandbox demo helper: Bypass localhost untuk webhook local agar demo skripsi lancar tanpa ngrok
+  // Mengambil harga secara dinamis dari SECURE_PACKAGES (checkout route) agar tidak hardcode
   const syncPaymentStatus = async (orderId, packageId) => {
     try {
-      let mockAmount = 15000;
-      if (packageId === 'PRO') mockAmount = 49000;
-      else if (packageId === 'ENTERPRISE') mockAmount = 149000;
-      else if (packageId === 'topup-standard') mockAmount = 50000;
-      else if (packageId === 'topup-power') mockAmount = 120000;
+      // Lookup harga dari definisi paket yang sudah ada di frontend
+      const allPackages = {
+        'PRO': 49000, 'ENTERPRISE': 149000,
+        'PRO_1M': 49000, 'PRO_3M': 139000, 'PRO_6M': 264000, 'PRO_12M': 470000,
+        'ENTERPRISE_1M': 149000, 'ENTERPRISE_3M': 424000, 'ENTERPRISE_6M': 804000, 'ENTERPRISE_12M': 1430000,
+        'topup-starter': 15000, 'topup-standard': 50000, 'topup-power': 120000,
+      };
+      const mockAmount = allPackages[packageId] || 15000;
 
       await fetch('/api/payment/notification', {
         method: 'POST',
@@ -252,16 +284,16 @@ export default function PricingPage() {
       </div>
 
       {/* ── Tab Switcher ─────────────────────────────────────── */}
-      <div className="flex justify-center">
+      <div className="flex flex-col items-center gap-3">
         <div className="flex bg-card border border-[var(--border-default)] rounded-xl p-1 gap-1">
           {[
-            { key: 'plans', label: 'Langganan Bulanan' },
+            { key: 'plans', label: 'Paket Langganan' },
             { key: 'topup', label: 'Top-up Kredit' },
           ].map(tab => (
             <button
               key={tab.key}
               onClick={() => setActiveTab(tab.key)}
-              className={`px-4 py-1.5 rounded-lg text-xs font-medium transition-all duration-200 ${activeTab === tab.key
+              className={`px-4 py-1.5 rounded-lg text-xs font-medium transition-all duration-200 cursor-pointer ${activeTab === tab.key
                   ? 'bg-indigo-500/10 text-indigo-300 border border-indigo-500/30'
                   : 'text-secondary hover:text-primary hover:bg-card-hover'
                 }`}
@@ -270,16 +302,45 @@ export default function PricingPage() {
             </button>
           ))}
         </div>
+
+        {/* ── Billing Cycle Switcher ── */}
+        {activeTab === 'plans' && (
+          <div className="flex bg-slate-500/5 border border-[var(--border-default)]/40 rounded-xl p-1 gap-1.5 select-none max-w-full overflow-x-auto">
+            {[
+              { key: '1M', label: '1 Bulan', badge: null },
+              { key: '3M', label: '3 Bulan', badge: 'Diskon 5%' },
+              { key: '6M', label: '6 Bulan', badge: 'Diskon 10%' },
+              { key: '12M', label: '1 Tahun', badge: 'Diskon 20%' },
+            ].map(cycle => (
+              <button
+                key={cycle.key}
+                onClick={() => setBillingCycle(cycle.key)}
+                className={`relative px-3.5 py-1 rounded-lg text-[10px] sm:text-xs font-semibold transition-all duration-200 cursor-pointer whitespace-nowrap ${
+                  billingCycle === cycle.key
+                    ? 'bg-gradient-to-r from-indigo-500/10 to-violet-500/10 text-indigo-300 border border-indigo-500/25 shadow-md shadow-indigo-500/5'
+                    : 'text-secondary hover:text-primary hover:bg-card-hover'
+                }`}
+              >
+                {cycle.label}
+                {cycle.badge && (
+                  <span className="absolute -top-1.5 -right-1 px-1 py-0.2 rounded bg-emerald-500/20 text-emerald-400 text-[6px] font-bold tracking-tight uppercase animate-pulse border border-emerald-500/10">
+                    {cycle.badge}
+                  </span>
+                )}
+              </button>
+            ))}
+          </div>
+        )}
       </div>
 
       {/* ── PLANS TAB ────────────────────────────────────────── */}
       {activeTab === 'plans' && (
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           {PLANS.map((plan) => {
-            const isCurrentTier = profile?.tier === plan.key;
-            const isFree = plan.key === 'FREE';
-            const isPro = plan.key === 'PRO';
-            const isEnterprise = plan.key === 'ENTERPRISE';
+            const isCurrentTier = profile?.tier === plan.tier;
+            const isFree = plan.tier === 'FREE';
+            const isPro = plan.tier === 'PRO';
+            const isEnterprise = plan.tier === 'ENTERPRISE';
 
             return (
               <div
@@ -379,7 +440,7 @@ export default function PricingPage() {
       {activeTab === 'topup' && (
         <div className="space-y-4">
           <p className="text-center text-xs text-secondary">
-            Beli paket kredit sekali bayar. Kredit tidak kedaluwarsa dan bisa dipakai kapan saja.
+            Beli paket kredit sekali bayar. Kredit top-up bersifat permanen — <strong className="text-emerald-400">tidak akan hangus</strong> meskipun masa aktif langganan Anda habis.
           </p>
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
             {TOP_UP_PACKAGES.map((pkg) => {
