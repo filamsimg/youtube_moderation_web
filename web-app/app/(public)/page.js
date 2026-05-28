@@ -71,7 +71,7 @@ const FEATURES = [
 
 const STATS = [
   { value: '95%+', label: 'Akurasi Deteksi Spam' },
-  { value: '< 1s', label: 'Waktu Analisis AI' },
+  { value: '< 5s', label: 'Waktu Analisis AI' },
   { value: '100', label: 'Komentar per Fetch' },
 ];
 

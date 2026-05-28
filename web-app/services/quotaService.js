@@ -26,6 +26,12 @@ export const quotaService = {
         p_email: email,
       });
       if (error) throw error;
+
+      // Compute total balance dari 3 sumber kuota terpisah
+      if (data) {
+        data.quota_balance = (data.subscription_quota || 0) + (data.topup_credits || 0) + (data.trial_quota || 0);
+      }
+
       return data;
     } catch (err) {
       console.error('[quotaService] getProfile error:', err);
@@ -57,24 +63,6 @@ export const quotaService = {
     } catch (err) {
       console.error('[quotaService] deduct error:', err);
       return { success: false, reason: 'server_error' };
-    }
-  },
-
-  // Tambah saldo (dipanggil setelah pembayaran sukses)
-  async topUp(email, units) {
-    if (!email || units <= 0) return null;
-    try {
-      const { data, error } = await supabase
-        .from('user_profiles')
-        .update({ quota_balance: supabase.raw(`quota_balance + ${units}`), updated_at: new Date().toISOString() })
-        .eq('email', email)
-        .select('quota_balance')
-        .single();
-      if (error) throw error;
-      return data;
-    } catch (err) {
-      console.error('[quotaService] topUp error:', err);
-      return null;
     }
   },
 
