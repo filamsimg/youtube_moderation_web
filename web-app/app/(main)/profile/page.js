@@ -78,6 +78,94 @@ export default function ProfilePage() {
     currentPage * itemsPerPage
   );
 
+  // Kalkulasi detail masa aktif kuota
+  const getExpiryDetails = () => {
+    if (!profile) return null;
+    
+    if (profile.tier === 'FREE') {
+      const totalBalance = profile.quota_balance || 0;
+      const hasTopup = (profile.topup_credits || 0) > 0;
+      
+      if (totalBalance <= 0) {
+        return {
+          text: 'Kuota Habis',
+          className: 'text-rose-500 font-bold animate-pulse',
+          isWarning: true,
+          message: 'Seluruh kuota Anda telah habis. Silakan lakukan Top-up atau tingkatkan ke paket Pro.'
+        };
+      }
+      
+      if (hasTopup && (profile.trial_quota || 0) <= 0) {
+        return {
+          text: 'Kredit Top-up Aktif',
+          className: 'text-emerald-500 dark:text-emerald-400 font-semibold',
+          isWarning: false,
+          message: null
+        };
+      }
+      
+      return {
+        text: 'Trial Uji Coba Aktif',
+        className: 'text-slate-400 font-semibold',
+        isWarning: false,
+        message: null
+      };
+    }
+    
+    // PRO & ENTERPRISE selalu memiliki masa aktif definitif
+    if (!profile.quota_expiry) {
+      return {
+        text: 'Perlu Verifikasi',
+        className: 'text-amber-400 font-medium',
+        isWarning: true,
+        message: 'Data masa aktif tidak ditemukan. Hubungi dukungan teknis.'
+      };
+    }
+
+    const expiryDate = new Date(profile.quota_expiry);
+    const diffTime = expiryDate - new Date();
+    const daysLeft = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+    const formattedDate = expiryDate.toLocaleDateString('id-ID', { dateStyle: 'medium' });
+
+    if (daysLeft < 0) {
+      return {
+        text: `${formattedDate} (Kedaluwarsa)`,
+        className: 'text-rose-500 font-bold',
+        isWarning: true,
+        message: 'Masa aktif paket Anda telah habis. Kuota langganan telah hangus. Silakan lakukan perpanjangan.'
+      };
+    } else if (daysLeft === 0) {
+      return {
+        text: `Hari ini!`,
+        className: 'text-rose-500 font-bold animate-pulse',
+        isWarning: true,
+        message: 'Masa aktif paket Anda habis hari ini! Kuota langganan akan hangus — kredit top-up tetap aman.'
+      };
+    } else if (daysLeft <= 3) {
+      return {
+        text: `${formattedDate} (${daysLeft} hari lagi!)`,
+        className: 'text-rose-400 font-bold animate-pulse',
+        isWarning: true,
+        message: `Masa aktif paket tinggal ${daysLeft} hari lagi! Kuota langganan akan hangus saat expire — kredit top-up tetap aman.`
+      };
+    } else if (daysLeft <= 7) {
+      return {
+        text: `${formattedDate} (${daysLeft} hari lagi)`,
+        className: 'text-amber-400 font-semibold',
+        isWarning: true,
+        message: `Masa aktif paket akan berakhir dalam ${daysLeft} hari.`
+      };
+    } else {
+      return {
+        text: formattedDate,
+        className: 'text-emerald-500 dark:text-emerald-400 font-semibold',
+        isWarning: false
+      };
+    }
+  };
+
+  const expiryDetails = getExpiryDetails();
+
   // Persentase lingkaran progres kuota
   const pct = profile?.percentage ?? 100;
   const strokeDashoffset = 251.2 - (251.2 * Math.min(pct, 100)) / 100;
@@ -139,14 +227,65 @@ export default function ProfilePage() {
             {/* Quota Indicators */}
             {profile && (
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-4 border-t border-[var(--border-default)]">
-                <div className="space-y-1">
-                  <p className="text-xs text-muted uppercase tracking-wider">Kuota Tersisa</p>
+                <div className="space-y-1.5">
+                  <p className="text-xs text-muted uppercase tracking-wider">Kuota Total</p>
                   <p className="text-xl font-black text-primary">
                     {profile.quota_balance.toLocaleString('id-ID')} <span className="text-xs font-normal text-secondary">unit</span>
                   </p>
                   <p className="text-[10px] text-muted">
                     Batas maksimum: {profile.quota_limit.toLocaleString('id-ID')} unit kuota
                   </p>
+                  
+                  {/* Breakdown Kuota Terpisah */}
+                  <div className="pt-2 border-t border-[var(--border-default)]/30 space-y-1.5">
+                    <p className="text-[9px] text-muted uppercase tracking-wider font-bold">Rincian Kuota</p>
+                    
+                    {/* Kuota Langganan */}
+                    <div className="flex items-center justify-between text-[10px]">
+                      <span className="text-muted flex items-center gap-1.5">
+                        <span className="w-2 h-2 rounded-full bg-indigo-500 inline-block flex-shrink-0" />
+                        <span>Langganan <span className="text-[8px] opacity-60">(hangus saat expire)</span></span>
+                      </span>
+                      <span className="text-indigo-400 font-bold">{(profile.subscription_quota || 0).toLocaleString('id-ID')}</span>
+                    </div>
+                    
+                    {/* Kredit Top-up */}
+                    <div className="flex items-center justify-between text-[10px]">
+                      <span className="text-muted flex items-center gap-1.5">
+                        <span className="w-2 h-2 rounded-full bg-emerald-500 inline-block flex-shrink-0" />
+                        <span>Top-up <span className="text-[8px] opacity-60">(permanen)</span></span>
+                      </span>
+                      <span className="text-emerald-400 font-bold">{(profile.topup_credits || 0).toLocaleString('id-ID')}</span>
+                    </div>
+                    
+                    {/* Kuota Trial */}
+                    <div className="flex items-center justify-between text-[10px]">
+                      <span className="text-muted flex items-center gap-1.5">
+                        <span className="w-2 h-2 rounded-full bg-slate-400 inline-block flex-shrink-0" />
+                        <span>Trial <span className="text-[8px] opacity-60">(sekali pakai)</span></span>
+                      </span>
+                      <span className="text-slate-400 font-bold">{(profile.trial_quota || 0).toLocaleString('id-ID')}</span>
+                    </div>
+                  </div>
+
+                  {/* Masa Aktif Kuota */}
+                  {expiryDetails && (
+                    <div className="pt-2 border-t border-[var(--border-default)]/30 space-y-1">
+                      <div className="flex items-center gap-1.5 text-[10px] text-muted">
+                        <svg className="w-3.5 h-3.5 text-indigo-400" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
+                          <path strokeLinecap="round" strokeLinejoin="round" d="M6.75 3v2.25M17.25 3v2.25M3 18.75V7.5a2.25 2.25 0 012.25-2.25h13.5A2.25 2.25 0 0121 7.5v11.25m-18 0A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75m-18 0v-7.5A2.25 2.25 0 015.25 9h13.5A2.25 2.25 0 0121 11.25v7.5m-9-6h.008v.008H12v-.008zM12 15h.008v.008H12V15zm0 2.25h.008v.008H12v-.008zM9.75 15h.008v.008H9.75V15zm0 2.25h.008v.008H9.75v-.008zM7.5 15h.008v.008H7.5V15zm0 2.25h.008v.008H7.5v-.008zm6.75-4.5h.008v.008h-.008v-.008zm0 2.25h.008v.008h-.008V15zm0 2.25h.008v.008h-.008v-.008zm2.25-4.5h.008v.008H16.5v-.008zm0 2.25h.008v.008H16.5V15z" />
+                        </svg>
+                        <span>Masa Aktif: <span className={`font-semibold ${expiryDetails.className}`}>{expiryDetails.text}</span></span>
+                      </div>
+                      
+                      {/* Warning Banner jika akan kedaluwarsa */}
+                      {expiryDetails.isWarning && (
+                        <div className="p-2 rounded-lg bg-rose-500/10 border border-rose-500/20 text-[9px] text-rose-400 font-medium">
+                          ⚠️ {expiryDetails.message}
+                        </div>
+                      )}
+                    </div>
+                  )}
                 </div>
                 
                 <div className="flex items-center gap-3">
@@ -307,19 +446,30 @@ export default function ProfilePage() {
                       </td>
                       {/* Paket */}
                       <td className="px-6 py-4.5 font-semibold text-secondary">
-                        {tx.target_tier === 'PRO' ? (
-                          <span className="flex items-center gap-1.5 text-amber-500">
-                            <span>💎</span> Pro Upgrade
-                          </span>
-                        ) : tx.target_tier === 'ENTERPRISE' ? (
-                          <span className="flex items-center gap-1.5 text-violet-500">
-                            <span>👑</span> Enterprise Upgrade
-                          </span>
-                        ) : (
-                          <span className="flex items-center gap-1.5 text-emerald-500">
-                            <span>📦</span> Starter Top-up
-                          </span>
-                        )}
+                        {(() => {
+                          // Mapping package_id ke nama yang lebih informatif
+                          const packageNames = {
+                            'PRO': 'Pro (1 Bulan)', 'PRO_1M': 'Pro (1 Bulan)', 'PRO_3M': 'Pro (3 Bulan)',
+                            'PRO_6M': 'Pro (6 Bulan)', 'PRO_12M': 'Pro (1 Tahun)',
+                            'ENTERPRISE': 'Enterprise (1 Bulan)', 'ENTERPRISE_1M': 'Enterprise (1 Bulan)',
+                            'ENTERPRISE_3M': 'Enterprise (3 Bulan)', 'ENTERPRISE_6M': 'Enterprise (6 Bulan)',
+                            'ENTERPRISE_12M': 'Enterprise (1 Tahun)',
+                            'topup-starter': 'Top-up Starter', 'topup-standard': 'Top-up Standard',
+                            'topup-power': 'Top-up Power',
+                          };
+                          const pkgName = packageNames[tx.package_id] || (
+                            tx.target_tier === 'PRO' ? 'Pro Upgrade' :
+                            tx.target_tier === 'ENTERPRISE' ? 'Enterprise Upgrade' : 'Top-up'
+                          );
+                          const icon = tx.target_tier === 'PRO' ? '💎' : tx.target_tier === 'ENTERPRISE' ? '👑' : '📦';
+                          const colorClass = tx.target_tier === 'PRO' ? 'text-amber-500' : tx.target_tier === 'ENTERPRISE' ? 'text-violet-500' : 'text-emerald-500';
+                          
+                          return (
+                            <span className={`flex items-center gap-1.5 ${colorClass}`}>
+                              <span>{icon}</span> {pkgName}
+                            </span>
+                          );
+                        })()}
                       </td>
                       {/* Harga */}
                       <td className="px-6 py-4.5 font-bold text-primary">
