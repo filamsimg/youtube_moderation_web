@@ -1,12 +1,15 @@
 import { NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
-import { quotaService, QUOTA_COSTS } from '@/services/quotaService';
+import { QUOTA_COSTS } from '@/services/quotaService';
+import { supabaseAdmin } from '@/lib/supabaseAdmin';
 
 /**
  * GET /api/quota/check?action=FETCH_COMMENTS
  * Mengecek apakah user punya saldo cukup untuk suatu aksi.
  * Response: { canAfford: bool, balance: int, cost: int, action: string }
+ * 
+ * Balance dihitung dari: subscription_quota + topup_credits + trial_quota
  */
 export async function GET(req) {
   try {
@@ -19,14 +22,21 @@ export async function GET(req) {
     const action = searchParams.get('action') || 'FETCH_COMMENTS';
     const cost = QUOTA_COSTS[action] ?? 0;
 
-    const profile = await quotaService.getProfile(session.user.email);
-    if (!profile) {
+    // Gunakan supabaseAdmin untuk konsistensi dan auto-downgrade check
+    const { data: profile, error } = await supabaseAdmin.rpc('ensure_user_profile', {
+      p_email: session.user.email,
+    });
+
+    if (error || !profile) {
       return NextResponse.json({ error: 'Profile not found' }, { status: 404 });
     }
 
+    // Compute total balance dari ketiga sumber kuota
+    const totalBalance = profile.subscription_quota + profile.topup_credits + profile.trial_quota;
+
     return NextResponse.json({
-      canAfford: profile.quota_balance >= cost,
-      balance: profile.quota_balance,
+      canAfford: totalBalance >= cost,
+      balance: totalBalance,
       limit: profile.quota_limit,
       tier: profile.tier,
       cost,
