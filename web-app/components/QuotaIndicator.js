@@ -6,6 +6,7 @@ import Link from 'next/link';
 /**
  * QuotaIndicator
  * Menampilkan sisa kuota user dalam bentuk progress bar mini (dark mode).
+ * Menampilkan breakdown kuota terpisah (Langganan / Top-up / Trial).
  * Dipanggil dari Sidebar (full) dan Header (compact).
  */
 export default function QuotaIndicator({ compact = false }) {
@@ -66,6 +67,66 @@ export default function QuotaIndicator({ compact = false }) {
   }
 
   // ── Full Mode (untuk Sidebar) ─────────────────────────────────
+
+  // Logika teks masa aktif yang presisi
+  const getExpiryText = () => {
+    if (profile.tier === 'FREE') {
+      const totalBalance = profile.quota_balance || 0;
+      const hasTopup = (profile.topup_credits || 0) > 0;
+      
+      if (totalBalance <= 0) {
+        return { 
+          text: 'Kuota Habis', 
+          className: 'text-rose-500 font-bold animate-pulse' 
+        };
+      }
+      
+      if (hasTopup && (profile.trial_quota || 0) <= 0) {
+        return { 
+          text: 'Kredit Top-up Aktif', 
+          className: 'text-emerald-500 dark:text-emerald-400 font-medium' 
+        };
+      }
+      
+      return { 
+        text: 'Trial Aktif', 
+        className: 'text-slate-400 font-medium' 
+      };
+    }
+    
+    // PRO & ENTERPRISE selalu memiliki masa aktif definitif
+    if (!profile.quota_expiry) {
+      // Fallback safety: PRO/ENT tanpa expiry seharusnya tidak terjadi
+      return { text: 'Perlu Verifikasi', className: 'text-amber-400 font-medium' };
+    }
+
+    const expiryDate = new Date(profile.quota_expiry);
+    const diffTime = expiryDate - new Date();
+    const daysLeft = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+
+    const formattedDate = expiryDate.toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' });
+
+    if (daysLeft < 0) {
+      return { text: `${formattedDate} (Kedaluwarsa)`, className: 'text-rose-500 font-bold' };
+    } else if (daysLeft === 0) {
+      return { text: `Hari ini!`, className: 'text-rose-500 font-bold animate-pulse' };
+    } else if (daysLeft <= 3) {
+      return { text: `${formattedDate} (${daysLeft} hari lagi!)`, className: 'text-rose-400 font-semibold animate-pulse' };
+    } else if (daysLeft <= 7) {
+      return { text: `${formattedDate} (${daysLeft} hari lagi)`, className: 'text-amber-400 font-semibold' };
+    } else {
+      return { text: formattedDate, className: 'text-emerald-500 dark:text-emerald-400 font-medium' };
+    }
+  };
+
+  const expiryInfo = getExpiryText();
+
+  // Cek apakah ada breakdown kuota terpisah
+  const hasBreakdown = profile.subscription_quota !== undefined;
+  const subQuota = profile.subscription_quota || 0;
+  const topupCredits = profile.topup_credits || 0;
+  const trialQuota = profile.trial_quota || 0;
+
   return (
     <div
       className="p-3 rounded-xl border space-y-2.5"
@@ -103,6 +164,50 @@ export default function QuotaIndicator({ compact = false }) {
         <p className="text-[10px]" style={{ color: 'var(--text-muted)' }}>
           / {profile.quota_limit.toLocaleString('id-ID')}
         </p>
+      </div>
+
+      {/* Breakdown Kuota Terpisah */}
+      {hasBreakdown && (subQuota > 0 || topupCredits > 0 || trialQuota > 0) && (
+        <div className="space-y-1 pt-1.5 border-t border-[var(--border-default)]/40">
+          <p className="text-[9px] text-muted uppercase tracking-wider font-semibold">Rincian</p>
+          <div className="space-y-0.5">
+            {subQuota > 0 && (
+              <div className="flex items-center justify-between text-[9px] sm:text-[10px]">
+                <span className="text-muted flex items-center gap-1">
+                  <span className="w-1.5 h-1.5 rounded-full bg-indigo-500 inline-block" />
+                  Langganan
+                </span>
+                <span className="text-indigo-400 font-semibold">{subQuota.toLocaleString('id-ID')}</span>
+              </div>
+            )}
+            {topupCredits > 0 && (
+              <div className="flex items-center justify-between text-[9px] sm:text-[10px]">
+                <span className="text-muted flex items-center gap-1">
+                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 inline-block" />
+                  Top-up
+                </span>
+                <span className="text-emerald-400 font-semibold">{topupCredits.toLocaleString('id-ID')}</span>
+              </div>
+            )}
+            {trialQuota > 0 && (
+              <div className="flex items-center justify-between text-[9px] sm:text-[10px]">
+                <span className="text-muted flex items-center gap-1">
+                  <span className="w-1.5 h-1.5 rounded-full bg-slate-400 inline-block" />
+                  Trial
+                </span>
+                <span className="text-slate-400 font-semibold">{trialQuota.toLocaleString('id-ID')}</span>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
+
+      {/* Active Period / Masa Aktif */}
+      <div className="flex items-center justify-between pt-1.5 border-t border-[var(--border-default)]/40 text-[9px] sm:text-[10px]" style={{ color: 'var(--text-muted)' }}>
+        <span>Masa Aktif:</span>
+        <span className={`font-medium ${expiryInfo.className}`}>
+          {expiryInfo.text}
+        </span>
       </div>
 
       {/* Top-up Alert */}
