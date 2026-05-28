@@ -4,12 +4,14 @@
 -- ============================================================
 
 CREATE TABLE IF NOT EXISTS public.transactions (
-  id             TEXT PRIMARY KEY, -- Order ID dari Midtrans (contoh: ATHENA-TRX-12345)
+  id             TEXT PRIMARY KEY,                        -- Order ID dari Midtrans (contoh: ATHENA-TRX-12345)
   user_email     TEXT NOT NULL REFERENCES public.user_profiles(email) ON DELETE CASCADE,
-  amount         INTEGER NOT NULL,
-  quota_units    INTEGER NOT NULL,
-  target_tier    TEXT NOT NULL DEFAULT 'FREE', -- 'FREE' | 'PRO' | 'ENTERPRISE'
-  status         TEXT NOT NULL DEFAULT 'pending', -- 'pending' | 'settlement' | 'expire' | 'cancel'
+  package_id     TEXT NOT NULL,                           -- ID paket dari SECURE_PACKAGES (e.g. 'PRO_3M', 'topup-starter')
+  amount         INTEGER NOT NULL,                        -- Nominal pembayaran (Rupiah)
+  quota_units    INTEGER NOT NULL,                        -- Jumlah kuota yang ditambahkan
+  target_tier    TEXT NOT NULL DEFAULT 'FREE',            -- 'FREE' | 'PRO' | 'ENTERPRISE'
+  duration_days  INTEGER NOT NULL DEFAULT 0,              -- Durasi masa aktif (0 = top-up tanpa expiry)
+  status         TEXT NOT NULL DEFAULT 'pending',         -- 'pending' | 'settlement' | 'expire' | 'cancel'
   snap_token     TEXT,
   created_at     TIMESTAMPTZ DEFAULT now(),
   updated_at     TIMESTAMPTZ DEFAULT now()
