@@ -1,10 +1,15 @@
 import { NextResponse } from 'next/server';
 import { supabaseAdmin } from '@/lib/supabaseAdmin';
 import crypto from 'crypto';
+import { SECURE_PACKAGES } from '../checkout/route';
 
 /**
  * POST /api/payment/notification
  * Webhook penerima notifikasi real-time dari Midtrans
+ * 
+ * Logika Kuota V2:
+ * - Paket Langganan (PRO/ENTERPRISE): Menambah subscription_quota + set/perpanjang quota_expiry
+ * - Paket Top-Up (FREE tier): Menambah topup_credits (permanen, tidak kedaluwarsa)
  */
 export async function POST(req) {
   try {
@@ -98,11 +103,20 @@ export async function POST(req) {
       return NextResponse.json({ error: 'Database update failed' }, { status: 500 });
     }
 
-    // 5. Apabila status berubah menjadi Sukses (settlement), tambahkan kuota & upgrade tier user
+    // 5. Apabila status berubah menjadi Sukses (settlement), proses kuota user
     if (isSuccess) {
       const email = transaction.user_email;
+      const packageId = transaction.package_id;
       const quotaToAdd = transaction.quota_units;
       const targetTier = transaction.target_tier;
+      const durationDays = transaction.duration_days;
+
+      // Validasi paket masih terdaftar di SECURE_PACKAGES (keamanan tambahan)
+      const pkg = SECURE_PACKAGES[packageId];
+      if (!pkg) {
+        console.error(`[Notification Webhook] Package ID "${packageId}" tidak ditemukan di SECURE_PACKAGES`);
+        return NextResponse.json({ error: 'Invalid package configuration' }, { status: 500 });
+      }
 
       // Ambil profil pengguna saat ini
       const { data: profile, error: fetchProfileError } = await supabaseAdmin
@@ -116,41 +130,73 @@ export async function POST(req) {
         return NextResponse.json({ error: 'User profile not found' }, { status: 404 });
       }
 
-      // Tentukan batas kapasitas kuota baru berdasarkan tier yang dituju
-      const newLimit =
-        targetTier === 'PRO'
-          ? 50000
-          : targetTier === 'ENTERPRISE'
-          ? 999999
-          : profile.quota_limit;
+      // ── Tentukan jenis paket dan proses sesuai ──
+      const isSubscription = durationDays > 0 && targetTier !== 'FREE';
+      const isTopUp = durationDays === 0 && targetTier === 'FREE';
 
-      const newBalance = profile.quota_balance + quotaToAdd;
+      if (isSubscription) {
+        // ══════════════════════════════════════════════════════════
+        // PAKET LANGGANAN (PRO / ENTERPRISE)
+        // - Tambah subscription_quota
+        // - Set/perpanjang masa aktif (quota_expiry) secara akumulatif
+        // - Upgrade tier
+        // ══════════════════════════════════════════════════════════
+        const currentExpiry = profile.quota_expiry ? new Date(profile.quota_expiry) : null;
+        const baseDate = (currentExpiry && currentExpiry > new Date()) ? currentExpiry : new Date();
+        const newExpiry = new Date(baseDate.getTime() + durationDays * 24 * 60 * 60 * 1000);
 
-      // Perbarui profile pengguna di database
-      const { error: updateProfileError } = await supabaseAdmin
-        .from('user_profiles')
-        .update({
-          quota_balance: newBalance,
-          tier: targetTier !== 'FREE' ? targetTier : profile.tier,
-          quota_limit: targetTier !== 'FREE' ? newLimit : profile.quota_limit,
-          updated_at: new Date().toISOString(),
-        })
-        .eq('email', email);
+        const newLimit = targetTier === 'ENTERPRISE' ? 999999 : 50000;
 
-      if (updateProfileError) {
-        console.error('[Notification Webhook] Gagal menambah saldo kuota:', updateProfileError);
-        return NextResponse.json({ error: 'Failed to credit user balance' }, { status: 500 });
+        const { error: updateProfileError } = await supabaseAdmin
+          .from('user_profiles')
+          .update({
+            tier: targetTier,
+            subscription_quota: profile.subscription_quota + quotaToAdd,
+            quota_limit: newLimit,
+            quota_expiry: newExpiry.toISOString(),
+            updated_at: new Date().toISOString(),
+          })
+          .eq('email', email);
+
+        if (updateProfileError) {
+          console.error('[Notification Webhook] Gagal memproses paket langganan:', updateProfileError);
+          return NextResponse.json({ error: 'Failed to process subscription' }, { status: 500 });
+        }
+
+        console.log(`[Notification Webhook] LANGGANAN SUKSES: ${email} → ${targetTier}, +${quotaToAdd} sub_quota, expiry: ${newExpiry.toISOString()}`);
+
+      } else if (isTopUp) {
+        // ══════════════════════════════════════════════════════════
+        // PAKET TOP-UP (Kredit Sekali Bayar)
+        // - Tambah topup_credits (permanen, TIDAK kedaluwarsa)
+        // - Tier dan masa aktif TIDAK berubah
+        // ══════════════════════════════════════════════════════════
+        const { error: updateProfileError } = await supabaseAdmin
+          .from('user_profiles')
+          .update({
+            topup_credits: profile.topup_credits + quotaToAdd,
+            updated_at: new Date().toISOString(),
+          })
+          .eq('email', email);
+
+        if (updateProfileError) {
+          console.error('[Notification Webhook] Gagal memproses top-up:', updateProfileError);
+          return NextResponse.json({ error: 'Failed to process top-up' }, { status: 500 });
+        }
+
+        console.log(`[Notification Webhook] TOP-UP SUKSES: ${email} → +${quotaToAdd} topup_credits`);
+
+      } else {
+        console.warn(`[Notification Webhook] Jenis paket tidak dikenali: packageId=${packageId}, tier=${targetTier}, duration=${durationDays}`);
       }
 
       // Masukkan log penambahan kuota ke tabel logs
       await supabaseAdmin.from('quota_usage_logs').insert({
         user_email: email,
-        action_name: 'TOP_UP',
+        action_name: isSubscription ? 'SUBSCRIPTION' : 'TOP_UP',
         units_spent: -quotaToAdd, // Negatif sebagai representasi penambahan kuota
-        description: `Top-up kuota sukses via Midtrans Sandbox (${order_id})`,
+        description: `${isSubscription ? 'Langganan' : 'Top-up'} kuota sukses via Midtrans (${order_id}) — Paket: ${pkg.name}`,
       });
-
-      console.log(`[Notification Webhook] BERHASIL: Pengguna ${email} bertambah +${quotaToAdd} kuota. Tier: ${targetTier}`);
     }
 
     return NextResponse.json({ success: true, status: newStatus });
