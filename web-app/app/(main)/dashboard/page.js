@@ -634,7 +634,12 @@ export default function DashboardPage() {
                   <div
                     key={video.id.videoId}
                     onClick={() => {
-                      localStorage.setItem('selectedVideoIds', JSON.stringify([video.id.videoId]));
+                      const email = session?.user?.email;
+                      if (email) {
+                        localStorage.setItem(`selectedVideoIds_${email}`, JSON.stringify([video.id.videoId]));
+                      } else {
+                        localStorage.setItem('selectedVideoIds', JSON.stringify([video.id.videoId]));
+                      }
                       router.push('/comments');
                     }}
                     className="flex items-center gap-3 p-2.5 rounded-xl hover:bg-card-hover border border-transparent hover:border-[var(--border-default)] transition-all cursor-pointer group"
