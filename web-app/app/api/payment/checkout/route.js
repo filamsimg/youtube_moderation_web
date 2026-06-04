@@ -16,6 +16,7 @@ export const SECURE_PACKAGES = {
     tier: 'PRO',
     durationDays: 30,
     name: 'Upgrade ke Pro (1 Bulan)',
+    type: 'subscription',
   },
   'ENTERPRISE': {
     price: 149000,
@@ -23,6 +24,7 @@ export const SECURE_PACKAGES = {
     tier: 'ENTERPRISE',
     durationDays: 30,
     name: 'Upgrade ke Enterprise (1 Bulan)',
+    type: 'subscription',
   },
 
   // --- BULANAN (1 Bulan = 30 Hari) ---
@@ -32,6 +34,7 @@ export const SECURE_PACKAGES = {
     tier: 'PRO',
     durationDays: 30,
     name: 'Pro (1 Bulan)',
+    type: 'subscription',
   },
   'ENTERPRISE_1M': {
     price: 149000,
@@ -39,6 +42,7 @@ export const SECURE_PACKAGES = {
     tier: 'ENTERPRISE',
     durationDays: 30,
     name: 'Enterprise (1 Bulan)',
+    type: 'subscription',
   },
   
   // --- 3 BULAN (Diskon 5%, 90 Hari) ---
@@ -48,6 +52,7 @@ export const SECURE_PACKAGES = {
     tier: 'PRO',
     durationDays: 90,
     name: 'Pro (3 Bulan)',
+    type: 'subscription',
   },
   'ENTERPRISE_3M': {
     price: 424000, // Biasa 447k, hemat ~5%
@@ -55,6 +60,7 @@ export const SECURE_PACKAGES = {
     tier: 'ENTERPRISE',
     durationDays: 90,
     name: 'Enterprise (3 Bulan)',
+    type: 'subscription',
   },
 
   // --- 6 BULAN (Diskon 10%, 180 Hari) ---
@@ -64,6 +70,7 @@ export const SECURE_PACKAGES = {
     tier: 'PRO',
     durationDays: 180,
     name: 'Pro (6 Bulan)',
+    type: 'subscription',
   },
   'ENTERPRISE_6M': {
     price: 804000, // Biasa 894k, hemat ~10%
@@ -71,6 +78,7 @@ export const SECURE_PACKAGES = {
     tier: 'ENTERPRISE',
     durationDays: 180,
     name: 'Enterprise (6 Bulan)',
+    type: 'subscription',
   },
 
   // --- 1 TAHUN (Diskon 20%, 360 Hari) ---
@@ -80,6 +88,7 @@ export const SECURE_PACKAGES = {
     tier: 'PRO',
     durationDays: 360,
     name: 'Pro (1 Tahun)',
+    type: 'subscription',
   },
   'ENTERPRISE_12M': {
     price: 1430000, // Biasa 1.788k, hemat ~20%
@@ -87,6 +96,7 @@ export const SECURE_PACKAGES = {
     tier: 'ENTERPRISE',
     durationDays: 360,
     name: 'Enterprise (1 Tahun)',
+    type: 'subscription',
   },
 
   // --- TOP-UP KREDIT (Sekali Bayar, Tidak Kedaluwarsa) ---
@@ -96,6 +106,7 @@ export const SECURE_PACKAGES = {
     tier: 'FREE',
     durationDays: 0,
     name: 'Top-Up Starter (5.000 Kuota)',
+    type: 'topup',
   },
   'topup-standard': {
     price: 50000,
@@ -103,6 +114,7 @@ export const SECURE_PACKAGES = {
     tier: 'FREE',
     durationDays: 0,
     name: 'Top-Up Standard (20.000 Kuota)',
+    type: 'topup',
   },
   'topup-power': {
     price: 120000,
@@ -110,6 +122,7 @@ export const SECURE_PACKAGES = {
     tier: 'FREE',
     durationDays: 0,
     name: 'Top-Up Power (60.000 Kuota)',
+    type: 'topup',
   }
 };
 
@@ -132,6 +145,10 @@ const getSnapClient = () => {
 /**
  * POST /api/payment/checkout
  * Endpoint inisialisasi pembayaran di Midtrans Sandbox (Server-Secure)
+ * 
+ * Fitur V2:
+ * - Cek transaksi pending yang sudah ada → resume dengan snap_token lama (cegah duplikat)
+ * - Simpan transaction_type, snap_redirect_url secara eksplisit
  */
 export async function POST(req) {
   try {
@@ -150,7 +167,47 @@ export async function POST(req) {
       return NextResponse.json({ error: 'ID Paket tidak valid atau tidak terdaftar' }, { status: 400 });
     }
 
-    const { price, quotaUnits, tier: targetTier, durationDays, name: packageName } = pkg;
+    const { price, quotaUnits, tier: targetTier, durationDays, name: packageName, type: transactionType } = pkg;
+
+    // ── V2: Cek transaksi pending duplikat ─────────────────────
+    // Jika user sudah punya transaksi pending untuk paket yang sama dan masih < 24 jam,
+    // kembalikan snap_token yang sudah ada (cegah tumpukan transaksi duplikat)
+    const { data: existingPending } = await supabaseAdmin
+      .from('transactions')
+      .select('id, snap_token, snap_redirect_url, created_at')
+      .eq('user_email', email)
+      .eq('package_id', packageId)
+      .eq('status', 'pending')
+      .order('created_at', { ascending: false })
+      .limit(1)
+      .single();
+
+    if (existingPending?.snap_token) {
+      const createdAt = new Date(existingPending.created_at);
+      const ageHours = (Date.now() - createdAt.getTime()) / (1000 * 60 * 60);
+
+      // Token masih valid jika < 24 jam (default expiry Midtrans)
+      if (ageHours < 24) {
+        console.log(`[Checkout] Resume transaksi pending: ${existingPending.id} (${ageHours.toFixed(1)}h lalu)`);
+        return NextResponse.json({
+          token: existingPending.snap_token,
+          orderId: existingPending.id,
+          redirectUrl: existingPending.snap_redirect_url,
+          resumed: true,
+        });
+      } else {
+        // Token sudah terlalu lama → mark sebagai expired dan buat baru
+        await supabaseAdmin
+          .from('transactions')
+          .update({
+            status: 'expired',
+            expired_at: new Date().toISOString(),
+            updated_at: new Date().toISOString(),
+          })
+          .eq('id', existingPending.id);
+        console.log(`[Checkout] Auto-expired transaksi lama: ${existingPending.id}`);
+      }
+    }
 
     // Buat Order ID unik dengan awalan ATHENA-
     const orderId = `ATHENA-TRX-${Date.now()}-${Math.floor(100 + Math.random() * 900)}`;
@@ -162,6 +219,7 @@ export async function POST(req) {
         id: orderId,
         user_email: email,
         package_id: packageId,
+        transaction_type: transactionType,
         amount: price,
         quota_units: quotaUnits,
         target_tier: targetTier,
@@ -203,16 +261,22 @@ export async function POST(req) {
     // 3. Buat transaksi Snap di Midtrans untuk mendapatkan Snap Token
     const transaction = await snap.createTransaction(parameter);
     const snapToken = transaction.token;
+    const redirectUrl = transaction.redirect_url || null;
 
-    // 4. Update transaksi di database dengan token yang valid
+    // 4. Update transaksi di database dengan token dan redirect URL
     await supabaseAdmin
       .from('transactions')
-      .update({ snap_token: snapToken })
+      .update({
+        snap_token: snapToken,
+        snap_redirect_url: redirectUrl,
+      })
       .eq('id', orderId);
 
     return NextResponse.json({
       token: snapToken,
       orderId: orderId,
+      redirectUrl: redirectUrl,
+      resumed: false,
     });
   } catch (err) {
     console.error('[Checkout] Internal Server Error:', err.message || err);

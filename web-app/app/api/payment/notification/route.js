@@ -8,8 +8,10 @@ import { SECURE_PACKAGES } from '../checkout/route';
  * Webhook penerima notifikasi real-time dari Midtrans
  * 
  * Logika Kuota V2:
- * - Paket Langganan (PRO/ENTERPRISE): Menambah subscription_quota + set/perpanjang quota_expiry
- * - Paket Top-Up (FREE tier): Menambah topup_credits (permanen, tidak kedaluwarsa)
+ * - Menggunakan transaction_type eksplisit dari DB (bukan derivasi)
+ * - Mencatat event timestamps (paid_at, expired_at, cancelled_at)
+ * - Menyimpan metode pembayaran (midtrans_payment_type)
+ * - Normalisasi status Midtrans ke skema V2 (expire → expired, cancel → cancelled)
  */
 export async function POST(req) {
   try {
@@ -22,6 +24,7 @@ export async function POST(req) {
       transaction_status,
       fraud_status,
       signature_key,
+      payment_type,
     } = body;
 
     // 1. Verifikasi Keaslian Signature Key dari Midtrans
@@ -71,31 +74,53 @@ export async function POST(req) {
       return NextResponse.json({ success: true, message: 'Already processed' });
     }
 
-    // 3. Tentukan status transaksi baru sesuai spesifikasi Midtrans
+    // 3. Tentukan status transaksi baru sesuai spesifikasi Midtrans → normalisasi ke skema V2
     let newStatus = 'pending';
     let isSuccess = false;
+    const now = new Date().toISOString();
+
+    // Object update dasar — akan di-extend sesuai status
+    const updatePayload = {
+      updated_at: now,
+    };
+
+    // Simpan metode pembayaran jika tersedia
+    if (payment_type) {
+      updatePayload.midtrans_payment_type = payment_type;
+    }
 
     if (transaction_status === 'capture') {
       if (fraud_status === 'accept') {
         newStatus = 'settlement';
         isSuccess = true;
+        updatePayload.paid_at = now;
       }
     } else if (transaction_status === 'settlement') {
       newStatus = 'settlement';
       isSuccess = true;
-    } else if (['cancel', 'deny', 'expire'].includes(transaction_status)) {
-      newStatus = transaction_status;
+      updatePayload.paid_at = now;
+    } else if (transaction_status === 'expire') {
+      // Midtrans kirim 'expire' → kita simpan 'expired' (konsisten)
+      newStatus = 'expired';
+      updatePayload.expired_at = now;
+    } else if (['cancel', 'deny'].includes(transaction_status)) {
+      // Midtrans kirim 'cancel'/'deny' → kita simpan 'cancelled'/'failed'
+      newStatus = transaction_status === 'cancel' ? 'cancelled' : 'failed';
+      if (transaction_status === 'cancel') {
+        updatePayload.cancelled_at = now;
+      }
+    } else if (transaction_status === 'failure') {
+      newStatus = 'failed';
     } else if (transaction_status === 'pending') {
       newStatus = 'pending';
     }
 
+    updatePayload.status = newStatus;
+
     // 4. Perbarui status transaksi di tabel transactions Supabase
     const { error: updateTxError } = await supabaseAdmin
       .from('transactions')
-      .update({
-        status: newStatus,
-        updated_at: new Date().toISOString(),
-      })
+      .update(updatePayload)
       .eq('id', order_id);
 
     if (updateTxError) {
@@ -110,6 +135,10 @@ export async function POST(req) {
       const quotaToAdd = transaction.quota_units;
       const targetTier = transaction.target_tier;
       const durationDays = transaction.duration_days;
+
+      // V2: Gunakan transaction_type eksplisit dari DB
+      const txType = transaction.transaction_type || 
+        (durationDays > 0 && targetTier !== 'FREE' ? 'subscription' : 'topup');
 
       // Validasi paket masih terdaftar di SECURE_PACKAGES (keamanan tambahan)
       const pkg = SECURE_PACKAGES[packageId];
@@ -130,11 +159,7 @@ export async function POST(req) {
         return NextResponse.json({ error: 'User profile not found' }, { status: 404 });
       }
 
-      // ── Tentukan jenis paket dan proses sesuai ──
-      const isSubscription = durationDays > 0 && targetTier !== 'FREE';
-      const isTopUp = durationDays === 0 && targetTier === 'FREE';
-
-      if (isSubscription) {
+      if (txType === 'subscription') {
         // ══════════════════════════════════════════════════════════
         // PAKET LANGGANAN (PRO / ENTERPRISE)
         // - Tambah subscription_quota
@@ -154,7 +179,7 @@ export async function POST(req) {
             subscription_quota: profile.subscription_quota + quotaToAdd,
             quota_limit: newLimit,
             quota_expiry: newExpiry.toISOString(),
-            updated_at: new Date().toISOString(),
+            updated_at: now,
           })
           .eq('email', email);
 
@@ -165,7 +190,7 @@ export async function POST(req) {
 
         console.log(`[Notification Webhook] LANGGANAN SUKSES: ${email} → ${targetTier}, +${quotaToAdd} sub_quota, expiry: ${newExpiry.toISOString()}`);
 
-      } else if (isTopUp) {
+      } else if (txType === 'topup') {
         // ══════════════════════════════════════════════════════════
         // PAKET TOP-UP (Kredit Sekali Bayar)
         // - Tambah topup_credits (permanen, TIDAK kedaluwarsa)
@@ -175,7 +200,7 @@ export async function POST(req) {
           .from('user_profiles')
           .update({
             topup_credits: profile.topup_credits + quotaToAdd,
-            updated_at: new Date().toISOString(),
+            updated_at: now,
           })
           .eq('email', email);
 
@@ -187,15 +212,15 @@ export async function POST(req) {
         console.log(`[Notification Webhook] TOP-UP SUKSES: ${email} → +${quotaToAdd} topup_credits`);
 
       } else {
-        console.warn(`[Notification Webhook] Jenis paket tidak dikenali: packageId=${packageId}, tier=${targetTier}, duration=${durationDays}`);
+        console.warn(`[Notification Webhook] Jenis transaksi tidak dikenali: txType=${txType}, packageId=${packageId}`);
       }
 
       // Masukkan log penambahan kuota ke tabel logs
       await supabaseAdmin.from('quota_usage_logs').insert({
         user_email: email,
-        action_name: isSubscription ? 'SUBSCRIPTION' : 'TOP_UP',
+        action_name: txType === 'subscription' ? 'SUBSCRIPTION' : 'TOP_UP',
         units_spent: -quotaToAdd, // Negatif sebagai representasi penambahan kuota
-        description: `${isSubscription ? 'Langganan' : 'Top-up'} kuota sukses via Midtrans (${order_id}) — Paket: ${pkg.name}`,
+        description: `${txType === 'subscription' ? 'Langganan' : 'Top-up'} kuota sukses via Midtrans (${order_id}) — Paket: ${pkg.name}`,
       });
     }
 
