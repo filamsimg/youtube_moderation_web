@@ -1,0 +1,329 @@
+# Redesain Sistem Transaksi — Konsisten, Presisi, dan Actionable
+
+## Latar Belakang
+
+User melaporkan bahwa di halaman **Riwayat Transaksi**, transaksi berstatus **"⏳ Menunggu Pembayaran"** tidak bisa di-klik untuk melanjutkan pembayaran. Ini adalah masalah UX yang kritis: user melihat transaksi pending tapi tidak bisa melakukan apa-apa.
+
+Selain itu, diminta untuk merancang skema transaksi yang **konsisten dan presisi**, mengikuti best practice dari layanan SaaS seperti **ChatGPT Plus, Gemini Advanced, Spotify, Netflix**.
+
+---
+
+## Analisis Masalah (8 Temuan Kritis)
+
+### 🔴 Masalah 1: Transaksi Pending Tidak Bisa Dilanjutkan (Dead-End UX)
+
+**Kondisi saat ini:**
+- User klik "Pilih Paket" → Snap popup muncul → User menutup popup tanpa bayar
+- Transaksi tersimpan di DB berstatus `pending` dengan `snap_token` valid
+- Di halaman profil, transaksi muncul sebagai "⏳ Menunggu Pembayaran"  
+- **Tidak ada tombol/link untuk melanjutkan pembayaran**
+
+**Dampak:** User bingung karena melihat transaksi pending tanpa aksi. Mereka harus membuat transaksi baru dari halaman pricing, menyebabkan tumpukan transaksi pending yang tidak terselesaikan.
+
+**Best practice (ChatGPT/Gemini):** Transaksi pending selalu menampilkan tombol "Lanjutkan Pembayaran" atau secara otomatis redirect ke halaman pembayaran.
+
+---
+
+### 🔴 Masalah 2: Tidak Ada Mekanisme Pembatalan Transaksi
+
+**Kondisi saat ini:**
+- Transaksi pending hanya bisa berubah status melalui:
+  1. Webhook Midtrans (settlement/expire/cancel) — butuh ngrok untuk localhost
+  2. Auto-expire Midtrans (24 jam default)
+- **User tidak punya kontrol** untuk membatalkan transaksi pending secara mandiri
+
+**Dampak:** Riwayat transaksi penuh dengan entri pending yang berantakan. Tidak ada sense of control bagi user.
+
+**Best practice (ChatGPT/Gemini):** User bisa membatalkan transaksi pending kapan saja. Pembatalan di-propagate ke payment gateway.
+
+---
+
+### 🟡 Masalah 3: Snap Token Tidak Dimanfaatkan untuk Resume Payment
+
+**Kondisi saat ini:**
+- `snap_token` disimpan di kolom database tapi **tidak pernah digunakan lagi** setelah checkout awal
+- Token ini sebenarnya bisa dipakai untuk membuka kembali popup Snap tanpa membuat transaksi baru
+
+**Dampak:** Setiap kali user ingin melanjutkan pembayaran, mereka harus membuat order baru (transaksi duplikat).
+
+---
+
+### 🟡 Masalah 4: Tidak Ada Timestamp Kejadian Penting
+
+**Kondisi saat ini:**
+- Hanya ada `created_at` dan `updated_at`
+- **Tidak ada pencatatan kapan pembayaran berhasil** (`paid_at`)
+- **Tidak ada pencatatan kapan transaksi dibatalkan** (`cancelled_at`)
+- **Tidak ada pencatatan kapan transaksi kedaluwarsa** (`expired_at`)
+
+**Dampak:** Sulit melakukan audit trail, rekonsiliasi, atau menampilkan timeline transaksi yang lengkap.
+
+**Best practice:** Setiap perubahan status penting harus dicatat dengan timestamp tersendiri.
+
+---
+
+### 🟡 Masalah 5: Status Transaksi Tidak Konsisten dengan Midtrans
+
+**Kondisi saat ini di database:**
+```
+'pending' | 'settlement' | 'expire' | 'cancel'
+```
+
+**Status dari Midtrans yang mungkin diterima:**
+```
+'pending' | 'capture' | 'settlement' | 'deny' | 'cancel' | 'expire' | 'failure' | 'refund'
+```
+
+**Masalah:**
+- `deny` dan `failure` tidak tertangani secara eksplisit di skema DB
+- Status `deny` di-map ke `newStatus = 'deny'` di webhook tapi kolom DB hanya mendukung semantik 4 status
+- Tidak ada validasi ENUM/CHECK constraint di level database
+
+---
+
+### 🟡 Masalah 6: Tidak Ada Transaction Type yang Eksplisit
+
+**Kondisi saat ini:**
+- Tipe transaksi (subscription vs top-up) dihitung secara **derivatif** dari `duration_days` dan `target_tier`:
+  ```js
+  const isSubscription = durationDays > 0 && targetTier !== 'FREE';
+  const isTopUp = durationDays === 0 && targetTier === 'FREE';
+  ```
+- Tidak ada kolom `transaction_type` eksplisit di tabel
+
+**Dampak:** Logika fragile — jika ada paket baru dengan kombinasi berbeda, logika ini akan pecah.
+
+---
+
+### 🟡 Masalah 7: Frontend Menampilkan Kredit Kuota untuk Transaksi Gagal
+
+**Kondisi saat ini:**
+- Kolom "Kredit Kuota" di tabel transaksi menampilkan `+50.000 Unit` bahkan untuk transaksi berstatus `pending`, `expire`, atau `cancel`
+- Ini membingungkan user karena seolah-olah kuota sudah ditambahkan padahal belum
+
+**Best practice:** Kredit kuota hanya ditampilkan dengan format `+X` untuk transaksi sukses. Untuk status lain, tampilkan dash (`—`) atau teks yang jelas.
+
+---
+
+### 🟢 Masalah 8: Tidak Ada Detail Modal/Drawer untuk Transaksi
+
+**Kondisi saat ini:**
+- Tabel transaksi hanya menampilkan data datar tanpa kemampuan untuk melihat detail lengkap
+- Tidak ada informasi metode pembayaran, timeline status, atau detail Midtrans
+
+**Best practice (ChatGPT/Gemini):** Klik pada baris transaksi membuka detail panel/modal yang menampilkan:
+- Timeline perubahan status
+- Metode pembayaran yang digunakan
+- Tombol aksi kontekstual (Lanjutkan/Batalkan)
+
+---
+
+## Perbandingan dengan Layanan SaaS Populer
+
+| Fitur | ChatGPT Plus | Gemini Advanced | **Athena (Saat Ini)** | **Athena (Rencana)** |
+|-------|-------------|-----------------|----------------------|---------------------|
+| Tombol lanjut bayar | ✅ Auto-redirect | ✅ Via Google Pay | ❌ Tidak ada | ✅ Resume via Snap |
+| Batalkan transaksi | ✅ Bisa kapan saja | ✅ Bisa kapan saja | ❌ Tidak ada | ✅ + API Midtrans |
+| Status badge interaktif | ✅ Klik = detail | ✅ Klik = detail | ❌ Hanya teks | ✅ Klik = aksi |
+| Audit timestamp | ✅ Lengkap | ✅ Lengkap | ❌ Hanya created/updated | ✅ paid/cancelled/expired |
+| Kredit di transaksi gagal | ❌ Tidak tampil | ❌ Tidak tampil | ✅ Tetap tampil | ❌ Tampil dash (—) |
+| Auto-expire cleanup | ✅ Otomatis | ✅ Otomatis | 🟡 Hanya via webhook | ✅ + check API lokal |
+
+---
+
+## State Machine Transaksi (Rencana)
+
+```mermaid
+stateDiagram-v2
+    [*] --> pending: User klik "Pilih Paket"
+    
+    pending --> settlement: Midtrans webhook (bayar sukses)
+    pending --> cancelled: User klik "Batalkan" + API cancel Midtrans
+    pending --> expired: Midtrans webhook (batas waktu habis)
+    pending --> failed: Midtrans webhook (deny/failure)
+    pending --> pending: User klik "Lanjutkan Pembayaran" (re-open Snap)
+    
+    settlement --> [*]: Terminal (Kuota sudah diproses)
+    cancelled --> [*]: Terminal
+    expired --> [*]: Terminal
+    failed --> [*]: Terminal
+```
+
+---
+
+## User Review Required
+
+> [!IMPORTANT]
+> **Pilihan desain untuk transaksi pending lama:**
+> Saat ini ada beberapa transaksi pending lama di database Anda (lihat screenshot). Apakah ingin:
+> 1. **Otomatis mark sebagai `expired`** semua transaksi pending yang lebih dari 24 jam saat migrasi dijalankan?
+> 2. **Biarkan apa adanya** dan biarkan Midtrans webhook yang menangani?
+
+> [!IMPORTANT]  
+> **Penanganan `snap_token` untuk resume payment:**
+> Snap token Midtrans memiliki masa berlaku (biasanya mengikuti expiry time transaksi, default 24 jam). Jika user mencoba "Lanjutkan Pembayaran" setelah token expired:
+> 1. **Buat transaksi baru otomatis** dan mark yang lama sebagai `expired`?
+> 2. **Tampilkan pesan error** dan minta user membuat transaksi baru dari pricing?
+> 
+> Saya rekomendasikan opsi 1 (lebih seamless).
+
+## Open Questions
+
+> [!IMPORTANT]
+> **Apakah ingin menambahkan fitur "Detail Transaksi" (modal/drawer)?**
+> Ini akan menampilkan timeline perubahan status, metode pembayaran, dll ketika user mengklik baris transaksi. Ini fitur nice-to-have tapi menambah kompleksitas. Apakah prioritas atau bisa ditunda?
+
+> [!NOTE]
+> **Perihal Midtrans Cancel API di Sandbox:**
+> Untuk fitur pembatalan, kita akan memanggil `POST https://api.sandbox.midtrans.com/v2/{order_id}/cancel` dengan autentikasi Server Key. Ini sudah tersedia di sandbox mode — tidak perlu akun production.
+
+---
+
+## Proposed Changes
+
+### Database Schema
+
+#### [MODIFY] [add_transactions_table.sql](file:///d:/KULIAH/SEMESTER%207/Skripsi/Moderasi%20Judol%20V1/web-app/database/add_transactions_table.sql)
+
+Perubahan pada tabel `transactions`:
+
+```diff
+ CREATE TABLE IF NOT EXISTS public.transactions (
+   id             TEXT PRIMARY KEY,
+   user_email     TEXT NOT NULL REFERENCES public.user_profiles(email) ON DELETE CASCADE,
+   package_id     TEXT NOT NULL,
++  transaction_type TEXT NOT NULL DEFAULT 'subscription',  -- 'subscription' | 'topup'
+   amount         INTEGER NOT NULL,
+   quota_units    INTEGER NOT NULL,
+   target_tier    TEXT NOT NULL DEFAULT 'FREE',
+   duration_days  INTEGER NOT NULL DEFAULT 0,
+-  status         TEXT NOT NULL DEFAULT 'pending',
++  status         TEXT NOT NULL DEFAULT 'pending'
++                  CHECK (status IN ('pending','settlement','cancelled','expired','failed')),
+   snap_token     TEXT,
++  snap_redirect_url TEXT,                                -- URL fallback jika Snap popup gagal
++  midtrans_payment_type TEXT,                            -- 'bank_transfer', 'gopay', 'credit_card', dll
++  paid_at        TIMESTAMPTZ DEFAULT NULL,               -- Waktu pembayaran berhasil
++  cancelled_at   TIMESTAMPTZ DEFAULT NULL,               -- Waktu user membatalkan
++  expired_at     TIMESTAMPTZ DEFAULT NULL,               -- Waktu kedaluwarsa otomatis
+   created_at     TIMESTAMPTZ DEFAULT now(),
+   updated_at     TIMESTAMPTZ DEFAULT now()
+ );
+```
+
+**Kolom baru:**
+| Kolom | Tipe | Tujuan |
+|-------|------|--------|
+| `transaction_type` | TEXT | Membedakan 'subscription' vs 'topup' secara eksplisit |
+| `status` CHECK constraint | — | Validasi status di level DB, mencegah typo |
+| `snap_redirect_url` | TEXT | URL redirect jika Snap popup tidak bisa digunakan |
+| `midtrans_payment_type` | TEXT | Mencatat metode pembayaran yang digunakan |
+| `paid_at` | TIMESTAMPTZ | Timestamp pembayaran sukses |
+| `cancelled_at` | TIMESTAMPTZ | Timestamp pembatalan manual |
+| `expired_at` | TIMESTAMPTZ | Timestamp kedaluwarsa otomatis |
+
+#### [NEW] [migration_transactions_v2.sql](file:///d:/KULIAH/SEMESTER%207/Skripsi/Moderasi%20Judol%20V1/web-app/database/migration_transactions_v2.sql)
+
+Skrip migrasi untuk:
+1. ALTER TABLE menambah kolom baru
+2. Migrasi data lama: isi `transaction_type` berdasarkan `duration_days`
+3. Normalisasi status: `expire` → `expired`, `cancel` → `cancelled`
+4. Backfill `paid_at` dari `updated_at` untuk transaksi `settlement`
+5. Auto-expire transaksi pending > 24 jam (opsional)
+
+---
+
+### Backend API
+
+#### [MODIFY] [checkout/route.js](file:///d:/KULIAH/SEMESTER%207/Skripsi/Moderasi%20Judol%20V1/web-app/app/api/payment/checkout/route.js)
+
+- Simpan `transaction_type` ('subscription' | 'topup') secara eksplisit saat insert
+- Simpan `snap_redirect_url` dari response Midtrans (`transaction.redirect_url`)
+- **Cek transaksi pending yang sudah ada** untuk paket yang sama sebelum membuat yang baru → jika ada dan token masih valid, kembalikan token lama (mencegah duplikasi)
+
+#### [MODIFY] [notification/route.js](file:///d:/KULIAH/SEMESTER%207/Skripsi/Moderasi%20Judol%20V1/web-app/app/api/payment/notification/route.js)
+
+- Gunakan `transaction_type` dari DB alih-alih kalkulasi derivatif
+- Isi `paid_at` saat status berubah ke `settlement`
+- Isi `expired_at` saat status berubah ke `expired`
+- Isi `cancelled_at` saat status berubah ke `cancelled`
+- Simpan `payment_type` dari body webhook Midtrans ke `midtrans_payment_type`
+- Normalisasi status Midtrans: `expire` → `expired`, `cancel` → `cancelled`
+
+#### [NEW] [cancel/route.js](file:///d:/KULIAH/SEMESTER%207/Skripsi/Moderasi%20Judol%20V1/web-app/app/api/payment/cancel/route.js)
+
+Endpoint baru `POST /api/payment/cancel`:
+1. Validasi user ownership (session email = transaction user_email)
+2. Validasi status transaksi = `pending` (hanya pending yang bisa dibatalkan)
+3. Panggil Midtrans Cancel API: `POST https://api.sandbox.midtrans.com/v2/{order_id}/cancel`
+4. Update status di DB menjadi `cancelled` + set `cancelled_at`
+5. Return sukses ke frontend
+
+#### [NEW] [status/route.js](file:///d:/KULIAH/SEMESTER%207/Skripsi/Moderasi%20Judol%20V1/web-app/app/api/payment/status/route.js)
+
+Endpoint baru `GET /api/payment/status?order_id=XXX`:
+1. Cek status transaksi terkini langsung ke Midtrans API: `GET https://api.sandbox.midtrans.com/v2/{order_id}/status`
+2. Sinkronisasi status DB jika berbeda dengan status Midtrans
+3. Return status terbaru + snap_token (untuk resume payment)
+
+#### [MODIFY] [history/route.js](file:///d:/KULIAH/SEMESTER%207/Skripsi/Moderasi%20Judol%20V1/web-app/app/api/payment/history/route.js)
+
+- Tetap menggunakan `select('*')` — otomatis mengambil kolom baru
+- Tidak perlu perubahan besar
+
+---
+
+### Frontend
+
+#### [MODIFY] [profile/page.js](file:///d:/KULIAH/SEMESTER%207/Skripsi/Moderasi%20Judol%20V1/web-app/app/%28main%29/profile/page.js)
+
+Perubahan UX signifikan pada tabel Riwayat Transaksi:
+
+1. **Status badge menjadi actionable:**
+   - `pending` → Badge kuning + **tombol "Lanjutkan Bayar"** (re-open Snap popup) + **tombol "Batalkan"**
+   - `settlement` → Badge hijau (final)
+   - `expired` → Badge merah (final)
+   - `cancelled` → Badge abu-abu (final)
+   - `failed` → Badge merah gelap (final)
+
+2. **Kolom Kredit Kuota:**
+   - Hanya tampilkan `+X Unit` untuk status `settlement`
+   - Untuk status lain, tampilkan `—` (dash) dengan warna muted
+
+3. **Kolom Tipe (baru):**
+   - Menampilkan tag `Langganan` atau `Top-up` berdasarkan `transaction_type`
+
+4. **Kolom Metode Pembayaran (opsional):**
+   - Menampilkan `midtrans_payment_type` jika tersedia (contoh: "GoPay", "BCA VA", dll)
+
+5. **Loading state untuk tombol aksi:**
+   - Spinner saat memanggil API cancel atau resume
+
+#### [MODIFY] [pricing/page.js](file:///d:/KULIAH/SEMESTER%207/Skripsi/Moderasi%20Judol%20V1/web-app/app/%28public%29/pricing/page.js)
+
+- Load Snap SDK lebih awal (untuk resume payment)
+- Fungsi `handlePurchase` → cek dulu apakah ada transaksi pending untuk paket yang sama, jika ada, langsung resume dengan snap_token lama
+
+---
+
+## Verification Plan
+
+### Automated Tests
+```bash
+# Build check
+cd web-app && npm run build
+
+# Verify new API routes exist
+curl -X POST http://localhost:3000/api/payment/cancel -d '{"orderId":"test"}'
+curl http://localhost:3000/api/payment/status?order_id=test
+```
+
+### Manual Verification
+1. **Skenario Resume Payment:**
+   - Buat transaksi → tutup Snap popup → klik "Lanjutkan Bayar" di riwayat → Snap popup terbuka kembali
+2. **Skenario Cancel Transaction:**
+   - Buat transaksi → klik "Batalkan" di riwayat → status berubah ke `cancelled`
+3. **Skenario Kredit Display:**
+   - Pastikan transaksi pending/expired/cancelled menampilkan `—` di kolom kredit
+4. **Skenario Build:**
+   - `npm run build` harus berhasil tanpa error baru
