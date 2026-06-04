@@ -2,22 +2,16 @@
 
 import { usePathname } from 'next/navigation';
 import Link from 'next/link';
-import { useSession, signOut } from 'next-auth/react';
 import { useState, useEffect, useRef } from 'react';
 import QuotaIndicator from '@/components/QuotaIndicator';
 import { useSidebar } from '@/contexts/SidebarContext';
-import { useToast } from '@/contexts/ToastContext';
-import ConfirmModal from '@/components/ui/ConfirmModal';
 
 export default function Sidebar() {
   const pathname = usePathname();
-  const { data: session } = useSession();
   const [isOpen, setIsOpen] = useState(false);
   const { sidebarMode, setSidebarMode, isHovered, setIsHovered } = useSidebar();
   const [showControlPanel, setShowControlPanel] = useState(false);
   const popoverRef = useRef(null);
-  const toast = useToast();
-  const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
 
   // Close sidebar on route change (mobile)
   useEffect(() => {
@@ -65,7 +59,7 @@ export default function Sidebar() {
       ),
     },
     {
-      name: 'Pemeriksaan Komentar',
+      name: 'Moderasi Komentar',
       href: '/comments',
       id: 'onboarding-nav-comments',
       icon: (
@@ -94,15 +88,7 @@ export default function Sidebar() {
         </svg>
       ),
     },
-    {
-      name: 'Profil Saya',
-      href: '/profile',
-      icon: (
-        <svg className="w-5 h-5 flex-shrink-0" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
-          <path strokeLinecap="round" strokeLinejoin="round" d="M17.982 18.725A7.488 7.488 0 0012 15.75a7.488 7.488 0 00-5.982 2.975m11.963 0a9 9 0 10-11.963 0m11.963 0A8.966 8.966 0 0112 21a8.966 8.966 0 01-5.982-2.275M15 9.75a3 3 0 11-6 0 3 3 0 016 0z" />
-        </svg>
-      ),
-    },
+
     {
       name: 'Paket & Kuota',
       href: '/pricing',
@@ -309,55 +295,6 @@ export default function Sidebar() {
             )}
           </div>
 
-          {/* User Info */}
-          {session?.user && (
-            isCollapsed ? (
-              <div className="flex justify-center py-2 relative group">
-                <img
-                  src={session.user.image || `https://ui-avatars.com/api/?name=${encodeURIComponent(session.user.name || 'User')}&background=6366f1&color=fff&size=32`}
-                  alt="avatar"
-                  className="w-7 h-7 rounded-full border border-indigo-500/40 flex-shrink-0"
-                />
-                <div className="absolute left-16 invisible opacity-0 group-hover:visible group-hover:opacity-100 transition-all duration-200 z-50 bg-slate-900 dark:bg-slate-800 text-slate-100 text-xs rounded-lg py-1.5 px-3 shadow-xl whitespace-nowrap border border-slate-700/50 pointer-events-none">
-                  {session.user.name} ({session.user.email})
-                </div>
-              </div>
-            ) : (
-              <div
-                className="flex items-center gap-2.5 px-3 py-2 rounded-xl transition-colors cursor-default hover:bg-[var(--bg-card-hover)]"
-              >
-                <img
-                  src={session.user.image || `https://ui-avatars.com/api/?name=${encodeURIComponent(session.user.name || 'User')}&background=6366f1&color=fff&size=32`}
-                  alt="avatar"
-                  className="w-7 h-7 rounded-full border border-indigo-500/40 flex-shrink-0"
-                />
-                <div className="min-w-0">
-                  <p className="text-[12px] truncate font-medium leading-tight" style={{ color: 'var(--text-secondary)' }}>
-                    {session.user.name}
-                  </p>
-                  <p className="text-[10px] truncate leading-tight" style={{ color: 'var(--text-muted)' }}>
-                    {session.user.email}
-                  </p>
-                </div>
-              </div>
-            )
-          )}
-
-          {/* Sign Out */}
-          <button
-            onClick={() => setShowLogoutConfirm(true)}
-            className={`btn-danger text-[13px] ${isCollapsed ? 'justify-center p-2.5 mx-2 w-10 h-10 group relative' : 'w-full'}`}
-          >
-            <svg className="w-5 h-5 flex-shrink-0" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 9V5.25A2.25 2.25 0 0013.5 3h-6a2.25 2.25 0 00-2.25 2.25v13.5A2.25 2.25 0 007.5 21h6a2.25 2.25 0 002.25-2.25V15m3 0l3-3m0 0l-3-3m3 3H9" />
-            </svg>
-            {!isCollapsed && <span>Keluar</span>}
-            {isCollapsed && (
-              <div className="absolute left-16 invisible opacity-0 group-hover:visible group-hover:opacity-100 transition-all duration-200 z-50 bg-slate-900 dark:bg-slate-800 text-slate-100 text-xs rounded-lg py-1.5 px-3 shadow-xl whitespace-nowrap border border-slate-700/50 pointer-events-none">
-                Keluar
-              </div>
-            )}
-          </button>
         </div>
       </aside>
     );
@@ -422,22 +359,6 @@ export default function Sidebar() {
           </div>
         </div>
       )}
-
-      {/* Logout Confirmation Modal */}
-      <ConfirmModal
-        isOpen={showLogoutConfirm}
-        onClose={() => setShowLogoutConfirm(false)}
-        onConfirm={() => {
-          toast.success('Berhasil keluar. Mengalihkan ke halaman login...');
-          setTimeout(() => {
-            signOut({ callbackUrl: '/login' });
-          }, 1200);
-        }}
-        title="Keluar Sesi"
-        description="Apakah Anda yakin ingin keluar dari Athena Shield? Anda perlu masuk kembali untuk mengakses panel pemeriksaan komentar YouTube Anda."
-        confirmText="Keluar"
-        variant="danger"
-      />
     </>
   );
 }

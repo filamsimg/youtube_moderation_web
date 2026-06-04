@@ -348,7 +348,7 @@ export default function DashboardPage() {
         <div className="bento-card p-5 lg:p-6">
           <div className="flex items-center justify-between mb-4">
             <div>
-              <h2 className="text-sm font-semibold text-primary">Hasil Pemeriksaan Komentar</h2>
+              <h2 className="text-sm font-semibold text-primary">Hasil Moderasi Komentar</h2>
               <p className="text-xs text-secondary mt-0.5">
                 {chartVideoFilter === 'all' ? 'Semua video' : 'Video terpilih'} — Komentar Bersih vs Iklan Judi
               </p>
@@ -620,9 +620,7 @@ export default function DashboardPage() {
                 <path strokeLinecap="round" strokeLinejoin="round" d="M5.25 5.653c0-.856.917-1.398 1.667-.986l11.54 6.348a1.125 1.125 0 010 1.971l-11.54 6.347a1.125 1.125 0 01-1.667-.985V5.653z" />
               </svg>
               <p className="text-xs text-secondary">Belum ada video ditemukan</p>
-              <Link href="/channel" className="text-xs text-indigo-400 hover:text-indigo-300 mt-1 inline-block">
-                Pilih kanal terlebih dahulu →
-              </Link>
+              <p className="text-[10px] text-muted mt-1">Pastikan Anda sudah mengunggah video ke kanal YouTube Anda.</p>
             </div>
           ) : (
             <div className="space-y-1.5">

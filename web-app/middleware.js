@@ -14,7 +14,6 @@ const PRIVATE_PREFIXES = [
   '/preferensi',
   '/channel',
   '/video',
-  '/pricing',
   '/profile',
 ];
 

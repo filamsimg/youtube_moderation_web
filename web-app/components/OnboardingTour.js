@@ -48,7 +48,7 @@ const STEPS = [
   },
   {
     id: 'comments',
-    title: 'Pemeriksaan Komentar',
+    title: 'Moderasi Komentar',
     description: 'Ini adalah "ruang operasi" utama Anda. Di sini, AI IndoBERT akan memindai dan menganalisis setiap komentar dari video YouTube Anda, lalu menandai mana yang Normal dan mana yang Spam Judol.',
     targetId: 'onboarding-nav-comments',
     icon: (

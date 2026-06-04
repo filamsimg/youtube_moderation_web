@@ -3,14 +3,36 @@
 import Sidebar from '@/components/Sidebar';
 import QuotaIndicator from '@/components/QuotaIndicator';
 import OnboardingTour from '@/components/OnboardingTour';
-import { useSession } from 'next-auth/react';
+import { useSession, signOut } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
-import { useEffect } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import { SidebarProvider } from '@/contexts/SidebarContext';
+import ConfirmModal from '@/components/ui/ConfirmModal';
+import { useToast } from '@/contexts/ToastContext';
+import Link from 'next/link';
+import { User, LogOut } from 'lucide-react';
 
 export default function MainLayout({ children }) {
   const { data: session, status } = useSession();
   const router = useRouter();
+  const toast = useToast();
+
+  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+  const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
+  const dropdownRef = useRef(null);
+
+  // Close dropdown on click outside
+  useEffect(() => {
+    function handleClickOutside(event) {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
+        setIsDropdownOpen(false);
+      }
+    }
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, []);
 
   useEffect(() => {
     if (status === 'unauthenticated' || session?.error === 'RefreshAccessTokenError') {
@@ -110,16 +132,70 @@ export default function MainLayout({ children }) {
                 <p className="text-[10px]" style={{ color: 'var(--text-muted)' }}>YouTube Content Creator</p>
               </div>
 
-              {/* Avatar */}
-              <img
-                src={
-                  session?.user?.image ||
-                  `https://ui-avatars.com/api/?name=${encodeURIComponent(session?.user?.name || 'User')}&background=6366f1&color=fff&size=32`
-                }
-                alt="avatar"
-                className="w-8 h-8 rounded-full flex-shrink-0 ring-2"
-                style={{ borderColor: 'var(--border-accent)', outlineColor: 'var(--accent-ai-soft)' }}
-              />
+              {/* Avatar Dropdown Wrapper */}
+              <div className="relative" ref={dropdownRef}>
+                <button
+                  onClick={() => setIsDropdownOpen(!isDropdownOpen)}
+                  className="flex items-center focus:outline-none cursor-pointer"
+                  aria-label="Menu Profil"
+                >
+                  <img
+                    src={
+                      session?.user?.image ||
+                      `https://ui-avatars.com/api/?name=${encodeURIComponent(session?.user?.name || 'User')}&background=6366f1&color=fff&size=32`
+                    }
+                    alt="avatar"
+                    className="w-8 h-8 rounded-full flex-shrink-0 ring-2 hover:opacity-95 transition-opacity"
+                    style={{ borderColor: 'var(--border-accent)', outlineColor: 'var(--accent-ai-soft)' }}
+                  />
+                </button>
+
+                {/* Dropdown Menu (YouTube style) */}
+                {isDropdownOpen && (
+                  <div className="absolute right-0 top-9 mt-1 w-64 bg-card rounded-xl border border-[var(--border-default)] shadow-2xl p-4 z-50 animate-fade-in text-left">
+                    {/* Header inside popover */}
+                    <div className="flex items-center gap-3 pb-3 border-b border-[var(--border-default)]">
+                      <img
+                        src={
+                          session?.user?.image ||
+                          `https://ui-avatars.com/api/?name=${encodeURIComponent(session?.user?.name || 'User')}&background=6366f1&color=fff&size=32`
+                        }
+                        alt="avatar"
+                        className="w-10 h-10 rounded-full border border-indigo-500/20 object-cover flex-shrink-0"
+                      />
+                      <div className="min-w-0">
+                        <p className="text-xs font-bold text-primary truncate">
+                          {session?.user?.name || 'Nama Kreator'}
+                        </p>
+                        <p className="text-[10px] text-muted truncate">{session?.user?.email}</p>
+                      </div>
+                    </div>
+
+                    {/* Menu links */}
+                    <div className="py-2 space-y-1">
+                      <Link
+                        href="/profile"
+                        onClick={() => setIsDropdownOpen(false)}
+                        className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-xs font-semibold text-secondary hover:text-primary hover:bg-indigo-500/5 transition-all"
+                      >
+                        <User className="w-4 h-4 text-muted flex-shrink-0" />
+                        <span>Profil Saya</span>
+                      </Link>
+
+                      <button
+                        onClick={() => {
+                          setIsDropdownOpen(false);
+                          setShowLogoutConfirm(true);
+                        }}
+                        className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-xs font-semibold text-rose-600 dark:text-rose-400 hover:bg-rose-500/5 transition-all text-left cursor-pointer"
+                      >
+                        <LogOut className="w-4 h-4 text-rose-500 flex-shrink-0" />
+                        <span>Keluar</span>
+                      </button>
+                    </div>
+                  </div>
+                )}
+              </div>
             </div>
           </header>
 
@@ -132,6 +208,22 @@ export default function MainLayout({ children }) {
         {/* ── Onboarding Tour ──────────────────────────────── */}
         <OnboardingTour />
       </div>
+
+      {/* Logout Confirmation Modal */}
+      <ConfirmModal
+        isOpen={showLogoutConfirm}
+        onClose={() => setShowLogoutConfirm(false)}
+        onConfirm={() => {
+          toast.success('Berhasil keluar. Mengalihkan ke halaman login...');
+          setTimeout(() => {
+            signOut({ callbackUrl: '/login' });
+          }, 1200);
+        }}
+        title="Keluar Sesi"
+        description="Apakah Anda yakin ingin keluar dari Athena Shield? Anda perlu masuk kembali untuk mengakses panel moderasi komentar YouTube Anda."
+        confirmText="Keluar"
+        variant="danger"
+      />
     </SidebarProvider>
   );
 }

@@ -372,7 +372,7 @@ export default function ProfilePage() {
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         
         {/* Modul 1: Ringkasan Pengguna (Bento Card 1) */}
-        <div className="bento-card p-6 md:col-span-2 flex flex-col justify-between relative overflow-hidden">
+        <div className="bento-card p-6 md:col-span-3 flex flex-col justify-between relative overflow-hidden">
           {/* Neon Glow */}
           <div className="absolute right-0 top-0 w-48 h-48 bg-indigo-500/5 blur-[40px] rounded-full pointer-events-none" />
           
@@ -496,67 +496,6 @@ export default function ProfilePage() {
                 </div>
               </div>
             )}
-          </div>
-        </div>
-
-        {/* Modul 2: YouTube Channel Management (Bento Card 2) */}
-        <div className="bento-card p-6 flex flex-col justify-between relative overflow-hidden">
-          <div className="space-y-4">
-            <h3 className="text-sm font-bold text-primary flex items-center gap-1.5">
-              <Tv className="w-4 h-4 text-amber-500" />
-              Kanal YouTube Aktif
-            </h3>
-            
-            {activeChannel ? (
-              <div className="flex items-center gap-3 p-3 rounded-xl bg-slate-500/5 border border-amber-500/20">
-                <img
-                  src={activeChannel.snippet.thumbnails.default.url}
-                  alt={activeChannel.snippet.title}
-                  className="w-10 h-10 rounded-full border border-amber-500/30 flex-shrink-0"
-                />
-                <div className="min-w-0">
-                  <p className="text-xs font-bold text-amber-400 truncate">{activeChannel.snippet.title}</p>
-                  <p className="text-[10px] text-muted truncate">{activeChannel.snippet.customUrl}</p>
-                </div>
-              </div>
-            ) : (
-              <div className="p-3 text-center text-xs text-muted border border-dashed rounded-xl">
-                Tidak ada kanal aktif terpilih
-              </div>
-            )}
-
-            {/* Opsi Alih Kanal Langsung */}
-            <div className="space-y-2">
-              <p className="text-[10px] text-muted uppercase tracking-wider">Alih Kanal YouTube:</p>
-              
-              {loadingChannel ? (
-                <div className="flex items-center justify-center py-4">
-                  <div className="w-4 h-4 border-2 border-amber-500 border-t-transparent rounded-full animate-spin" />
-                </div>
-              ) : channels.length <= 1 ? (
-                <p className="text-[11px] text-muted">Hanya memiliki 1 kanal YouTube.</p>
-              ) : (
-                <div className="max-h-24 overflow-y-auto space-y-1.5 pr-1 divide-y divide-slate-500/5">
-                  {channels.map((ch) => {
-                    const isActive = ch.id === activeChannel?.id;
-                    return (
-                      <div
-                        key={ch.id}
-                        onClick={() => handleSelectChannel(ch)}
-                        className={`flex items-center justify-between py-1.5 cursor-pointer text-xs transition-colors rounded-lg px-2 ${
-                          isActive
-                            ? 'text-indigo-400 font-semibold bg-indigo-500/5'
-                            : 'text-secondary hover:text-primary hover:bg-card-hover'
-                        }`}
-                      >
-                        <span className="truncate max-w-[130px]">{ch.snippet.title}</span>
-                        {isActive && <CheckCircle2 className="w-3.5 h-3.5 text-indigo-400 flex-shrink-0" />}
-                      </div>
-                    );
-                  })}
-                </div>
-              )}
-            </div>
           </div>
         </div>
 

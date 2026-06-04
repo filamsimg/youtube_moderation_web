@@ -193,8 +193,8 @@ export default function CommentsPage() {
           <p className="text-xs font-semibold uppercase tracking-wider" style={{ color: 'var(--text-muted)' }}>Daftar Video</p>
           <p className="text-[11px] mt-0.5" style={{ color: 'var(--text-muted)' }}>
             {selectedVideoIds.size > 0
-              ? `${selectedVideoIds.size} dari ${videos.length} dipilih`
-              : `${videos.length} video tersedia`}
+              ? `${selectedVideoIds.size} dari ${videos.length} video dipilih`
+              : 'Pilih satu/beberapa video di bawah'}
           </p>
         </div>
 
@@ -283,12 +283,6 @@ export default function CommentsPage() {
           ) : videos.length === 0 ? (
             <div className="text-center py-8 px-4">
               <p className="text-xs" style={{ color: 'var(--text-muted)' }}>Tidak ada video ditemukan.</p>
-              <button
-                onClick={() => router.push('/channel')}
-                className="text-xs text-indigo-400 hover:underline mt-2 block mx-auto"
-              >
-                Ganti Kanal →
-              </button>
             </div>
           ) : filteredVideos.length === 0 ? (
             <div className="text-center py-8 px-4">
@@ -372,7 +366,11 @@ export default function CommentsPage() {
           <button
             onClick={() => { handleLoadSelected(false); setShowVideoPanel(false); }}
             disabled={selectedVideoIds.size === 0 || isFetchingMulti}
-            className="w-full py-2 px-3 bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-semibold rounded-xl transition-all active:scale-95 disabled:cursor-not-allowed flex items-center justify-center gap-2 disabled:opacity-50"
+            className={`w-full py-2 px-3 text-white text-xs font-semibold rounded-xl transition-all active:scale-95 disabled:cursor-not-allowed flex items-center justify-center gap-2 disabled:opacity-50 ${
+              selectedVideoIds.size > 0 && !hasLoaded && !isFetchingMulti
+                ? 'bg-indigo-600 hover:bg-indigo-700 animate-pulse shadow-lg shadow-indigo-500/20'
+                : 'bg-indigo-600 hover:bg-indigo-700'
+            }`}
           >
             {isFetchingMulti ? (
               <>
@@ -389,13 +387,6 @@ export default function CommentsPage() {
                 Muat Komentar ({selectedVideoIds.size} video)
               </>
             )}
-          </button>
-
-          <button
-            onClick={() => router.push('/channel')}
-            className="w-full text-xs py-1.5 transition-colors text-indigo-400 hover:text-indigo-300"
-          >
-            ← Ganti Kanal
           </button>
         </div>
       </div>
@@ -585,7 +576,7 @@ export default function CommentsPage() {
             className={`py-3 text-xs font-semibold relative transition-all flex items-center gap-2 ${activeTab === 'belum' ? 'text-indigo-400 font-bold' : 'text-[var(--text-muted)] hover:text-[var(--text-secondary)]'
               }`}
           >
-            Daftar Tunggu Pemeriksaan
+            Daftar Tunggu Moderasi
             <span className={`text-[10px] px-1.5 py-0.5 rounded-full font-medium transition-all ${activeTab === 'belum'
               ? 'bg-indigo-500/20 text-indigo-400'
               : 'bg-[var(--bg-card-hover)] text-[var(--text-muted)]'
@@ -1191,8 +1182,22 @@ export default function CommentsPage() {
       {/* Page title bar */}
       <div className="flex items-center justify-between px-4 lg:px-6 py-3 border-b flex-shrink-0" style={{ background: 'var(--bg-card)', borderColor: 'var(--border-default)' }}>
         <div>
-          <h1 className="text-base lg:text-lg font-semibold" style={{ color: 'var(--text-primary)' }}>Pemeriksaan Komentar</h1>
-          <p className="text-[11px]" style={{ color: 'var(--text-muted)' }}>Pilih beberapa video lalu muat komentarnya sekaligus</p>
+          <h1 className="text-base lg:text-lg font-semibold" style={{ color: 'var(--text-primary)' }}>Moderasi Komentar</h1>
+          <div className="mt-1 flex flex-col sm:flex-row sm:items-center gap-x-2 gap-y-0.5 text-[11px]" style={{ color: 'var(--text-muted)' }}>
+            <span className="flex items-center gap-1 text-indigo-400 font-semibold flex-shrink-0">
+              <svg className="w-3.5 h-3.5 flex-shrink-0" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" d="M11.25 11.25l.041-.02a.75.75 0 111.063.852l-.708 2.836a.75.75 0 001.063.852l.041-.021M21 12a9 9 0 11-18 0 9 9 0 0118 0zm-9-3.75h.008v.008H12V8.25z" />
+              </svg>
+              Panduan Cepat:
+            </span>
+            <div className="flex flex-wrap items-center gap-x-1.5 gap-y-0.5">
+              <span>(1) Centang video di daftar kiri</span>
+              <span className="opacity-40 font-normal">•</span>
+              <span>(2) Klik tombol <strong className="text-indigo-400 font-semibold">&quot;Muat Komentar&quot;</strong> di bawah daftar</span>
+              <span className="opacity-40 font-normal">•</span>
+              <span>(3) Moderasi komentar yang terdeteksi judi</span>
+            </div>
+          </div>
         </div>
         <button
           onClick={() => setShowVideoPanel(true)}
