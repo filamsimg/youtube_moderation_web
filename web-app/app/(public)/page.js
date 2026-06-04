@@ -76,27 +76,18 @@ const STATS = [
 ];
 
 const colorMap = {
-  amber: 'bg-amber-50 text-amber-600',
-  emerald: 'bg-emerald-50 text-emerald-600',
-  amber: 'bg-amber-50 text-amber-600',
-  amber: 'bg-amber-50 text-amber-600',
-  rose: 'bg-rose-50 text-rose-600',
-  violet: 'bg-violet-50 text-violet-600',
+  amber: 'bg-amber-50 dark:bg-amber-500/10 text-amber-700 dark:text-amber-400',
+  emerald: 'bg-emerald-50 dark:bg-emerald-500/10 text-emerald-700 dark:text-emerald-400',
+  rose: 'bg-rose-50 dark:bg-rose-500/10 text-rose-700 dark:text-rose-400',
+  violet: 'bg-violet-50 dark:bg-violet-500/10 text-violet-700 dark:text-violet-400',
 };
 
 export default function LandingPage() {
   const { data: session, status } = useSession();
   const router = useRouter();
 
-  // Jika sudah login, redirect ke dashboard
-  useEffect(() => {
-    if (status === 'authenticated') {
-      router.replace('/dashboard');
-    }
-  }, [status, router]);
-
   // Tampilkan loading spinner saat mengecek sesi
-  if (status === 'loading' || status === 'authenticated') {
+  if (status === 'loading') {
     return (
       <div className="flex items-center justify-center min-h-[60vh]">
         <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-amber-600" />
@@ -105,16 +96,20 @@ export default function LandingPage() {
   }
 
   return (
-    <div className="overflow-x-hidden">
+    <div className="relative min-h-screen w-full overflow-hidden">
+      {/* ── Background Effects ── */}
+      <div className="absolute inset-0 z-0 pointer-events-none overflow-hidden">
+        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[800px] h-[500px] bg-amber-100/60 dark:bg-amber-950/10 rounded-full blur-3xl" />
+        <div className="absolute top-[35%] right-0 w-[400px] h-[400px] bg-purple-100/40 dark:bg-purple-950/10 rounded-full blur-3xl" />
+        <div className="absolute bottom-[20%] left-0 w-[500px] h-[500px] bg-indigo-100/30 dark:bg-indigo-950/5 rounded-full blur-3xl" />
+        <div className="absolute inset-0 bg-mesh-dark opacity-[0.06] dark:opacity-30 dark:mix-blend-screen" />
+        <KineticGrid />
+      </div>
+
+      <div className="relative z-10">
 
       {/* ── HERO SECTION ──────────────────────────────────────────── */}
-      <section className="relative pt-20 pb-24 px-4 text-center overflow-hidden">
-        {/* Background gradient blobs & Kinetic Grid */}
-        <div className="absolute inset-0 z-0 pointer-events-none overflow-hidden">
-          <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[600px] h-[400px] bg-amber-100/60 dark:bg-amber-950/10 rounded-full blur-3xl" />
-          <div className="absolute top-20 right-0 w-[300px] h-[300px] bg-purple-100/40 dark:bg-purple-950/10 rounded-full blur-3xl" />
-          <KineticGrid />
-        </div>
+      <section className="relative pt-20 pb-24 px-4 text-center">
 
         {/* Hero Content Wrapper */}
         <div className="relative z-10 pointer-events-none">
@@ -167,7 +162,7 @@ export default function LandingPage() {
       </section>
 
       {/* ── FEATURES SECTION ──────────────────────────────────────── */}
-      <section className="py-20 px-4 bg-page border-y" style={{ borderColor: 'var(--border-default)' }}>
+      <section className="py-20 px-4 bg-transparent border-y" style={{ borderColor: 'var(--border-default)' }}>
         <div className="max-w-5xl mx-auto">
           <div className="text-center mb-12">
             <h2 className="text-2xl font-bold text-primary mb-2">Semua yang Anda Butuhkan</h2>
@@ -223,7 +218,7 @@ export default function LandingPage() {
           </Link>
         </div>
       </section>
-
+      </div>
     </div>
   );
 }

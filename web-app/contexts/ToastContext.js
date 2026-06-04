@@ -31,11 +31,11 @@ export function ToastProvider({ children }) {
         {toasts.map((t) => (
           <div
             key={t.id}
-            className={`animate-fade-in-up flex items-center gap-3 px-4 py-3 rounded-xl shadow-lg border backdrop-blur-md pointer-events-auto ${
-              t.type === 'success' ? 'bg-emerald-500/10 border-emerald-500/20 text-emerald-600 dark:text-emerald-400' :
-              t.type === 'error' ? 'bg-rose-500/10 border-rose-500/20 text-rose-600 dark:text-rose-400' :
-              t.type === 'warning' ? 'bg-amber-500/10 border-amber-500/20 text-amber-600 dark:text-amber-400' :
-              'bg-blue-500/10 border-blue-500/20 text-blue-600 dark:text-blue-400'
+            className={`animate-fade-in-up flex items-center gap-3 px-4 py-3 rounded-xl shadow-xl border backdrop-blur-md pointer-events-auto ${
+              t.type === 'success' ? 'bg-emerald-50/95 border-emerald-200/80 text-emerald-800 dark:bg-emerald-500/10 dark:border-emerald-500/20 dark:text-emerald-400' :
+              t.type === 'error' ? 'bg-rose-50/95 border-rose-200/80 text-rose-800 dark:bg-rose-500/10 dark:border-rose-500/20 dark:text-rose-400' :
+              t.type === 'warning' ? 'bg-amber-50/95 border-amber-200/80 text-amber-800 dark:bg-amber-500/10 dark:border-amber-500/20 dark:text-amber-400' :
+              'bg-blue-50/95 border-blue-200/80 text-blue-800 dark:bg-blue-500/10 dark:border-blue-500/20 dark:text-blue-400'
             }`}
           >
             {t.type === 'success' && (

@@ -6,6 +6,7 @@ import { useQuota } from '@/contexts/QuotaContext';
 import { useToast } from '@/contexts/ToastContext';
 import Link from 'next/link';
 import Script from 'next/script';
+import KineticGrid from '@/components/KineticGrid';
 
 // =========================================================================
 // DEFINISI PAKET LANGGANAN & TOP-UP (Sesuai Konfigurasi Keamanan Sisi Server)
@@ -28,18 +29,18 @@ const COST_TABLE = [
 
 const topupColorMap = {
   emerald: {
-    btn: 'bg-gradient-to-r from-emerald-600 to-teal-600 text-white hover:shadow-[0_0_20px_rgba(16,185,129,0.4)]',
-    badge: 'bg-emerald-50 border border-emerald-200 text-emerald-700 dark:bg-emerald-500/10 dark:text-emerald-400 dark:border-emerald-500/20',
+    btn: 'bg-gradient-to-r from-emerald-600 to-teal-600 text-white hover:shadow-[0_0_20px_rgba(16,185,129,0.35)]',
+    badge: 'border-emerald-500/30 text-emerald-700 dark:text-emerald-400 bg-emerald-500/10',
     icon: 'text-emerald-600 dark:text-emerald-400',
   },
   blue: {
-    btn: 'bg-gradient-to-r from-blue-600 to-indigo-600 text-white hover:shadow-[0_0_20px_rgba(59,130,246,0.4)]',
-    badge: 'bg-blue-50 border border-blue-200 text-blue-700 dark:bg-blue-500/10 dark:text-blue-400 dark:border-blue-500/20',
+    btn: 'bg-gradient-to-r from-blue-600 to-indigo-600 text-white hover:shadow-[0_0_20px_rgba(59,130,246,0.35)]',
+    badge: 'border-blue-500/30 text-blue-700 dark:text-blue-400 bg-blue-500/10',
     icon: 'text-blue-600 dark:text-blue-400',
   },
   violet: {
-    btn: 'bg-gradient-to-r from-violet-600 to-purple-600 text-white hover:shadow-[0_0_20px_rgba(124,58,237,0.4)]',
-    badge: 'bg-violet-50 border border-violet-200 text-violet-700 dark:bg-violet-500/10 dark:text-violet-400 dark:border-violet-500/20',
+    btn: 'bg-gradient-to-r from-violet-600 to-purple-600 text-white hover:shadow-[0_0_20px_rgba(124,58,237,0.35)]',
+    badge: 'border-violet-500/30 text-violet-700 dark:text-violet-400 bg-violet-500/10',
     icon: 'text-violet-600 dark:text-violet-400',
   },
 };
@@ -82,6 +83,8 @@ export default function PricingPage() {
         cta: 'Paket Saat Ini',
         badge: null,
         tier: 'FREE',
+        originalPrice: null,
+        savedAmount: null,
       },
       {
         key: `PRO_${billingCycle}`,
@@ -107,10 +110,14 @@ export default function PricingPage() {
         ],
         disabled: [],
         cta: `Pilih Pro (${cycleInfo.label === 'bulan' ? '1 Bulan' : cycleInfo.label === 'tahun' ? '1 Tahun' : billingCycle.replace('M', ' Bulan')})`,
-        badge: billingCycle === '1M' ? '🔥 Paling Populer' : 
-               billingCycle === '3M' ? '💡 Hemat 5%' : 
-               billingCycle === '6M' ? '💎 Hemat 10%' : '🚀 Hemat 20%',
+        badge: '🔥 Paling Populer',
         tier: 'PRO',
+        originalPrice: billingCycle === '1M' ? null :
+                       billingCycle === '3M' ? 'Rp 147.000' :
+                       billingCycle === '6M' ? 'Rp 294.000' : 'Rp 588.000',
+        savedAmount: billingCycle === '1M' ? null :
+                     billingCycle === '3M' ? 'Rp 8.000' :
+                     billingCycle === '6M' ? 'Rp 30.000' : 'Rp 118.000',
       },
       {
         key: `ENTERPRISE_${billingCycle}`,
@@ -132,10 +139,14 @@ export default function PricingPage() {
         ],
         disabled: [],
         cta: `Pilih Enterprise (${cycleInfo.label === 'bulan' ? '1 Bulan' : cycleInfo.label === 'tahun' ? '1 Tahun' : billingCycle.replace('M', ' Bulan')})`,
-        badge: billingCycle === '1M' ? '⭐ Terlengkap' : 
-               billingCycle === '3M' ? '💡 Hemat 5%' : 
-               billingCycle === '6M' ? '💎 Hemat 10%' : '👑 Hemat 20%',
+        badge: '⭐ Terlengkap',
         tier: 'ENTERPRISE',
+        originalPrice: billingCycle === '1M' ? null :
+                       billingCycle === '3M' ? 'Rp 447.000' :
+                       billingCycle === '6M' ? 'Rp 894.000' : 'Rp 1.788.000',
+        savedAmount: billingCycle === '1M' ? null :
+                     billingCycle === '3M' ? 'Rp 23.000' :
+                     billingCycle === '6M' ? 'Rp 90.000' : 'Rp 358.000',
       },
     ];
   };
@@ -241,7 +252,7 @@ export default function PricingPage() {
   };
 
   return (
-    <div className="animate-fade-in-up space-y-8 pb-12 max-w-5xl mx-auto">
+    <div className="relative min-h-screen w-full overflow-hidden py-12 px-4 sm:px-6 lg:px-8">
       {/* Memuat Midtrans Snap SDK (Sandbox Environment) */}
       <Script
         src="https://app.sandbox.midtrans.com/snap/snap.js"
@@ -249,237 +260,235 @@ export default function PricingPage() {
         strategy="lazyOnload"
       />
 
-      {/* ── Page Header ──────────────────────────────────────── */}
-      <div className="text-center space-y-3 pt-2">
-        <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full badge badge-ai text-[11px] mb-2">
-          ⚡ Kelola Kuota API
-        </div>
-        <h1 className="text-2xl font-bold text-primary tracking-tight">Paket &amp; Jatah Poin Harian</h1>
-        <p className="text-sm text-secondary">
-          Kelola kuota sistem Anda. Setiap tindakan pemeriksaan atau penghapusan komentar akan mengurangi jatah poin harian dari YouTube.
-        </p>
-
-        {/* Current Quota Status Badge */}
-        {!loadingProfile && profile && (
-          <div className="inline-flex items-center gap-3 mt-3 px-4 py-2.5 bento-card">
-            <div className="text-left">
-              <p className="text-[10px] text-secondary uppercase tracking-wider">Sisa Kuota Anda</p>
-              <p className="text-sm font-bold text-primary">
-                {profile.quota_balance.toLocaleString('id-ID')}
-                <span className="text-xs font-normal text-muted"> / {profile.quota_limit.toLocaleString('id-ID')} unit</span>
-              </p>
-            </div>
-            <div className="w-20 h-1.5 rounded-full overflow-hidden" style={{ background: 'var(--border-default)' }}>
-              <div
-                className={`h-full rounded-full transition-all ${profile.percentage > 50 ? 'bg-emerald-500' :
-                    profile.percentage > 20 ? 'bg-amber-400' : 'bg-rose-500'
-                  }`}
-                style={{ width: `${profile.percentage}%` }}
-              />
-            </div>
-            <span className={`text-[10px] font-semibold px-2 py-0.5 rounded-full ${profile.tier === 'PRO' ? 'bg-amber-50 border border-amber-200 text-amber-700 dark:bg-amber-500/10 dark:text-amber-400 dark:border-amber-500/20' :
-                profile.tier === 'ENTERPRISE' ? 'bg-violet-50 border border-violet-200 text-violet-700 dark:bg-violet-500/10 dark:text-violet-400 dark:border-violet-500/20' :
-                  'bg-card-hover text-muted border border-[var(--border-default)]'
-              }`}>
-              {profile.tier}
-            </span>
-          </div>
-        )}
+      {/* ── Background Effects ── */}
+      <div className="absolute inset-0 z-0 pointer-events-none overflow-hidden">
+        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[800px] h-[500px] bg-indigo-500/10 dark:bg-indigo-950/5 rounded-full blur-3xl" />
+        <div className="absolute bottom-0 right-0 w-[400px] h-[400px] bg-purple-500/10 dark:bg-purple-950/5 rounded-full blur-3xl" />
+        <div className="absolute inset-0 bg-mesh-dark opacity-[0.06] dark:opacity-40 dark:mix-blend-screen" />
+        <KineticGrid />
       </div>
 
-      {/* ── Tab Switcher ─────────────────────────────────────── */}
-      <div className="flex flex-col items-center gap-3">
-        <div className="flex bg-card border border-[var(--border-default)] rounded-xl p-1 gap-1">
-          {[
-            { key: 'plans', label: 'Paket Langganan' },
-            { key: 'topup', label: 'Top-up Kredit' },
-          ].map(tab => (
-            <button
-              key={tab.key}
-              onClick={() => setActiveTab(tab.key)}
-              className={`px-4 py-1.5 rounded-lg text-xs font-medium transition-all duration-200 cursor-pointer ${activeTab === tab.key
-                  ? 'bg-indigo-500/10 text-indigo-300 border border-indigo-500/30'
-                  : 'text-secondary hover:text-primary hover:bg-card-hover'
-                }`}
-            >
-              {tab.label}
-            </button>
-          ))}
+      <div className="relative z-10 max-w-5xl mx-auto space-y-10 animate-fade-in-up">
+        {/* ── Page Header ──────────────────────────────────────── */}
+        <div className="text-center space-y-3 pt-2">
+          <div className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-indigo-500/10 border border-indigo-500/30 text-indigo-600 dark:text-indigo-400 text-xs font-semibold mb-2 shadow-sm">
+            ⚡ Kelola Kuota API
+          </div>
+          <h1 className="text-3xl sm:text-4xl font-extrabold text-primary tracking-tight">
+            Pilih Paket Terbaik untuk Menjaga Kanal Anda
+          </h1>
+          <p className="text-sm text-secondary max-w-xl mx-auto leading-relaxed">
+            Kelola kuota moderasi sistem Anda. Setiap tindakan pemeriksaan atau penghapusan komentar akan mengurangi jatah poin dari YouTube.
+          </p>
+
+          {/* Current Quota Status Badge */}
+          {!loadingProfile && profile && (
+            <div className="inline-flex items-center gap-4 mt-4 px-5 py-3 rounded-2xl border border-[var(--border-default)] bg-card/60 backdrop-blur-md shadow-sm">
+              <div className="text-left">
+                <p className="text-[10px] text-secondary uppercase tracking-wider font-semibold">Sisa Kuota Anda</p>
+                <p className="text-sm font-bold text-primary mt-0.5">
+                  {profile.quota_balance.toLocaleString('id-ID')}
+                  <span className="text-xs font-normal text-muted"> / {profile.quota_limit.toLocaleString('id-ID')} unit</span>
+                </p>
+              </div>
+              <div className="w-20 h-1.5 rounded-full overflow-hidden bg-[var(--border-default)]">
+                <div
+                  className={`h-full rounded-full transition-all duration-500 ${
+                    profile.percentage > 50 ? 'bg-emerald-500' :
+                    profile.percentage > 20 ? 'bg-amber-400' : 'bg-rose-500'
+                  }`}
+                  style={{ width: `${profile.percentage}%` }}
+                />
+              </div>
+              <span className={`text-[10px] font-bold uppercase tracking-wider px-2.5 py-1 rounded-md border ${
+                profile.tier === 'PRO' ? 'bg-amber-500/10 border-amber-500/30 text-amber-700 dark:text-amber-400' :
+                profile.tier === 'ENTERPRISE' ? 'bg-purple-500/10 border-purple-500/30 text-purple-700 dark:text-purple-400' :
+                'bg-card-hover text-muted border-[var(--border-default)]'
+              }`}>
+                {profile.tier}
+              </span>
+            </div>
+          )}
         </div>
 
-        {/* ── Billing Cycle Switcher ── */}
-        {activeTab === 'plans' && (
-          <div className="flex bg-slate-500/5 border border-[var(--border-default)]/40 rounded-xl p-1 gap-1.5 select-none max-w-full overflow-x-auto">
+        {/* ── Tab Switcher ─────────────────────────────────────── */}
+        <div className="flex flex-col items-center gap-4">
+          <div className="flex bg-card/60 backdrop-blur-md border border-[var(--border-default)] rounded-2xl p-1 gap-1 shadow-sm">
             {[
-              { key: '1M', label: '1 Bulan', badge: null },
-              { key: '3M', label: '3 Bulan', badge: 'Diskon 5%' },
-              { key: '6M', label: '6 Bulan', badge: 'Diskon 10%' },
-              { key: '12M', label: '1 Tahun', badge: 'Diskon 20%' },
-            ].map(cycle => (
+              { key: 'plans', label: 'Paket Langganan' },
+              { key: 'topup', label: 'Top-up Kredit' },
+            ].map(tab => (
               <button
-                key={cycle.key}
-                onClick={() => setBillingCycle(cycle.key)}
-                className={`relative px-3.5 py-1 rounded-lg text-[10px] sm:text-xs font-semibold transition-all duration-200 cursor-pointer whitespace-nowrap ${
-                  billingCycle === cycle.key
-                    ? 'bg-gradient-to-r from-indigo-500/10 to-violet-500/10 text-indigo-300 border border-indigo-500/25 shadow-md shadow-indigo-500/5'
-                    : 'text-secondary hover:text-primary hover:bg-card-hover'
+                key={tab.key}
+                onClick={() => setActiveTab(tab.key)}
+                className={`px-5 py-2 rounded-xl text-xs font-semibold transition-all duration-200 cursor-pointer ${
+                  activeTab === tab.key
+                    ? 'bg-indigo-500/10 text-indigo-700 dark:text-indigo-300 border border-indigo-500/35 dark:border-indigo-500/50 shadow-sm'
+                    : 'text-secondary hover:text-primary hover:bg-card-hover/50 border border-transparent'
                 }`}
               >
-                {cycle.label}
-                {cycle.badge && (
-                  <span className="absolute -top-1.5 -right-1 px-1 py-0.2 rounded bg-emerald-500/20 text-emerald-400 text-[6px] font-bold tracking-tight uppercase animate-pulse border border-emerald-500/10">
-                    {cycle.badge}
-                  </span>
-                )}
+                {tab.label}
               </button>
             ))}
           </div>
-        )}
-      </div>
 
-      {/* ── PLANS TAB ────────────────────────────────────────── */}
-      {activeTab === 'plans' && (
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          {PLANS.map((plan) => {
-            const isCurrentTier = profile?.tier === plan.tier;
-            const isFree = plan.tier === 'FREE';
-            const isPro = plan.tier === 'PRO';
-            const isEnterprise = plan.tier === 'ENTERPRISE';
-
-            return (
-              <div
-                key={plan.key}
-                className={`relative bento-card flex flex-col gap-4 p-5 transition-all duration-300 ${isPro ? 'bento-card-glow' : ''
-                  } ${isCurrentTier ? 'border-indigo-500/30 shadow-[0_0_30px_rgba(99,102,241,0.10)]' : ''}`}
-              >
-                {/* Popular Badge */}
-                {plan.badge && (
-                  <div className={`absolute -top-3 left-1/2 -translate-x-1/2 px-3 py-1 rounded-full text-[11px] font-semibold whitespace-nowrap border bg-card ${isPro
-                      ? 'text-amber-600 border-amber-200 dark:text-amber-400 dark:border-amber-500/30'
-                      : 'text-violet-600 border-violet-200 dark:text-violet-400 dark:border-violet-500/30'
-                    }`}>
-                    {plan.badge}
-                  </div>
-                )}
-
-                {/* Plan Header */}
-                <div>
-                  <div className="flex items-center justify-between mb-1">
-                    <span className={`text-sm font-bold ${isPro ? 'text-amber-300' : isEnterprise ? 'text-violet-300' : 'text-primary'
-                      }`}>
-                      {plan.name}
-                    </span>
-                    {isCurrentTier && (
-                      <span className="badge badge-success text-[10px]">Aktif</span>
-                    )}
-                  </div>
-                  <p className="text-xs text-secondary">{plan.description}</p>
-                </div>
-
-                {/* Price */}
-                <div>
-                  <div className="flex items-baseline gap-1">
-                    <span className="text-2xl font-bold text-primary">{plan.price}</span>
-                    <span className="text-xs text-secondary">{plan.period}</span>
-                  </div>
-                  <p className="text-[11px] text-indigo-500 dark:text-indigo-400 font-semibold mt-1.5">
-                    ⚡ {plan.quota} unit API
-                  </p>
-                </div>
-
-                {/* Features */}
-                <ul className="space-y-2 flex-1">
-                  {plan.features.map(f => (
-                    <li key={f} className="flex items-start gap-2 text-xs text-secondary">
-                      <svg className="w-3.5 h-3.5 mt-0.5 flex-shrink-0 text-emerald-600 dark:text-emerald-400" fill="none" viewBox="0 0 24 24" strokeWidth={2.5} stroke="currentColor">
-                        <path strokeLinecap="round" strokeLinejoin="round" d="M4.5 12.75l6 6 9-13.5" />
-                      </svg>
-                      {f}
-                    </li>
-                  ))}
-                  {plan.disabled.map(f => (
-                    <li key={f} className="flex items-start gap-2 text-xs text-muted">
-                      <svg className="w-3.5 h-3.5 mt-0.5 flex-shrink-0 text-muted" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor">
-                        <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
-                      </svg>
-                      {f}
-                    </li>
-                  ))}
-                </ul>
-
-                {/* CTA */}
-                <button
-                  disabled={isCurrentTier || isFree || loadingTx !== null}
-                  onClick={() => handlePurchase(plan.key)}
-                  className={`relative overflow-hidden w-full py-2.5 rounded-xl text-xs font-semibold transition-all duration-300 cursor-pointer select-none ${isCurrentTier || isFree
-                      ? 'bg-card-hover text-muted cursor-default border border-[var(--border-default)]'
-                      : isPro
-                        ? 'bg-gradient-to-r from-indigo-600 to-violet-600 text-white hover:shadow-[0_0_24px_rgba(99,102,241,0.45)] hover:-translate-y-0.5'
-                        : 'bg-gradient-to-r from-amber-500 to-orange-500 text-white hover:shadow-[0_0_24px_rgba(245,158,11,0.45)] hover:-translate-y-0.5'
-                    } disabled:opacity-50 disabled:cursor-not-allowed`}
-                >
-                  {!isCurrentTier && !isFree && (
-                    <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent -translate-x-full hover:translate-x-full transition-transform duration-700" />
-                  )}
-                  <span className="relative">
-                    {loadingTx === plan.key ? (
-                      <span className="flex items-center justify-center gap-1">
-                        <span className="w-3 h-3 border-2 border-white border-t-transparent rounded-full animate-spin" />
-                        Inisialisasi...
-                      </span>
-                    ) : isCurrentTier ? (
-                      '✓ Paket Aktif Anda'
-                    ) : (
-                      plan.cta
-                    )}
-                  </span>
-                </button>
+          {/* ── Billing Cycle Switcher ── */}
+          {activeTab === 'plans' && (
+            <div className="flex flex-col items-center gap-2.5 select-none w-full">
+              <div className="flex bg-slate-500/5 backdrop-blur-md border border-[var(--border-default)]/40 rounded-2xl p-1 gap-1.5 max-w-full overflow-x-auto shadow-sm">
+                {[
+                  { key: '1M', label: '1 Bulan' },
+                  { key: '3M', label: '3 Bulan' },
+                  { key: '6M', label: '6 Bulan' },
+                  { key: '12M', label: '1 Tahun' },
+                ].map(cycle => (
+                  <button
+                    key={cycle.key}
+                    onClick={() => setBillingCycle(cycle.key)}
+                    className={`px-4 py-1.5 rounded-xl text-[10px] sm:text-xs font-semibold transition-all duration-200 cursor-pointer whitespace-nowrap border border-transparent ${
+                      billingCycle === cycle.key
+                        ? 'bg-indigo-500/10 text-indigo-700 dark:text-indigo-300 border-indigo-500/25 dark:border-indigo-500/35 shadow-sm'
+                        : 'text-secondary hover:text-primary hover:bg-card-hover'
+                    }`}
+                  >
+                    {cycle.label}
+                  </button>
+                ))}
               </div>
-            );
-          })}
+              
+              {/* Google One style hemat notice */}
+              <p className="text-xs font-semibold text-emerald-600 dark:text-emerald-400 min-h-[18px] animate-fade-in text-center">
+                {billingCycle === '1M' ? (
+                  '💡 Pilih paket jangka panjang untuk hemat hingga 20%!'
+                ) : billingCycle === '3M' ? (
+                  '🎉 Hemat 5% jika Anda memilih paket 3 Bulan'
+                ) : billingCycle === '6M' ? (
+                  '💎 Hemat 10% jika Anda memilih paket 6 Bulan'
+                ) : (
+                  '🚀 Hemat 20% jika Anda memilih paket 1 Tahun (Diskon Terbesar)'
+                )}
+              </p>
+            </div>
+          )}
         </div>
-      )}
 
-      {/* ── TOP-UP TAB ───────────────────────────────────────── */}
-      {activeTab === 'topup' && (
-        <div className="space-y-4">
-          <p className="text-center text-xs text-secondary">
-            Beli paket kredit sekali bayar. Kredit top-up bersifat permanen — <strong className="text-emerald-400">tidak akan hangus</strong> meskipun masa aktif langganan Anda habis.
-          </p>
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-            {TOP_UP_PACKAGES.map((pkg) => {
-              const c = topupColorMap[pkg.color];
+        {/* ── PLANS TAB ────────────────────────────────────────── */}
+        {activeTab === 'plans' && (
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            {PLANS.map((plan) => {
+              const isCurrentTier = profile?.tier === plan.tier;
+              const isFree = plan.tier === 'FREE';
+              const isPro = plan.tier === 'PRO';
+              const isEnterprise = plan.tier === 'ENTERPRISE';
+
               return (
-                <div key={pkg.units} className="relative bento-card bento-card-glow p-5 flex flex-col gap-3">
-                  {pkg.badge && (
-                    <div className={`absolute -top-3 left-1/2 -translate-x-1/2 px-3 py-1 rounded-full text-[11px] font-semibold bg-card border ${c.badge}`}>
-                      {pkg.badge}
+                <div
+                  key={plan.key}
+                  className={`relative flex flex-col gap-6 p-6 rounded-3xl transition-all duration-300 border backdrop-blur-md ${
+                    isPro 
+                      ? 'bg-card/75 bg-gradient-to-b from-indigo-500/10 to-indigo-500/[0.02] border-indigo-500/35 shadow-[0_0_30px_rgba(99,102,241,0.12)]' 
+                      : isEnterprise
+                        ? 'bg-card/75 bg-gradient-to-b from-purple-500/10 to-purple-500/[0.02] border-purple-500/30 shadow-[0_0_30px_rgba(168,85,247,0.08)]'
+                        : 'bg-card/60 border-[var(--border-default)]'
+                  } ${isCurrentTier ? 'ring-2 ring-indigo-500/40' : ''}`}
+                >
+                  {/* Popular Badge */}
+                  {plan.badge && (
+                    <div className={`absolute -top-3.5 left-1/2 -translate-x-1/2 px-3 py-1 rounded-full text-[10px] uppercase tracking-wider font-bold border shadow-sm ${
+                      isPro
+                        ? 'text-indigo-700 dark:text-indigo-400 bg-indigo-500/10 border-indigo-500/30'
+                        : 'text-purple-700 dark:text-purple-400 bg-purple-500/10 border-purple-500/30'
+                    }`}>
+                      {plan.badge}
                     </div>
                   )}
+
+                  {/* Plan Header */}
                   <div>
-                    <p className="text-xs font-semibold text-secondary uppercase tracking-wider">{pkg.label}</p>
-                    <p className="text-2xl font-bold text-primary mt-1">{pkg.price}</p>
+                    <div className="flex items-center justify-between mb-1.5">
+                      <span className={`text-lg font-bold ${isPro ? 'text-indigo-700 dark:text-indigo-300' : isEnterprise ? 'text-purple-700 dark:text-purple-300' : 'text-primary'}`}>
+                        {plan.name}
+                      </span>
+                      {isCurrentTier && (
+                        <span className="bg-emerald-500/10 dark:bg-emerald-500/20 text-emerald-700 dark:text-emerald-400 border border-emerald-500/20 dark:border-emerald-500/30 text-[9px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-md">
+                          Aktif
+                        </span>
+                      )}
+                    </div>
+                    <p className="text-xs text-secondary leading-relaxed">{plan.description}</p>
                   </div>
-                  <div className={`flex items-center gap-1.5 text-sm font-semibold ${c.icon}`}>
-                    <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
-                      <path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z" />
-                    </svg>
-                    {pkg.units.toLocaleString('id-ID')} Unit
+
+                   {/* Price */}
+                  <div className="border-y py-4 border-[var(--border-default)]/40 my-1">
+                    <div className="flex flex-col gap-1">
+                      <div className="flex items-baseline gap-1.5 flex-wrap">
+                        <span className="text-3xl font-extrabold text-primary">{plan.price}</span>
+                        <span className="text-xs text-secondary">{plan.period}</span>
+                        {plan.originalPrice && (
+                          <span className="text-xs sm:text-sm text-dimmed line-through decoration-1 opacity-75">
+                            {plan.originalPrice}
+                          </span>
+                        )}
+                      </div>
+                      {plan.savedAmount && (
+                        <p className="text-[11px] font-bold text-emerald-600 dark:text-emerald-400 mt-0.5">
+                          Hemat {plan.savedAmount}
+                        </p>
+                      )}
+                    </div>
+                    <p className="text-xs text-indigo-700 dark:text-indigo-400 font-semibold mt-2.5 flex items-center gap-1">
+                      <svg className="w-3.5 h-3.5 text-indigo-700 dark:text-indigo-400" fill="currentColor" viewBox="0 0 24 24">
+                        <path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z" />
+                      </svg>
+                      Jatah: {plan.quota} unit API
+                    </p>
                   </div>
+
+                  {/* Features */}
+                  <ul className="space-y-3 flex-1">
+                    {plan.features.map(f => (
+                      <li key={f} className="flex items-start gap-2.5 text-xs text-secondary">
+                        <svg className="w-4 h-4 mt-0.5 flex-shrink-0 text-emerald-600 dark:text-emerald-400" fill="none" viewBox="0 0 24 24" strokeWidth={2.5} stroke="currentColor">
+                          <path strokeLinecap="round" strokeLinejoin="round" d="M4.5 12.75l6 6 9-13.5" />
+                        </svg>
+                        <span className="leading-tight">{f}</span>
+                      </li>
+                    ))}
+                    {plan.disabled.map(f => (
+                      <li key={f} className="flex items-start gap-2.5 text-xs text-muted/60">
+                        <svg className="w-4 h-4 mt-0.5 flex-shrink-0 text-muted/40" fill="none" viewBox="0 0 24 24" strokeWidth={2.5} stroke="currentColor">
+                          <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+                        </svg>
+                        <span className="leading-tight">{f}</span>
+                      </li>
+                    ))}
+                  </ul>
+
+                  {/* CTA */}
                   <button
-                    disabled={loadingTx !== null}
-                    className={`relative overflow-hidden w-full py-2.5 rounded-xl text-xs font-semibold transition-all duration-300 hover:-translate-y-0.5 cursor-pointer select-none ${c.btn} disabled:opacity-50 disabled:cursor-not-allowed`}
-                    onClick={() => handlePurchase(pkg.key)}
+                    disabled={isCurrentTier || isFree || loadingTx !== null}
+                    onClick={() => handlePurchase(plan.key)}
+                    className={`relative overflow-hidden w-full py-3 rounded-2xl text-xs font-bold transition-all duration-300 cursor-pointer select-none ${
+                      isCurrentTier || isFree
+                        ? 'bg-card-hover text-muted cursor-default border border-[var(--border-default)]'
+                        : isPro
+                          ? 'bg-gradient-to-r from-indigo-600 to-violet-600 text-white hover:shadow-[0_0_24px_rgba(99,102,241,0.45)] hover:-translate-y-0.5 active:scale-98'
+                          : 'bg-gradient-to-r from-purple-600 to-indigo-600 text-white hover:shadow-[0_0_24px_rgba(168,85,247,0.4)] hover:-translate-y-0.5 active:scale-98'
+                    } disabled:opacity-50 disabled:cursor-not-allowed`}
                   >
-                    <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent -translate-x-full hover:translate-x-full transition-transform duration-700" />
+                    {!isCurrentTier && !isFree && (
+                      <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent -translate-x-full hover:translate-x-full transition-transform duration-700" />
+                    )}
                     <span className="relative">
-                      {loadingTx === pkg.key ? (
-                        <span className="flex items-center justify-center gap-1">
-                          <span className="w-3 h-3 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                      {loadingTx === plan.key ? (
+                        <span className="flex items-center justify-center gap-1.5">
+                          <span className="w-3.5 h-3.5 border-2 border-white border-t-transparent rounded-full animate-spin" />
                           Inisialisasi...
                         </span>
+                      ) : isCurrentTier ? (
+                        '✓ Paket Aktif Anda'
                       ) : (
-                        'Beli Sekarang'
+                        plan.cta
                       )}
                     </span>
                   </button>
@@ -487,49 +496,115 @@ export default function PricingPage() {
               );
             })}
           </div>
-        </div>
-      )}
+        )}
 
-      {/* ── Tabel Biaya API ──────────────────────────────────── */}
-      <div className="bento-card p-5 space-y-3 border border-[var(--border-default)]">
-        <div>
-          <h2 className="text-sm font-semibold text-primary">Panduan Konsumsi Jatah Poin</h2>
-          <p className="text-xs text-secondary mt-0.5">Setiap tindakan pemeriksaan atau penghapusan komentar akan memotong jatah poin Anda.</p>
-        </div>
-        <div className="overflow-x-auto">
-          <table className="w-full text-xs">
-            <thead>
-              <tr className="border-b" style={{ borderColor: 'var(--border-default)' }}>
-                <th className="py-2 text-left font-semibold text-secondary uppercase tracking-wider text-[10px]">Tindakan</th>
-                <th className="py-2 text-left font-semibold text-secondary uppercase tracking-wider text-[10px]">Nama Teknis YouTube (Abaikan saja)</th>
-                <th className="py-2 text-right font-semibold text-secondary uppercase tracking-wider text-[10px]">Konsumsi Poin</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y" style={{ borderColor: 'var(--border-default)' }}>
-              {COST_TABLE.map((row) => (
-                <tr key={row.action} className="hover:bg-card-hover transition-colors">
-                  <td className="py-2.5 text-primary font-medium">{row.action}</td>
-                  <td className="py-2.5 text-secondary font-mono text-[10px]">{row.api}</td>
-                  <td className="py-2.5 text-right">
-                    <span className={`font-semibold ${row.cost >= 50 ? 'text-rose-600 dark:text-rose-400' : 'text-emerald-600 dark:text-emerald-400'}`}>
-                      {row.cost} unit
-                    </span>
-                  </td>
+        {/* ── TOP-UP TAB ───────────────────────────────────────── */}
+        {activeTab === 'topup' && (
+          <div className="space-y-6">
+            <p className="text-center text-xs text-secondary max-w-xl mx-auto leading-relaxed">
+              Beli paket kredit sekali bayar. Kredit top-up bersifat permanen — <strong className="text-emerald-700 dark:text-emerald-400">tidak akan hangus</strong> meskipun masa aktif langganan Anda habis.
+            </p>
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
+              {TOP_UP_PACKAGES.map((pkg) => {
+                const c = topupColorMap[pkg.color];
+                const isBlue = pkg.color === 'blue';
+                const isEmerald = pkg.color === 'emerald';
+
+                return (
+                  <div 
+                    key={pkg.units} 
+                    className={`relative flex flex-col gap-5 p-6 rounded-3xl transition-all duration-300 border backdrop-blur-md ${
+                      isEmerald 
+                        ? 'bg-card/75 bg-gradient-to-b from-emerald-500/10 to-emerald-500/[0.02] border-emerald-500/30 shadow-[0_0_25px_rgba(16,185,129,0.04)]'
+                        : isBlue
+                          ? 'bg-card/75 bg-gradient-to-b from-blue-500/10 to-blue-500/[0.02] border-blue-500/30 shadow-[0_0_25px_rgba(59,130,246,0.08)]'
+                          : 'bg-card/75 bg-gradient-to-b from-violet-500/10 to-violet-500/[0.02] border-violet-500/30 shadow-[0_0_25px_rgba(139,92,246,0.04)]'
+                    }`}
+                  >
+                    {pkg.badge && (
+                      <div className={`absolute -top-3.5 left-1/2 -translate-x-1/2 px-3 py-1 rounded-full text-[10px] uppercase tracking-wider font-bold border shadow-sm ${
+                        isBlue ? 'text-blue-700 dark:text-blue-400 bg-blue-500/10 border-blue-500/30' : ''
+                      }`}>
+                        {pkg.badge}
+                      </div>
+                    )}
+                    <div>
+                      <p className="text-xs font-semibold text-secondary uppercase tracking-wider">{pkg.label}</p>
+                      <p className="text-2xl font-extrabold text-primary mt-1">{pkg.price}</p>
+                    </div>
+                    <div className={`flex items-center gap-1.5 text-sm font-semibold ${c.icon}`}>
+                      <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
+                        <path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z" />
+                      </svg>
+                      {pkg.units.toLocaleString('id-ID')} Unit
+                    </div>
+                    <button
+                      disabled={loadingTx !== null}
+                      className={`relative overflow-hidden w-full py-3 rounded-2xl text-xs font-bold transition-all duration-300 hover:-translate-y-0.5 active:scale-98 cursor-pointer select-none ${c.btn} disabled:opacity-50 disabled:cursor-not-allowed`}
+                      onClick={() => handlePurchase(pkg.key)}
+                    >
+                      <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent -translate-x-full hover:translate-x-full transition-transform duration-700" />
+                      <span className="relative">
+                        {loadingTx === pkg.key ? (
+                          <span className="flex items-center justify-center gap-1.5">
+                            <span className="w-3.5 h-3.5 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                            Inisialisasi...
+                          </span>
+                        ) : (
+                          'Beli Sekarang'
+                        )}
+                      </span>
+                    </button>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        )}
+
+        {/* ── Tabel Biaya API ──────────────────────────────────── */}
+        <div className="border border-[var(--border-default)]/60 bg-card/50 backdrop-blur-md rounded-3xl p-6 space-y-4 shadow-sm">
+          <div>
+            <h2 className="text-base font-bold text-primary">Panduan Konsumsi Jatah Poin</h2>
+            <p className="text-xs text-secondary mt-0.5">Setiap tindakan pemeriksaan atau penghapusan komentar akan memotong jatah poin Anda.</p>
+          </div>
+          <div className="overflow-x-auto">
+            <table className="w-full text-xs">
+              <thead>
+                <tr className="border-b" style={{ borderColor: 'var(--border-default)' }}>
+                  <th className="py-2.5 text-left font-bold text-secondary uppercase tracking-wider text-[10px]">Tindakan</th>
+                  <th className="py-2.5 text-left font-bold text-secondary uppercase tracking-wider text-[10px]">Nama Teknis YouTube</th>
+                  <th className="py-2.5 text-right font-bold text-secondary uppercase tracking-wider text-[10px]">Konsumsi Poin</th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
+              </thead>
+              <tbody className="divide-y divide-[var(--border-default)]/45">
+                {COST_TABLE.map((row) => (
+                  <tr key={row.action} className="hover:bg-card-hover/30 transition-colors">
+                    <td className="py-3 text-primary font-semibold">{row.action}</td>
+                    <td className="py-3 text-secondary font-mono text-[10px] opacity-75">{row.api}</td>
+                    <td className="py-3 text-right">
+                      <span className={`font-bold px-2 py-0.5 rounded-md ${
+                        row.cost >= 50 ? 'bg-rose-500/10 text-rose-700 dark:text-rose-400 border border-rose-500/10' : 'bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 border border-emerald-500/10'
+                      }`}>
+                        {row.cost} unit
+                      </span>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+          <p className="text-[10px] text-muted opacity-80">* Batas gratis YouTube API: 10.000 unit/hari per project Google Cloud.</p>
         </div>
-        <p className="text-[10px] text-muted">* Batas gratis YouTube API: 10.000 unit/hari per project Google Cloud.</p>
-      </div>
 
-      {/* Footer Note */}
-      <p className="text-center text-[11px] text-muted">
-        *Gunakan Kunci Akses Sendiri (Gratis): Anda bisa membuat dan menggunakan Kunci Akses YouTube (API Key) milik Anda sendiri dari Google untuk menikmati penyaringan tanpa batasan. Dapat dikonfigurasi di{' '}
-        <Link href="/preferensi" className="text-indigo-400 hover:text-indigo-300 hover:underline">
-          Preferensi
-        </Link>.
-      </p>
+        {/* Footer Note */}
+        <p className="text-center text-[11px] text-muted bg-card/30 backdrop-blur-sm border border-[var(--border-default)]/40 rounded-2xl py-3 px-4 max-w-3xl mx-auto">
+          *Gunakan Kunci Akses Sendiri (Gratis): Anda bisa membuat dan menggunakan Kunci Akses YouTube (API Key) milik Anda sendiri dari Google untuk menikmati penyaringan tanpa batasan. Dapat dikonfigurasi di{' '}
+          <Link href="/preferensi" className="text-indigo-600 dark:text-indigo-400 hover:text-indigo-300 hover:underline font-semibold">
+            Preferensi
+          </Link>.
+        </p>
+      </div>
     </div>
   );
 }
