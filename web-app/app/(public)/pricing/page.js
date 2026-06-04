@@ -167,7 +167,11 @@ export default function PricingPage() {
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || 'Gagal inisialisasi checkout');
 
-      const { token, orderId } = data;
+      const { token, orderId, resumed } = data;
+      
+      if (resumed) {
+        toast.info('Melanjutkan transaksi sebelumnya yang belum selesai...');
+      }
 
       // 2. Luncurkan Popup Midtrans Snap di browser
       if (window.snap) {
