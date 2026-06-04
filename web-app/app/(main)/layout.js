@@ -2,6 +2,7 @@
 
 import Sidebar from '@/components/Sidebar';
 import QuotaIndicator from '@/components/QuotaIndicator';
+import OnboardingTour from '@/components/OnboardingTour';
 import { useSession } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
 import { useEffect } from 'react';
@@ -127,6 +128,9 @@ export default function MainLayout({ children }) {
             {children}
           </main>
         </div>
+
+        {/* ── Onboarding Tour ──────────────────────────────── */}
+        <OnboardingTour />
       </div>
     </SidebarProvider>
   );
