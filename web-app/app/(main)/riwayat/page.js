@@ -285,7 +285,7 @@ export default function RiwayatPage() {
                       <td className="px-5 py-3">
                         <div className="flex flex-col gap-1">
                           <span className={`badge ${item.aiLabel?.toLowerCase() === 'spam' ? 'badge-danger' : 'badge-success'}`}>
-                            {item.aiLabel === 'Spam' ? '🚨 Terdeteksi Judi' : '✅ Komentar Bersih'}
+                            {item.aiLabel === 'Spam' ? '🚨 Spam Judol' : '✅ Normal'}
                           </span>
                           {item.aiLabel !== 'Spam' && item.sentiment && (
                             <span className={`badge ${
@@ -293,8 +293,8 @@ export default function RiwayatPage() {
                               item.sentiment === 'negative' ? 'badge-danger' :
                               'badge-muted'
                             }`}>
-                              {item.sentiment === 'positive' ? '😊 Mendukung' :
-                               item.sentiment === 'negative' ? '😠 Mengkritik' : '😐 Biasa Saja'}
+                              {item.sentiment === 'positive' ? '😊 Positif' :
+                               item.sentiment === 'negative' ? '😠 Negatif' : '😐 Netral'}
                             </span>
                           )}
                         </div>
@@ -329,15 +329,15 @@ export default function RiwayatPage() {
                 </p>
                 <div className="flex items-center gap-2 flex-wrap">
                   <span className={`badge ${item.aiLabel?.toLowerCase() === 'spam' ? 'badge-danger' : 'badge-success'}`}>
-                    {item.aiLabel === 'Spam' ? '🚨 Terdeteksi Judi' : '✅ Komentar Bersih'}
+                    {item.aiLabel === 'Spam' ? '🚨 Spam Judol' : '✅ Normal'}
                   </span>
                   {item.aiLabel !== 'Spam' && item.sentiment && (
                     <span className={`badge ${
                       item.sentiment === 'positive' ? 'badge-success' :
                       item.sentiment === 'negative' ? 'badge-danger' : 'badge-muted'
                     }`}>
-                      {item.sentiment === 'positive' ? '😊 Mendukung' :
-                       item.sentiment === 'negative' ? '😠 Mengkritik' : '😐 Biasa Saja'}
+                      {item.sentiment === 'positive' ? '😊 Positif' :
+                       item.sentiment === 'negative' ? '😠 Negatif' : '😐 Netral'}
                     </span>
                   )}
                 </div>

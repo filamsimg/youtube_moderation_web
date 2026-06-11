@@ -315,6 +315,18 @@ export function ModerationProvider({ children }) {
             const trulyNew = allNewComments.filter(c => !existingIds.has(c.id));
             if (trulyNew.length > 0 && settings.notifKomentar) {
               toast.info(`Ada ${trulyNew.length} komentar baru!`);
+              
+              // Native OS Desktop Notification
+              if (typeof window !== 'undefined' && 'Notification' in window && Notification.permission === 'granted') {
+                try {
+                  new Notification('Athena Shield - Komentar Baru', {
+                    body: `Ada ${trulyNew.length} komentar baru yang masuk dan perlu ditinjau!`,
+                    icon: '/logo.webp',
+                  });
+                } catch (err) {
+                  console.error('Gagal mengirimkan notifikasi native:', err);
+                }
+              }
             }
             return [...trulyNew, ...prev];
           });

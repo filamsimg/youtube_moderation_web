@@ -26,7 +26,9 @@ export default function PreferensiPage() {
   // Sync local state with context when settings are loaded
   useEffect(() => {
     if (!loading && settings) {
-      setNotifKomentar(settings.notifKomentar ?? true);
+      const isNotifSupported = typeof window !== 'undefined' && 'Notification' in window;
+      const isNotifBlocked = isNotifSupported && Notification.permission === 'denied';
+      setNotifKomentar(isNotifBlocked ? false : (settings.notifKomentar ?? true));
       setAutoTahan(settings.autoTahan ?? true);
       setAutoHapus(settings.autoHapus ?? false);
       setThresholdHold(settings.thresholdHold ?? 70);
@@ -35,6 +37,30 @@ export default function PreferensiPage() {
       setBatchModeration(settings.batchModeration ?? true);
     }
   }, [loading, settings]);
+
+  const handleToggleNotif = async (checked) => {
+    if (checked) {
+      if (typeof window === 'undefined' || !('Notification' in window)) {
+        toast.error('Browser Anda tidak mendukung notifikasi desktop.');
+        setNotifKomentar(false);
+        return;
+      }
+      
+      if (Notification.permission === 'denied') {
+        toast.warning('Izin notifikasi diblokir oleh browser. Silakan aktifkan di pengaturan browser Anda.');
+        setNotifKomentar(false);
+        return;
+      }
+
+      const permission = await Notification.requestPermission();
+      if (permission !== 'granted') {
+        toast.warning('Izin notifikasi ditolak. Aktifkan izin notifikasi untuk menerima pemberitahuan.');
+        setNotifKomentar(false);
+        return;
+      }
+    }
+    setNotifKomentar(checked);
+  };
 
   const handleSave = async () => {
     await updateSettings({
@@ -213,7 +239,7 @@ export default function PreferensiPage() {
                 Terima pemberitahuan saat ada komentar baru yang perlu ditinjau
               </p>
             </div>
-            <Toggle checked={notifKomentar} onChange={setNotifKomentar} />
+            <Toggle checked={notifKomentar} onChange={handleToggleNotif} />
           </div>
 
           <div className="space-y-4 pt-2">

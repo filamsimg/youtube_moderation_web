@@ -3,7 +3,6 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { useSession } from 'next-auth/react';
 import { settingsService } from '@/services/settingsService';
-import { useTheme } from '@/components/ThemeProvider';
 import { useToast } from './ToastContext';
 
 const SettingsContext = createContext(null);
@@ -21,9 +20,8 @@ const DEFAULT_SETTINGS = {
 
 export function SettingsProvider({ children }) {
   const { data: session } = useSession();
-  const { theme, setTheme } = useTheme();
   const toast = useToast();
-  
+
   const [settings, setSettingsState] = useState(DEFAULT_SETTINGS);
   const [loading, setLoading] = useState(true);
 
@@ -68,12 +66,20 @@ export function SettingsProvider({ children }) {
           pollingInterval: data.polling_interval ?? 120,
           batchModeration: data.batch_moderation ?? true,
         };
-        setSettingsState({ ...DEFAULT_SETTINGS, ...mapped });
-        localStorage.setItem(`userSettings_${email}`, JSON.stringify(mapped));
 
-        if (mapped.theme && mapped.theme !== theme) {
-          setTheme(mapped.theme);
+        const savedLocal = localStorage.getItem(`userSettings_${email}`);
+        let parsedLocal = {};
+        if (savedLocal) {
+          try {
+            parsedLocal = JSON.parse(savedLocal);
+          } catch (e) { }
         }
+
+        const merged = { ...DEFAULT_SETTINGS, ...parsedLocal, ...mapped };
+        setSettingsState(merged);
+        localStorage.setItem(`userSettings_${email}`, JSON.stringify(merged));
+
+
       }
     } catch (err) {
       console.error('Settings load error:', err);
@@ -85,14 +91,12 @@ export function SettingsProvider({ children }) {
   const updateSettings = async (newSettings) => {
     const updated = { ...settings, ...newSettings };
     setSettingsState(updated);
-    
+
     const email = session?.user?.email;
     const storageKey = email ? `userSettings_${email}` : 'userSettings';
     localStorage.setItem(storageKey, JSON.stringify(updated));
 
-    if (newSettings.theme && newSettings.theme !== theme) {
-      setTheme(newSettings.theme);
-    }
+
 
     if (email) {
       try {

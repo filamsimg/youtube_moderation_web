@@ -5,9 +5,12 @@ import Link from 'next/link';
 import { useState, useEffect, useRef } from 'react';
 import QuotaIndicator from '@/components/QuotaIndicator';
 import { useSidebar } from '@/contexts/SidebarContext';
+import { useSession } from 'next-auth/react';
 
 export default function Sidebar() {
   const pathname = usePathname();
+  const { data: session } = useSession();
+  const isAdmin = session?.user?.role === 'admin' || session?.user?.role === 'superadmin';
   const [isOpen, setIsOpen] = useState(false);
   const { sidebarMode, setSidebarMode, isHovered, setIsHovered } = useSidebar();
   const [showControlPanel, setShowControlPanel] = useState(false);
@@ -185,6 +188,28 @@ export default function Sidebar() {
               </Link>
             );
           })}
+          
+          {isAdmin && (
+            <Link
+              href="/admin"
+              className={`flex items-center rounded-xl text-[13px] font-medium transition-all duration-200 group relative border ${isCollapsed ? 'justify-center p-2.5 mx-2 w-10 h-10' : 'gap-3 px-3 py-2.5 mx-0 mt-3'
+                } bg-rose-50/40 border-rose-500/20 text-rose-600 dark:bg-rose-500/10 dark:border-rose-500/25 dark:text-rose-300 hover:bg-rose-50 hover:border-rose-300 dark:hover:bg-rose-500/15`}
+            >
+              <span className="flex-shrink-0 flex items-center justify-center text-rose-500 dark:text-rose-400">
+                <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M9 12.75L11.25 15 15 9.75m-3-7.036A11.959 11.959 0 013.598 6 11.99 11.99 0 003 9.749c0 5.592 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.31-.21-2.57-.598-3.75h-.152c-3.196 0-6.1-1.248-8.25-3.285z" />
+                </svg>
+              </span>
+              <span className={`transition-all duration-300 overflow-hidden whitespace-nowrap ${isCollapsed ? 'opacity-0 w-0' : 'opacity-100 w-auto ml-1'}`}>
+                Panel Admin
+              </span>
+              {isCollapsed && (
+                <div className="absolute left-16 invisible opacity-0 group-hover:visible group-hover:opacity-100 transition-all duration-200 z-50 bg-slate-900 dark:bg-slate-800 text-slate-100 text-xs rounded-lg py-1.5 px-3 shadow-xl whitespace-nowrap border border-slate-700/50 pointer-events-none">
+                  Panel Admin
+                </div>
+              )}
+            </Link>
+          )}
         </nav>
 
         {/* ── Bottom Section ───────────────────────────────────── */}

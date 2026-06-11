@@ -61,7 +61,66 @@ export const authOptions = {
         token.accessToken = account.access_token;
         token.refreshToken = account.refresh_token;
         token.expiresAt = account.expires_at;
+
+        // Fetch user role from database on initial login
+        try {
+          const { supabaseAdmin } = await import('@/lib/supabaseAdmin');
+          const { data } = await supabaseAdmin
+            .from('user_profiles')
+            .select('role, is_active')
+            .eq('email', token.email)
+            .single();
+
+          const adminEmails = (process.env.ADMIN_EMAILS || '').split(',').map(email => email.trim().toLowerCase());
+          const isDefaultAdmin = adminEmails.includes(token.email?.toLowerCase());
+
+          let userRole = data?.role || 'user';
+          if (isDefaultAdmin && userRole === 'user') {
+            userRole = 'superadmin';
+            await supabaseAdmin
+              .from('user_profiles')
+              .upsert({ email: token.email, role: 'superadmin' }, { onConflict: 'email' });
+          }
+
+          token.role = userRole;
+          token.isActive = data?.is_active ?? true;
+          token.roleRefreshedAt = Date.now();
+        } catch (e) {
+          token.role = 'user';
+          token.isActive = true;
+          token.roleRefreshedAt = Date.now();
+        }
       }
+
+      // Check / Refresh role & isActive status every 5 minutes
+      if (!token.roleRefreshedAt || Date.now() - token.roleRefreshedAt > 5 * 60 * 1000) {
+        try {
+          const { supabaseAdmin } = await import('@/lib/supabaseAdmin');
+          const { data } = await supabaseAdmin
+            .from('user_profiles')
+            .select('role, is_active')
+            .eq('email', token.email)
+            .single();
+
+          const adminEmails = (process.env.ADMIN_EMAILS || '').split(',').map(email => email.trim().toLowerCase());
+          const isDefaultAdmin = adminEmails.includes(token.email?.toLowerCase());
+
+          let userRole = data?.role || 'user';
+          if (isDefaultAdmin && userRole === 'user') {
+            userRole = 'superadmin';
+            await supabaseAdmin
+              .from('user_profiles')
+              .upsert({ email: token.email, role: 'superadmin' }, { onConflict: 'email' });
+          }
+
+          token.role = userRole;
+          token.isActive = data?.is_active ?? true;
+          token.roleRefreshedAt = Date.now();
+        } catch (e) {
+          // Keep existing values on error
+        }
+      }
+
       // Check if token is expired (giving a 5 minute safety window)
       const bufferTime = 300; // 5 minutes safety buffer
       if (Date.now() < ((token.expiresAt || 0) - bufferTime) * 1000) {
@@ -74,6 +133,8 @@ export const authOptions = {
       // Send properties to the client
       session.accessToken = token.accessToken;
       session.error = token.error;
+      session.user.role = token.role || 'user';
+      session.user.isActive = token.isActive ?? true;
       return session;
     },
   },

@@ -366,11 +366,10 @@ export default function CommentsPage() {
           <button
             onClick={() => { handleLoadSelected(false); setShowVideoPanel(false); }}
             disabled={selectedVideoIds.size === 0 || isFetchingMulti}
-            className={`w-full py-2 px-3 text-white text-xs font-semibold rounded-xl transition-all active:scale-95 disabled:cursor-not-allowed flex items-center justify-center gap-2 disabled:opacity-50 ${
-              selectedVideoIds.size > 0 && !hasLoaded && !isFetchingMulti
+            className={`w-full py-2 px-3 text-white text-xs font-semibold rounded-xl transition-all active:scale-95 disabled:cursor-not-allowed flex items-center justify-center gap-2 disabled:opacity-50 ${selectedVideoIds.size > 0 && !hasLoaded && !isFetchingMulti
                 ? 'bg-indigo-600 hover:bg-indigo-700 animate-pulse shadow-lg shadow-indigo-500/20'
                 : 'bg-indigo-600 hover:bg-indigo-700'
-            }`}
+              }`}
           >
             {isFetchingMulti ? (
               <>
@@ -619,7 +618,7 @@ export default function CommentsPage() {
                 }`}
               style={filter !== f ? { color: 'var(--text-secondary)' } : {}}
             >
-              {f === 'semua' ? 'Semua' : f === 'spam' ? 'Iklan Judi' : f === 'normal' ? 'Komentar Bersih' : f}
+              {f === 'semua' ? 'Semua' : f === 'spam' ? 'Spam Judol' : f === 'normal' ? 'Normal' : f}
             </button>
           ))}
 
@@ -701,6 +700,7 @@ export default function CommentsPage() {
                         const prediction = predictions[comment.id];
                         const isSpam = prediction?.label?.toLowerCase() === 'spam';
                         const isProcessing = processingComment === comment.id;
+                        const commentStatus = comment.status || comment.moderationStatus || 'published';
                         return (
                           <tr key={comment.id} className="transition-colors group hover:bg-[var(--bg-card-hover)] border-b" style={{ borderColor: 'var(--border-default)' }}>
                             <td className="px-4 py-3">
@@ -737,14 +737,14 @@ export default function CommentsPage() {
                               ) : (
                                 <div>
                                   <span className={`badge ${isSpam ? 'badge-danger' : 'badge-success'}`}>
-                                    {isSpam ? '🚨 Terdeteksi Judi' : '✅ Komentar Bersih'}
+                                    {isSpam ? '🚨 Spam Judol' : '✅ Normal'}
                                   </span>
                                   {!isSpam && prediction.sentiment && (
                                     <span className={`ml-1 badge ${prediction.sentiment === 'positive' ? 'badge-success'
                                       : prediction.sentiment === 'negative' ? 'badge-danger'
                                         : 'badge-muted'
                                       }`}>
-                                      {prediction.sentiment === 'positive' ? '😊 Mendukung' : prediction.sentiment === 'negative' ? '😠 Mengkritik' : '😐 Biasa Saja'}
+                                      {prediction.sentiment === 'positive' ? '😊 Positif' : prediction.sentiment === 'negative' ? '😠 Negatif' : '😐 Netral'}
                                     </span>
                                   )}
                                   <p className="text-[10px] mt-1" style={{ color: 'var(--text-muted)' }}>
@@ -754,27 +754,33 @@ export default function CommentsPage() {
                                 </div>
                               )}
                             </td>
-                            <td className="px-4 py-3">{getStatusBadge(comment.status)}</td>
+                            <td className="px-4 py-3">{getStatusBadge(commentStatus)}</td>
                             <td className="px-4 py-3 text-right">
                               <div className="flex items-center justify-end gap-0.5 opacity-30 group-hover:opacity-100 transition-opacity">
-                                <button disabled={isProcessing} onClick={() => handleModerate(comment.id, 'publish')} title="Terbitkan"
-                                  className="p-1.5 rounded-md hover:bg-emerald-500/10 disabled:opacity-30" style={{ color: 'var(--color-success-text)' }}>
-                                  <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor">
-                                    <path strokeLinecap="round" strokeLinejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                                  </svg>
-                                </button>
-                                <button disabled={isProcessing} onClick={() => handleModerate(comment.id, 'hold')} title="Tahan untuk Ditinjau"
-                                  className="p-1.5 rounded-md hover:bg-amber-500/10 text-amber-500 disabled:opacity-30">
-                                  <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor">
-                                    <path strokeLinecap="round" strokeLinejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 11-18 0 9 9 0 0118 0z" />
-                                  </svg>
-                                </button>
-                                <button disabled={isProcessing} onClick={() => handleModerate(comment.id, 'reject')} title="Hapus Komentar"
-                                  className="p-1.5 rounded-md hover:bg-rose-500/10 disabled:opacity-30" style={{ color: 'var(--color-danger-text)' }}>
-                                  <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor">
-                                    <path strokeLinecap="round" strokeLinejoin="round" d="M9.75 9.75l4.5 4.5m0-4.5l-4.5 4.5M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                                  </svg>
-                                </button>
+                                {commentStatus !== 'published' && (
+                                  <button disabled={isProcessing} onClick={() => handleModerate(comment.id, 'publish')} title="Terbitkan"
+                                    className="p-1.5 rounded-md hover:bg-emerald-500/10 disabled:opacity-30" style={{ color: 'var(--color-success-text)' }}>
+                                    <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor">
+                                      <path strokeLinecap="round" strokeLinejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                    </svg>
+                                  </button>
+                                )}
+                                {commentStatus !== 'heldForReview' && (
+                                  <button disabled={isProcessing} onClick={() => handleModerate(comment.id, 'hold')} title="Tahan untuk Ditinjau"
+                                    className="p-1.5 rounded-md hover:bg-amber-500/10 text-amber-500 disabled:opacity-30">
+                                    <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor">
+                                      <path strokeLinecap="round" strokeLinejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                    </svg>
+                                  </button>
+                                )}
+                                {commentStatus !== 'rejected' && (
+                                  <button disabled={isProcessing} onClick={() => handleModerate(comment.id, 'reject')} title="Hapus Komentar"
+                                    className="p-1.5 rounded-md hover:bg-rose-500/10 disabled:opacity-30" style={{ color: 'var(--color-danger-text)' }}>
+                                    <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor">
+                                      <path strokeLinecap="round" strokeLinejoin="round" d="M9.75 9.75l4.5 4.5m0-4.5l-4.5 4.5M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                    </svg>
+                                  </button>
+                                )}
                               </div>
                             </td>
                           </tr>
@@ -790,6 +796,7 @@ export default function CommentsPage() {
                     const prediction = predictions[comment.id];
                     const isSpam = prediction?.label?.toLowerCase() === 'spam';
                     const isProcessing = processingComment === comment.id;
+                    const commentStatus = comment.status || comment.moderationStatus || 'published';
                     return (
                       <div key={comment.id} className="rounded-xl border p-3.5 space-y-2.5" style={{ background: 'var(--bg-card-hover)', borderColor: 'var(--border-default)' }}>
                         <div className="flex items-center justify-between">
@@ -806,7 +813,7 @@ export default function CommentsPage() {
                               <p className="text-[10px]" style={{ color: 'var(--text-muted)' }}>{new Date(comment.publishedAt).toLocaleDateString('id-ID')}</p>
                             </div>
                           </div>
-                          {getStatusBadge(comment.status)}
+                          {getStatusBadge(commentStatus)}
                         </div>
 
                         {loadedVideos.length > 1 && (
@@ -831,7 +838,7 @@ export default function CommentsPage() {
                               <div className="flex flex-col gap-1">
                                 <div className="flex items-center gap-1.5">
                                   <span className={`text-[11px] font-semibold px-2 py-0.5 rounded-full ${isSpam ? 'bg-red-100 text-red-700' : 'bg-green-100 text-green-700'}`}>
-                                    {isSpam ? '🚨 Terdeteksi Judi' : '✅ Komentar Bersih'}
+                                    {isSpam ? '🚨 Spam Judol' : '✅ Normal'}
                                   </span>
                                   <span className="text-[10px] text-muted">{Math.round(prediction.confidence * 100)}%</span>
                                 </div>
@@ -841,7 +848,7 @@ export default function CommentsPage() {
                                       : prediction.sentiment === 'negative' ? 'badge-danger'
                                         : 'badge-muted'
                                       }`}>
-                                      {prediction.sentiment === 'positive' ? '😊 Mendukung' : prediction.sentiment === 'negative' ? '😠 Mengkritik' : '😐 Biasa Saja'}
+                                      {prediction.sentiment === 'positive' ? '😊 Positif' : prediction.sentiment === 'negative' ? '😠 Negatif' : '😐 Netral'}
                                     </span>
                                     <span className="text-[10px]" style={{ color: 'var(--text-muted)' }}>{Math.round(prediction.sentiment_score * 100)}%</span>
                                   </div>
@@ -850,15 +857,21 @@ export default function CommentsPage() {
                             )}
                           </div>
                           <div className="flex items-center gap-1">
-                            <button disabled={isProcessing} onClick={() => handleModerate(comment.id, 'publish')} className="p-2 rounded-lg hover:bg-emerald-500/10 disabled:opacity-30 active:scale-95 transition-all" style={{ color: 'var(--color-success-text)' }}>
-                              <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
-                            </button>
-                            <button disabled={isProcessing} onClick={() => handleModerate(comment.id, 'hold')} className="p-2 rounded-lg text-amber-500 hover:bg-amber-500/10 disabled:opacity-30 active:scale-95 transition-all">
-                              <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
-                            </button>
-                            <button disabled={isProcessing} onClick={() => handleModerate(comment.id, 'reject')} className="p-2 rounded-lg hover:bg-rose-500/10 disabled:opacity-30 active:scale-95 transition-all" style={{ color: 'var(--color-danger-text)' }}>
-                              <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" d="M9.75 9.75l4.5 4.5m0-4.5l-4.5 4.5M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
-                            </button>
+                            {commentStatus !== 'published' && (
+                              <button disabled={isProcessing} onClick={() => handleModerate(comment.id, 'publish')} className="p-2 rounded-lg hover:bg-emerald-500/10 disabled:opacity-30 active:scale-95 transition-all" style={{ color: 'var(--color-success-text)' }}>
+                                <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+                              </button>
+                            )}
+                            {commentStatus !== 'heldForReview' && (
+                              <button disabled={isProcessing} onClick={() => handleModerate(comment.id, 'hold')} className="p-2 rounded-lg text-amber-500 hover:bg-amber-500/10 disabled:opacity-30 active:scale-95 transition-all">
+                                <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+                              </button>
+                            )}
+                            {commentStatus !== 'rejected' && (
+                              <button disabled={isProcessing} onClick={() => handleModerate(comment.id, 'reject')} className="p-2 rounded-lg hover:bg-rose-500/10 disabled:opacity-30 active:scale-95 transition-all" style={{ color: 'var(--color-danger-text)' }}>
+                                <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" d="M9.75 9.75l4.5 4.5m0-4.5l-4.5 4.5M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+                              </button>
+                            )}
                           </div>
                         </div>
                       </div>
@@ -962,14 +975,14 @@ export default function CommentsPage() {
                               {comment.aiLabel ? (
                                 <div>
                                   <span className={`badge ${comment.aiLabel.toLowerCase() === 'spam' ? 'badge-danger' : 'badge-success'}`}>
-                                    {comment.aiLabel.toLowerCase() === 'spam' ? '🚨 Terdeteksi Judi' : '✅ Komentar Bersih'}
+                                    {comment.aiLabel.toLowerCase() === 'spam' ? '🚨 Spam Judol' : '✅ Normal'}
                                   </span>
                                   {comment.sentiment && (
                                     <span className={`ml-1 badge ${comment.sentiment === 'positive' ? 'badge-success'
                                       : comment.sentiment === 'negative' ? 'badge-danger'
                                         : 'badge-muted'
                                       }`}>
-                                      {comment.sentiment === 'positive' ? '😊 Mendukung' : comment.sentiment === 'negative' ? '😠 Mengkritik' : '😐 Biasa Saja'}
+                                      {comment.sentiment === 'positive' ? '😊 Positif' : comment.sentiment === 'negative' ? '😠 Negatif' : '😐 Netral'}
                                     </span>
                                   )}
                                   <p className="text-[10px] mt-1" style={{ color: 'var(--text-muted)' }}>
@@ -1099,7 +1112,7 @@ export default function CommentsPage() {
                               <div className="flex flex-col gap-1">
                                 <div className="flex items-center gap-1.5">
                                   <span className={`text-[11px] font-semibold px-2 py-0.5 rounded-full ${comment.aiLabel.toLowerCase() === 'spam' ? 'bg-red-100 text-red-700' : 'bg-green-100 text-green-700'}`}>
-                                    {comment.aiLabel.toLowerCase() === 'spam' ? '🚨 Terdeteksi Judi' : '✅ Komentar Bersih'}
+                                    {comment.aiLabel.toLowerCase() === 'spam' ? '🚨 Spam Judol' : '✅ Normal'}
                                   </span>
                                   <span className="text-[10px] text-muted">{Math.round(comment.aiConfidence * 100)}%</span>
                                 </div>
@@ -1109,7 +1122,7 @@ export default function CommentsPage() {
                                       : comment.sentiment === 'negative' ? 'badge-danger'
                                         : 'badge-muted'
                                       }`}>
-                                      {comment.sentiment === 'positive' ? '😊 Mendukung' : comment.sentiment === 'negative' ? '😠 Mengkritik' : '😐 Biasa Saja'}
+                                      {comment.sentiment === 'positive' ? '😊 Positif' : comment.sentiment === 'negative' ? '😠 Negatif' : '😐 Netral'}
                                     </span>
                                     <span className="text-[10px]" style={{ color: 'var(--text-muted)' }}>{Math.round(comment.sentimentScore * 100)}%</span>
                                   </div>
@@ -1252,65 +1265,68 @@ export default function CommentsPage() {
 
       {/* Floating Action Bar untuk Aksi Massal */}
       <div
-        className={`fixed bottom-6 left-1/2 -translate-x-1/2 z-40 transition-all duration-300 transform flex items-center gap-4 px-4 py-3 rounded-2xl border shadow-2xl max-w-lg w-[calc(100vw-2rem)] md:w-auto ${selectedComments.size > 0 && activeTab === 'belum'
-          ? 'translate-y-0 opacity-100 scale-100'
-          : 'translate-y-24 opacity-0 scale-90 pointer-events-none'
+        className={`fixed bottom-8 left-1/2 -translate-x-1/2 z-40 transition-all duration-300 ease-out transform flex items-center px-5 py-3 rounded-full border shadow-[0_10px_35px_rgba(0,0,0,0.3)] max-w-2xl w-[calc(100vw-2rem)] md:w-auto ${selectedComments.size > 0 && activeTab === 'belum'
+            ? 'translate-y-0 opacity-100 scale-100'
+            : 'translate-y-24 opacity-0 scale-95 pointer-events-none'
           }`}
         style={{
           background: 'var(--bg-card)',
-          backdropFilter: 'blur(16px)',
-          WebkitBackdropFilter: 'blur(16px)',
+          backdropFilter: 'blur(20px)',
+          WebkitBackdropFilter: 'blur(20px)',
           borderColor: 'var(--border-default)',
         }}
       >
-        <div className="flex flex-col md:flex-row items-center gap-3 w-full">
-          <div className="flex items-center gap-2 flex-shrink-0">
-            <div className="w-6 h-6 rounded-lg bg-indigo-500/20 text-indigo-400 flex items-center justify-center font-bold text-xs">
+        <div className="flex flex-row items-center justify-between gap-4 w-full">
+          <div className="flex items-center gap-2.5 flex-shrink-0">
+            <span className="h-5 px-2 rounded-full bg-indigo-500 text-white flex items-center justify-center font-bold text-[11px] shadow-sm shadow-indigo-500/20">
               {selectedComments.size}
-            </div>
-            <span className="text-[12px] font-semibold" style={{ color: 'var(--text-primary)' }}>Komentar Terpilih</span>
+            </span>
+            <span className="text-[11px] md:text-xs font-semibold tracking-wide uppercase opacity-90 hidden sm:inline" style={{ color: 'var(--text-primary)' }}>
+              Komentar Terpilih
+            </span>
           </div>
 
-          <div className="h-px md:h-5 w-full md:w-px" style={{ background: 'var(--border-default)' }} />
+          <div className="hidden sm:block h-5 w-px" style={{ background: 'var(--border-default)' }} />
 
-          <div className="flex items-center gap-2 w-full md:w-auto justify-end">
+          <div className="flex items-center gap-2 w-full sm:w-auto justify-end">
             <button
               onClick={() => handleExecuteBatch('publish')}
-              className="flex-1 md:flex-initial flex items-center justify-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold text-white bg-emerald-600 hover:bg-emerald-500 active:scale-95 transition-all shadow-md shadow-emerald-900/20"
+              className="flex-1 sm:flex-initial flex items-center justify-center gap-1.5 px-4 py-2 rounded-full text-xs font-bold text-white bg-emerald-600 hover:bg-emerald-500 active:scale-95 transition-all hover:-translate-y-0.5 shadow-md shadow-emerald-900/10"
             >
               <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" strokeWidth={2.5} stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
               </svg>
-              Terbitkan
+              <span>Terbitkan</span>
             </button>
 
             <button
               onClick={() => handleExecuteBatch('hold')}
-              className="flex-1 md:flex-initial flex items-center justify-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold text-white bg-amber-600 hover:bg-amber-500 active:scale-95 transition-all shadow-md shadow-amber-900/20"
+              className="flex-1 sm:flex-initial flex items-center justify-center gap-1.5 px-4 py-2 rounded-full text-xs font-bold text-white bg-amber-600 hover:bg-amber-500 active:scale-95 transition-all hover:-translate-y-0.5 shadow-md shadow-amber-900/10"
             >
               <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" strokeWidth={2.5} stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 11-18 0 9 9 0 0118 0z" />
               </svg>
-              Tahan Terpilih
+              <span>Tahan</span>
             </button>
 
             <button
               onClick={() => handleExecuteBatch('reject')}
-              className="flex-1 md:flex-initial flex items-center justify-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold text-white bg-rose-600 hover:bg-rose-500 active:scale-95 transition-all shadow-md shadow-rose-900/20"
+              className="flex-1 sm:flex-initial flex items-center justify-center gap-1.5 px-4 py-2 rounded-full text-xs font-bold text-white bg-rose-600 hover:bg-rose-500 active:scale-95 transition-all hover:-translate-y-0.5 shadow-md shadow-rose-900/10"
             >
               <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" strokeWidth={2.5} stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" d="M9.75 9.75l4.5 4.5m0-4.5l-4.5 4.5M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
               </svg>
-              Hapus Terpilih
+              <span>Hapus</span>
             </button>
+
+            <div className="h-5 w-px mx-0.5" style={{ background: 'var(--border-default)' }} />
 
             <button
               onClick={() => setSelectedComments(new Set())}
-              className="p-1.5 rounded-lg hover:bg-[var(--bg-card-hover)] transition-colors"
-              style={{ color: 'var(--text-muted)' }}
+              className="p-1.5 rounded-full hover:bg-[var(--bg-card-hover)] active:scale-90 transition-all text-[var(--text-muted)] hover:text-[var(--text-primary)]"
               title="Batal Pilihan"
             >
-              <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor">
+              <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" strokeWidth={2.5} stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
               </svg>
             </button>

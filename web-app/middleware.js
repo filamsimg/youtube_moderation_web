@@ -15,11 +15,11 @@ const PRIVATE_PREFIXES = [
   '/channel',
   '/video',
   '/profile',
+  '/admin',
 ];
 
-// Route yang BOLEH diakses tanpa login (public)
-// Semua route yang tidak ada di PRIVATE_PREFIXES dianggap publik.
-// API routes dihandle oleh masing-masing getServerSession() sendiri.
+// Route yang MEMERLUKAN role admin/superadmin
+const ADMIN_PREFIXES = ['/admin'];
 
 export async function middleware(request) {
   const { pathname } = request.nextUrl;
@@ -45,6 +45,24 @@ export async function middleware(request) {
     const loginUrl = new URL('/login', request.url);
     loginUrl.searchParams.set('callbackUrl', request.nextUrl.pathname);
     return NextResponse.redirect(loginUrl);
+  }
+
+  // Cek status aktif (suspend) untuk rute privat apapun
+  if (token.isActive === false) {
+    const loginUrl = new URL('/login?error=suspended', request.url);
+    return NextResponse.redirect(loginUrl);
+  }
+
+  // Cek otorisasi khusus untuk halaman admin
+  const isAdminRoute = ADMIN_PREFIXES.some((prefix) =>
+    pathname === prefix || pathname.startsWith(`${prefix}/`)
+  );
+
+  if (isAdminRoute) {
+    const role = token.role || 'user';
+    if (role !== 'admin' && role !== 'superadmin') {
+      return NextResponse.redirect(new URL('/dashboard?error=unauthorized', request.url));
+    }
   }
 
   return NextResponse.next();
