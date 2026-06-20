@@ -5,10 +5,12 @@ import { useSession } from 'next-auth/react';
 import { historyService } from '@/services/historyService';
 import PaginationControls from '@/components/PaginationControls';
 import { useToast } from '@/contexts/ToastContext';
+import { useQuota } from '@/contexts/QuotaContext';
 
 export default function RiwayatPage() {
   const { data: session } = useSession();
   const toast = useToast();
+  const { isFeatureDisabled } = useQuota();
   const [searchQuery, setSearchQuery] = useState('');
   const [filterAction, setFilterAction] = useState('semua');
   const [activities, setActivities] = useState([]);
@@ -45,6 +47,10 @@ export default function RiwayatPage() {
   };
 
   const handleExportCSV = () => {
+    if (isFeatureDisabled('export_csv')) {
+      toast.error('Fitur Ekspor CSV terkunci untuk paket langganan Anda. Silakan upgrade!');
+      return;
+    }
     if (filtered.length === 0) {
       toast.error('Tidak ada data riwayat yang dapat diekspor!');
       return;
@@ -145,14 +151,25 @@ export default function RiwayatPage() {
         </div>
         <button
           onClick={handleExportCSV}
-          disabled={filtered.length === 0}
+          disabled={filtered.length === 0 && !isFeatureDisabled('export_csv')}
           className="flex items-center gap-2 px-3 py-2 rounded-xl text-xs font-medium border transition-all self-start sm:self-auto bento-card disabled:opacity-50 disabled:cursor-not-allowed select-none cursor-pointer"
           style={{ color: 'var(--text-secondary)' }}
         >
-          <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
-            <path strokeLinecap="round" strokeLinejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5M16.5 12L12 16.5m0 0L7.5 12m4.5 4.5V3" />
-          </svg>
-          Ekspor
+          {isFeatureDisabled('export_csv') ? (
+            <>
+              <svg className="w-4 h-4 text-amber-500" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" d="M16.5 10.5V6.75a4.5 4.5 0 10-9 0v3.75m-.75 11.25h10.5a2.25 2.25 0 002.25-2.25v-6.75a2.25 2.25 0 00-2.25-2.25H6.75a2.25 2.25 0 00-2.25 2.25v6.75a2.25 2.25 0 002.25 2.25z" />
+              </svg>
+              Ekspor 🔒
+            </>
+          ) : (
+            <>
+              <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5M16.5 12L12 16.5m0 0L7.5 12m4.5 4.5V3" />
+              </svg>
+              Ekspor
+            </>
+          )}
         </button>
       </div>
 

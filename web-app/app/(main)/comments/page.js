@@ -4,9 +4,11 @@ import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useModeration } from '@/contexts/ModerationContext';
 import { useYouTube } from '@/contexts/YouTubeContext';
+import { useQuota } from '@/contexts/QuotaContext';
 
 export default function CommentsPage() {
   const router = useRouter();
+  const { isFeatureDisabled } = useQuota();
 
   useEffect(() => {
     const mainEl = document.querySelector('main');
@@ -1276,62 +1278,87 @@ export default function CommentsPage() {
           borderColor: 'var(--border-default)',
         }}
       >
-        <div className="flex flex-row items-center justify-between gap-4 w-full">
-          <div className="flex items-center gap-2.5 flex-shrink-0">
-            <span className="h-5 px-2 rounded-full bg-indigo-500 text-white flex items-center justify-center font-bold text-[11px] shadow-sm shadow-indigo-500/20">
-              {selectedComments.size}
-            </span>
-            <span className="text-[11px] md:text-xs font-semibold tracking-wide uppercase opacity-90 hidden sm:inline" style={{ color: 'var(--text-primary)' }}>
-              Komentar Terpilih
-            </span>
-          </div>
-
-          <div className="hidden sm:block h-5 w-px" style={{ background: 'var(--border-default)' }} />
-
-          <div className="flex items-center gap-2 w-full sm:w-auto justify-end">
-            <button
-              onClick={() => handleExecuteBatch('publish')}
-              className="flex-1 sm:flex-initial flex items-center justify-center gap-1.5 px-4 py-2 rounded-full text-xs font-bold text-white bg-emerald-600 hover:bg-emerald-500 active:scale-95 transition-all hover:-translate-y-0.5 shadow-md shadow-emerald-900/10"
-            >
-              <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" strokeWidth={2.5} stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+        {isFeatureDisabled('bulk_moderation') ? (
+          <div className="flex flex-row items-center justify-between gap-4 w-full text-xs">
+            <div className="flex items-center gap-2 text-amber-500">
+              <svg className="w-4 h-4 flex-shrink-0 text-amber-500" fill="none" viewBox="0 0 24 24" strokeWidth={2.5} stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" d="M16.5 10.5V6.75a4.5 4.5 0 10-9 0v3.75m-.75 11.25h10.5a2.25 2.25 0 002.25-2.25v-6.75a2.25 2.25 0 00-2.25-2.25H6.75a2.25 2.25 0 00-2.25 2.25v6.75a2.25 2.25 0 002.25 2.25z" />
               </svg>
-              <span>Terbitkan</span>
-            </button>
-
-            <button
-              onClick={() => handleExecuteBatch('hold')}
-              className="flex-1 sm:flex-initial flex items-center justify-center gap-1.5 px-4 py-2 rounded-full text-xs font-bold text-white bg-amber-600 hover:bg-amber-500 active:scale-95 transition-all hover:-translate-y-0.5 shadow-md shadow-amber-900/10"
+              <span className="font-semibold text-secondary">
+                Fitur Bulk Moderasi terkunci untuk paket Anda.
+              </span>
+            </div>
+            <a
+              href="/pricing"
+              className="px-4 py-2 rounded-full text-xs font-bold text-white bg-indigo-600 hover:bg-indigo-500 active:scale-95 transition-all shadow-md shadow-indigo-900/10 cursor-pointer select-none"
             >
-              <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" strokeWidth={2.5} stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 11-18 0 9 9 0 0118 0z" />
-              </svg>
-              <span>Tahan</span>
-            </button>
-
-            <button
-              onClick={() => handleExecuteBatch('reject')}
-              className="flex-1 sm:flex-initial flex items-center justify-center gap-1.5 px-4 py-2 rounded-full text-xs font-bold text-white bg-rose-600 hover:bg-rose-500 active:scale-95 transition-all hover:-translate-y-0.5 shadow-md shadow-rose-900/10"
-            >
-              <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" strokeWidth={2.5} stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" d="M9.75 9.75l4.5 4.5m0-4.5l-4.5 4.5M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-              </svg>
-              <span>Hapus</span>
-            </button>
-
-            <div className="h-5 w-px mx-0.5" style={{ background: 'var(--border-default)' }} />
-
+              Upgrade
+            </a>
             <button
               onClick={() => setSelectedComments(new Set())}
-              className="p-1.5 rounded-full hover:bg-[var(--bg-card-hover)] active:scale-90 transition-all text-[var(--text-muted)] hover:text-[var(--text-primary)]"
-              title="Batal Pilihan"
+              className="p-1.5 rounded-full hover:bg-card-hover text-muted hover:text-primary transition-all cursor-pointer text-xs"
             >
-              <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" strokeWidth={2.5} stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
-              </svg>
+              Batal
             </button>
           </div>
-        </div>
+        ) : (
+          <div className="flex flex-row items-center justify-between gap-4 w-full">
+            <div className="flex items-center gap-2.5 flex-shrink-0">
+              <span className="h-5 px-2 rounded-full bg-indigo-500 text-white flex items-center justify-center font-bold text-[11px] shadow-sm shadow-indigo-500/20">
+                {selectedComments.size}
+              </span>
+              <span className="text-[11px] md:text-xs font-semibold tracking-wide uppercase opacity-90 hidden sm:inline" style={{ color: 'var(--text-primary)' }}>
+                Komentar Terpilih
+              </span>
+            </div>
+
+            <div className="hidden sm:block h-5 w-px" style={{ background: 'var(--border-default)' }} />
+
+            <div className="flex items-center gap-2 w-full sm:w-auto justify-end">
+              <button
+                onClick={() => handleExecuteBatch('publish')}
+                className="flex-1 sm:flex-initial flex items-center justify-center gap-1.5 px-4 py-2 rounded-full text-xs font-bold text-white bg-emerald-600 hover:bg-emerald-500 active:scale-95 transition-all hover:-translate-y-0.5 shadow-md shadow-emerald-900/10"
+              >
+                <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" strokeWidth={2.5} stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+                <span>Terbitkan</span>
+              </button>
+
+              <button
+                onClick={() => handleExecuteBatch('hold')}
+                className="flex-1 sm:flex-initial flex items-center justify-center gap-1.5 px-4 py-2 rounded-full text-xs font-bold text-white bg-amber-600 hover:bg-amber-500 active:scale-95 transition-all hover:-translate-y-0.5 shadow-md shadow-amber-900/10"
+              >
+                <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" strokeWidth={2.5} stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+                <span>Tahan</span>
+              </button>
+
+              <button
+                onClick={() => handleExecuteBatch('reject')}
+                className="flex-1 sm:flex-initial flex items-center justify-center gap-1.5 px-4 py-2 rounded-full text-xs font-bold text-white bg-rose-600 hover:bg-rose-500 active:scale-95 transition-all hover:-translate-y-0.5 shadow-md shadow-rose-900/10"
+              >
+                <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" strokeWidth={2.5} stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M9.75 9.75l4.5 4.5m0-4.5l-4.5 4.5M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+                <span>Hapus</span>
+              </button>
+
+              <div className="h-5 w-px mx-0.5" style={{ background: 'var(--border-default)' }} />
+
+              <button
+                onClick={() => setSelectedComments(new Set())}
+                className="p-1.5 rounded-full hover:bg-[var(--bg-card-hover)] active:scale-90 transition-all text-[var(--text-muted)] hover:text-[var(--text-primary)]"
+                title="Batal Pilihan"
+              >
+                <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" strokeWidth={2.5} stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );

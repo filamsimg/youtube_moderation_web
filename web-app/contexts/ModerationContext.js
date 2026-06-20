@@ -15,7 +15,7 @@ const ModerationContext = createContext(null);
 export function ModerationProvider({ children }) {
   const { data: session } = useSession();
   const toast = useToast();
-  const { deductQuota } = useQuota();
+  const { deductQuota, isFeatureDisabled } = useQuota();
   const { settings } = useSettings();
   const { videosCache, selectedChannelId } = useYouTube();
 
@@ -333,7 +333,7 @@ export function ModerationProvider({ children }) {
         }
 
         // Auto-Moderation Engine
-        if (settings.autoTahan || settings.autoHapus) {
+        if ((settings.autoTahan || settings.autoHapus) && !isFeatureDisabled('auto_moderation')) {
           const pendingHold = [];
           const pendingReject = [];
           allNewComments.forEach(c => {
@@ -439,6 +439,10 @@ export function ModerationProvider({ children }) {
   }, [isPolling, session, selectedVideoIds.size, settings.pollingInterval, handleLoadSelected]);
 
   const togglePolling = () => {
+    if (isFeatureDisabled('auto_moderation')) {
+      toast.error('Fitur Auto-Moderasi terkunci untuk paket langganan Anda. Silakan upgrade!');
+      return;
+    }
     if (!isPolling && selectedVideoIds.size === 0) {
       toast.warning('Pilih minimal 1 video terlebih dahulu');
       return;
@@ -530,6 +534,10 @@ export function ModerationProvider({ children }) {
   };
 
   const handleBatchAction = async (commentIds, action) => {
+    if (isFeatureDisabled('bulk_moderation')) {
+      toast.error('Fitur Bulk Moderasi terkunci untuk paket langganan Anda. Silakan upgrade!');
+      return false;
+    }
     if (!commentIds || commentIds.length === 0) return false;
     
     // Set processing untuk semua komentar yang termasuk dalam batch

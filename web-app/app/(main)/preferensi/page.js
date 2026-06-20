@@ -6,12 +6,14 @@ import { signOut } from 'next-auth/react';
 import { useTheme } from '@/components/ThemeProvider';
 import { useSettings } from '@/contexts/SettingsContext';
 import { useToast } from '@/contexts/ToastContext';
+import { useQuota } from '@/contexts/QuotaContext';
 import ConfirmModal from '@/components/ui/ConfirmModal';
 
 export default function PreferensiPage() {
   const { data: session } = useSession();
   const { theme, setTheme } = useTheme();
   const { settings, updateSettings, loading } = useSettings();
+  const { isFeatureDisabled } = useQuota();
   const toast = useToast();
   const [showRenewConfirm, setShowRenewConfirm] = useState(false);
 
@@ -76,10 +78,11 @@ export default function PreferensiPage() {
   };
 
   // ── Sub-components ─────────────────────────────────────────────
-  const Toggle = ({ checked, onChange }) => (
+  const Toggle = ({ checked, onChange, disabled }) => (
     <button
-      onClick={() => onChange(!checked)}
-      className={`relative w-10 h-5 rounded-full transition-colors ${checked ? 'bg-indigo-500' : ''}`}
+      onClick={() => !disabled && onChange(!checked)}
+      disabled={disabled}
+      className={`relative w-10 h-5 rounded-full transition-colors ${checked ? 'bg-indigo-500' : ''} ${disabled ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}`}
       style={!checked ? { background: 'var(--border-hover)' } : {}}
     >
       <span
@@ -89,8 +92,8 @@ export default function PreferensiPage() {
     </button>
   );
 
-  const Slider = ({ label, value, onChange, min = 50, max = 100, unit = '%' }) => (
-    <div className="py-3">
+  const Slider = ({ label, value, onChange, min = 50, max = 100, unit = '%', disabled }) => (
+    <div className={`py-3 ${disabled ? 'opacity-50' : ''}`}>
       <div className="flex justify-between items-center mb-2">
         <p className="text-sm font-medium" style={{ color: 'var(--text-secondary)' }}>{label}</p>
         <span className="badge badge-amber text-xs font-bold px-2 py-0.5">{value}{unit}</span>
@@ -100,8 +103,9 @@ export default function PreferensiPage() {
         min={min}
         max={max}
         value={value}
-        onChange={(e) => onChange(parseInt(e.target.value))}
-        className="w-full h-1.5 rounded-lg appearance-none cursor-pointer accent-indigo-500"
+        disabled={disabled}
+        onChange={(e) => !disabled && onChange(parseInt(e.target.value))}
+        className="w-full h-1.5 rounded-lg appearance-none cursor-pointer accent-indigo-500 disabled:cursor-not-allowed"
         style={{ background: 'var(--border-default)' }}
       />
       <div className="flex justify-between mt-1">
@@ -111,14 +115,15 @@ export default function PreferensiPage() {
     </div>
   );
 
-  const SelectField = ({ label, desc, value, onChange, options }) => (
-    <div className="py-4">
+  const SelectField = ({ label, desc, value, onChange, options, disabled }) => (
+    <div className={`py-4 ${disabled ? 'opacity-50' : ''}`}>
       <p className="text-sm font-medium mb-2" style={{ color: 'var(--text-secondary)' }}>{label}</p>
       <div className="relative">
         <select
           value={value}
-          onChange={(e) => onChange(e.target.value)}
-          className="input-dark w-full appearance-none pr-8"
+          disabled={disabled}
+          onChange={(e) => !disabled && onChange(e.target.value)}
+          className="input-dark w-full appearance-none pr-8 disabled:cursor-not-allowed"
         >
           {options.map((opt) => (
             <option key={opt.value} value={opt.value}>{opt.label}</option>
@@ -245,30 +250,40 @@ export default function PreferensiPage() {
           <div className="space-y-4 pt-2">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm font-medium" style={{ color: 'var(--text-secondary)' }}>Penahanan Otomatis</p>
+                <p className="text-sm font-medium flex items-center gap-1.5" style={{ color: 'var(--text-secondary)' }}>
+                  Penahanan Otomatis
+                  {isFeatureDisabled('auto_moderation') && (
+                    <span className="text-[9px] font-bold text-amber-500 bg-amber-500/10 px-1.5 py-0.5 rounded border border-amber-500/20">PRO / ENT 🔒</span>
+                  )}
+                </p>
                 <p className="text-[11px] mt-0.5" style={{ color: 'var(--text-muted)' }}>
                   Amankan komentar ke folder tinjauan jika tingkat kecurigaan AI melewati batas kepekaan.
                 </p>
               </div>
-              <Toggle checked={autoTahan} onChange={setAutoTahan} />
+              <Toggle checked={autoTahan} onChange={setAutoTahan} disabled={isFeatureDisabled('auto_moderation')} />
             </div>
             {autoTahan && (
-              <Slider label="Sensitivitas Penahanan Komentar (Mencurigakan)" value={thresholdHold} onChange={setThresholdHold} min={50} max={95} />
+              <Slider label="Sensitivitas Penahanan Komentar (Mencurigakan)" value={thresholdHold} onChange={setThresholdHold} min={50} max={95} disabled={isFeatureDisabled('auto_moderation')} />
             )}
           </div>
 
           <div className="space-y-4 pt-2 border-t" style={{ borderColor: 'var(--border-default)' }}>
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm font-medium" style={{ color: 'var(--text-secondary)' }}>Penghapusan Otomatis</p>
+                <p className="text-sm font-medium flex items-center gap-1.5" style={{ color: 'var(--text-secondary)' }}>
+                  Penghapusan Otomatis
+                  {isFeatureDisabled('auto_moderation') && (
+                    <span className="text-[9px] font-bold text-amber-500 bg-amber-500/10 px-1.5 py-0.5 rounded border border-amber-500/20">PRO / ENT 🔒</span>
+                  )}
+                </p>
                 <p className="text-[11px] mt-0.5" style={{ color: 'var(--text-muted)' }}>
                   Langsung hapus komentar dari YouTube jika AI sangat yakin komentar tersebut berisi iklan judi.
                 </p>
               </div>
-              <Toggle checked={autoHapus} onChange={setAutoHapus} />
+              <Toggle checked={autoHapus} onChange={setAutoHapus} disabled={isFeatureDisabled('auto_moderation')} />
             </div>
             {autoHapus && (
-              <Slider label="Sensitivitas Penghapusan Otomatis (Sangat Yakin)" value={thresholdReject} onChange={setThresholdReject} min={70} max={99} />
+              <Slider label="Sensitivitas Penghapusan Otomatis (Sangat Yakin)" value={thresholdReject} onChange={setThresholdReject} min={70} max={99} disabled={isFeatureDisabled('auto_moderation')} />
             )}
           </div>
         </div>
@@ -292,6 +307,7 @@ export default function PreferensiPage() {
             desc="Semakin lama jeda pemeriksaan, jatah poin harian YouTube Anda akan semakin hemat. (Disarankan 2-5 menit)."
             value={pollingInterval}
             onChange={(val) => setPollingInterval(parseInt(val))}
+            disabled={isFeatureDisabled('auto_moderation')}
             options={[
               { value: 30, label: '30 Detik (Boros Kuota)' },
               { value: 60, label: '1 Menit' },
@@ -302,12 +318,17 @@ export default function PreferensiPage() {
           />
           <div className="flex items-center justify-between py-2 border-t" style={{ borderColor: 'var(--border-default)' }}>
             <div>
-              <p className="text-sm font-medium" style={{ color: 'var(--text-secondary)' }}>Pembersihan Massal Sekaligus</p>
+              <p className="text-sm font-medium flex items-center gap-1.5" style={{ color: 'var(--text-secondary)' }}>
+                Pembersihan Massal Sekaligus
+                {isFeatureDisabled('bulk_moderation') && (
+                  <span className="text-[9px] font-bold text-amber-500 bg-amber-500/10 px-1.5 py-0.5 rounded border border-amber-500/20">PRO / ENT 🔒</span>
+                )}
+              </p>
               <p className="text-[11px] mt-0.5" style={{ color: 'var(--text-muted)' }}>
                 Kirim instruksi penghapusan untuk banyak komentar sekaligus agar sangat menghemat jatah kuota YouTube.
               </p>
             </div>
-            <Toggle checked={batchModeration} onChange={setBatchModeration} />
+            <Toggle checked={batchModeration} onChange={setBatchModeration} disabled={isFeatureDisabled('bulk_moderation')} />
           </div>
         </div>
 
