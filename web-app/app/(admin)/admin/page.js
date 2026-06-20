@@ -134,14 +134,33 @@ export default function AdminOverviewPage() {
           <div className="absolute top-0 right-0 w-24 h-24 bg-amber-500/5 rounded-bl-full translate-x-4 -translate-y-4 transition-transform group-hover:scale-110" />
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-xs text-muted font-medium">Konsumsi Kuota API</p>
-              <h3 className="text-2xl font-bold tracking-tight mt-1 text-primary">{stats.totalQuotaUsed.toLocaleString()} u</h3>
+              <p className="text-xs text-muted font-medium">Kuota Google API Hari Ini</p>
+              <h3 className="text-xl font-bold tracking-tight mt-1 text-primary">
+                {stats.todayQuotaUsed.toLocaleString()} <span className="text-[10px] text-muted font-normal">/ 10.000 unit</span>
+              </h3>
             </div>
             <div className="p-3 rounded-xl bg-amber-500/10 text-amber-600 dark:text-amber-400">
               <Database className="w-5 h-5" />
             </div>
           </div>
-          <p className="text-[10px] text-amber-500 font-medium mt-3">Unit Kuota Terpakai (Semua User)</p>
+          
+          {/* Progress Bar Visual */}
+          {(() => {
+            const percentage = Math.min(Math.round((stats.todayQuotaUsed / 10000) * 100), 100);
+            const barColor = percentage > 90 ? 'bg-rose-500' : percentage > 70 ? 'bg-amber-500' : 'bg-emerald-500';
+            const textColor = percentage > 90 ? 'text-rose-500' : percentage > 70 ? 'text-amber-500' : 'text-emerald-500';
+            return (
+              <div className="mt-3.5 space-y-1">
+                <div className="h-1.5 rounded-full overflow-hidden bg-[var(--bg-card-hover)] border border-[var(--border-default)]">
+                  <div className={`h-full rounded-full transition-all duration-500 ${barColor}`} style={{ width: `${percentage}%` }} />
+                </div>
+                <div className="flex justify-between text-[9px] font-medium">
+                  <span className={textColor}>{percentage}% Terpakai</span>
+                  <span className="text-muted">Total: {stats.totalQuotaUsed.toLocaleString()} u</span>
+                </div>
+              </div>
+            );
+          })()}
         </div>
       </div>
 

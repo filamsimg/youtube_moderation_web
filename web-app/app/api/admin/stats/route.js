@@ -45,6 +45,17 @@ export async function GET(request) {
     if (quotaError) throw quotaError;
     const totalQuotaUsed = quotaLogs.reduce((acc, log) => acc + (log.units_spent || 0), 0);
 
+    // 3.1. Google API Quota Consumed Today (sejak jam 00:00 hari ini)
+    const todayStart = new Date();
+    todayStart.setHours(0, 0, 0, 0);
+    const { data: todayQuotaLogs, error: todayQuotaErr } = await supabaseAdmin
+      .from('quota_usage_logs')
+      .select('units_spent')
+      .gte('created_at', todayStart.toISOString());
+
+    if (todayQuotaErr) throw todayQuotaErr;
+    const todayQuotaUsed = todayQuotaLogs.reduce((acc, log) => acc + (log.units_spent || 0), 0);
+
     // 4. Total Income (settlement transactions)
     const { data: transactions, error: trxError } = await supabaseAdmin
       .from('transactions')
@@ -92,6 +103,7 @@ export async function GET(request) {
         tierCounts,
         totalComments: totalComments || 0,
         totalQuotaUsed,
+        todayQuotaUsed,
         totalRevenue,
       },
       newestUsers,
