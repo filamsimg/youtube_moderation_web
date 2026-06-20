@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
 import { supabaseAdmin } from '@/lib/supabaseAdmin';
 import crypto from 'crypto';
-import { SECURE_PACKAGES } from '../checkout/route';
+// Import SECURE_PACKAGES has been replaced by dynamic DB lookup
 
 /**
  * POST /api/payment/notification
@@ -140,10 +140,15 @@ export async function POST(req) {
       const txType = transaction.transaction_type || 
         (durationDays > 0 && targetTier !== 'FREE' ? 'subscription' : 'topup');
 
-      // Validasi paket masih terdaftar di SECURE_PACKAGES (keamanan tambahan)
-      const pkg = SECURE_PACKAGES[packageId];
-      if (!pkg) {
-        console.error(`[Notification Webhook] Package ID "${packageId}" tidak ditemukan di SECURE_PACKAGES`);
+      // Validasi paket masih terdaftar di database (keamanan tambahan)
+      const { data: pkg, error: pkgErr } = await supabaseAdmin
+        .from('pricing_packages')
+        .select('*')
+        .eq('id', packageId)
+        .single();
+
+      if (pkgErr || !pkg) {
+        console.error(`[Notification Webhook] Package ID "${packageId}" tidak ditemukan di database pricing_packages`);
         return NextResponse.json({ error: 'Invalid package configuration' }, { status: 500 });
       }
 

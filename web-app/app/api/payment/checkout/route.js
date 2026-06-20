@@ -161,13 +161,20 @@ export async function POST(req) {
     const body = await req.json();
     const { packageId } = body;
 
-    // VALIDASI KEAMANAN: Cari paket berdasarkan ID di server-side dictionary
-    const pkg = SECURE_PACKAGES[packageId];
-    if (!pkg) {
+    // VALIDASI KEAMANAN: Cari paket berdasarkan ID di database Supabase (Dynamic & Server-Secure)
+    const { data: pkg, error: pkgErr } = await supabaseAdmin
+      .from('pricing_packages')
+      .select('*')
+      .eq('id', packageId)
+      .eq('is_active', true)
+      .single();
+
+    if (pkgErr || !pkg) {
+      console.warn(`[Checkout] Percobaan checkout paket tidak valid atau tidak aktif: ${packageId}`);
       return NextResponse.json({ error: 'ID Paket tidak valid atau tidak terdaftar' }, { status: 400 });
     }
 
-    const { price, quotaUnits, tier: targetTier, durationDays, name: packageName, type: transactionType } = pkg;
+    const { price, quota_units: quotaUnits, tier: targetTier, duration_days: durationDays, name: packageName, type: transactionType } = pkg;
 
     // ── V2: Cek transaksi pending duplikat ─────────────────────
     // Jika user sudah punya transaksi pending untuk paket yang sama dan masih < 24 jam,
