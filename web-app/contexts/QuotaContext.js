@@ -3,7 +3,8 @@
 import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
 import { useSession } from 'next-auth/react';
 import { useToast } from './ToastContext';
-import { QUOTA_COSTS } from '@/services/quotaService'; // make sure this import is valid or move costs somewhere
+import { QUOTA_COSTS } from '@/services/quotaService';
+import { checkIsFeatureDisabled } from '@/lib/featureGate';
 
 const QuotaContext = createContext(null);
 
@@ -63,8 +64,13 @@ export function QuotaProvider({ children }) {
     }
   };
 
+  // Pengecekan status fitur dibatasi (Feature Gating) secara dinamis
+  const isFeatureDisabled = useCallback((featureKey) => {
+    return checkIsFeatureDisabled(featureKey, profile?.disabled_features || []);
+  }, [profile?.disabled_features]);
+
   return (
-    <QuotaContext.Provider value={{ profile, loading, fetchQuota, deductQuota }}>
+    <QuotaContext.Provider value={{ profile, loading, fetchQuota, deductQuota, isFeatureDisabled }}>
       {children}
     </QuotaContext.Provider>
   );

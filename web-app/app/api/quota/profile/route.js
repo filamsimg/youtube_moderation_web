@@ -25,10 +25,26 @@ export async function GET() {
       p_email: email,
     });
 
-    if (error) {
+    if (error || !profile) {
       console.error('ensure_user_profile error:', error);
       return NextResponse.json({ error: 'Database error' }, { status: 500 });
     }
+
+    // Ambil detail konfigurasi fitur dinamis untuk tier pengguna ini dari pricing_packages
+    const { data: pkg } = await supabaseAdmin
+      .from('pricing_packages')
+      .select('disabled_features, allow_bulk_moderation, allow_export_csv, allow_auto_moderation')
+      .eq('type', 'subscription')
+      .eq('tier', profile.tier)
+      .eq('is_active', true)
+      .order('price', { ascending: false })
+      .limit(1)
+      .maybeSingle();
+
+    const disabledFeatures = pkg?.disabled_features || [];
+    const allowBulkModeration = pkg?.allow_bulk_moderation ?? false;
+    const allowExportCSV = pkg?.allow_export_csv ?? false;
+    const allowAutoModeration = pkg?.allow_auto_moderation ?? false;
 
     // Compute total balance dari ketiga sumber kuota
     const totalBalance = profile.subscription_quota + profile.topup_credits + profile.trial_quota;
@@ -53,6 +69,14 @@ export async function GET() {
 
       // Persentase terpakai
       percentage: Math.min(percentage, 100),
+
+      // Fitur pemasaran yang dinonaktifkan untuk tier ini (Estetika UI)
+      disabled_features: disabledFeatures,
+
+      // Feature Flags Konfigurasi Hak Akses Boolean Baku (Aplikasi)
+      allow_bulk_moderation: allowBulkModeration,
+      allow_export_csv: allowExportCSV,
+      allow_auto_moderation: allowAutoModeration,
     });
   } catch (err) {
     console.error('GET /api/quota/profile error:', err);
