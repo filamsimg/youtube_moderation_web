@@ -13,7 +13,8 @@ import {
   Menu, 
   Settings,
   HelpCircle,
-  LogOut
+  LogOut,
+  CreditCard
 } from 'lucide-react';
 
 export default function AdminSidebar() {
@@ -66,6 +67,11 @@ export default function AdminSidebar() {
       name: 'Moderasi Global',
       href: '/admin/moderation',
       icon: <History className="w-5 h-5 flex-shrink-0" />,
+    },
+    {
+      name: 'Pricing & Paket',
+      href: '/admin/plans',
+      icon: <CreditCard className="w-5 h-5 flex-shrink-0" />,
     },
     {
       name: 'Log Audit Admin',

@@ -12,12 +12,7 @@ import KineticGrid from '@/components/KineticGrid';
 // DEFINISI PAKET LANGGANAN & TOP-UP (Sesuai Konfigurasi Keamanan Sisi Server)
 // =========================================================================
 // DEFINISI PAKET LANGGANAN SECARA DINAMIS (Sesuai Konfigurasi Keamanan Sisi Server)
-
-const TOP_UP_PACKAGES = [
-  { key: 'topup-starter', units: 5000, price: 'Rp 15.000', label: 'Starter', color: 'emerald', badge: null },
-  { key: 'topup-standard', units: 20000, price: 'Rp 50.000', label: 'Standard', color: 'blue', badge: 'Terlaris' },
-  { key: 'topup-power', units: 60000, price: 'Rp 120.000', label: 'Power', color: 'violet', badge: null },
-];
+// TOP_UP_PACKAGES is now loaded dynamically from the database.
 
 const COST_TABLE = [
   { action: 'Ambil Daftar Video', api: 'playlistItems.list', cost: 1 },
@@ -54,104 +49,74 @@ export default function PricingPage() {
   const [billingCycle, setBillingCycle] = useState('1M'); // '1M' | '3M' | '6M' | '12M'
   const [loadingTx, setLoadingTx] = useState(null);
 
-  const getDynamicPlans = () => {
-    const multipliers = {
-      '1M': { label: 'bulan', days: 30, discount: 0, textSuffix: '/ bulan' },
-      '3M': { label: '3 bulan', days: 90, discount: 5, textSuffix: '/ 3 bulan' },
-      '6M': { label: '6 bulan', days: 180, discount: 10, textSuffix: '/ 6 bulan' },
-      '12M': { label: 'tahun', days: 360, discount: 20, textSuffix: '/ tahun' }
-    };
+  const [plans, setPlans] = useState([]);
+  const [topups, setTopups] = useState([]);
+  const [loadingPackages, setLoadingPackages] = useState(true);
 
-    const cycleInfo = multipliers[billingCycle];
-
-    return [
-      {
-        key: 'FREE',
-        name: 'Free Trial',
-        price: 'Rp 0',
-        period: 'Sekali Pakai',
-        quota: '1.000',
-        quotaNum: 1000,
-        description: 'Untuk percobaan & penggunaan pribadi ringan awal.',
-        features: [
-          'Jatah 1.000 poin trial awal (sekali pakai saat pertama kali daftar)',
-          'Penyaringan komentar manual',
-          'Analisis AI (Iklan Judi & Emosi Penonton)',
-          'Riwayat tindakan penyaringan',
-        ],
-        disabled: ['Penyaringan Otomatis', 'Pengecekan berkala otomatis', 'Pilihan banyak video sekaligus'],
-        cta: 'Paket Saat Ini',
-        badge: null,
-        tier: 'FREE',
-        originalPrice: null,
-        savedAmount: null,
-      },
-      {
-        key: `PRO_${billingCycle}`,
-        name: 'Pro',
-        price: billingCycle === '1M' ? 'Rp 49.000' :
-               billingCycle === '3M' ? 'Rp 139.000' :
-               billingCycle === '6M' ? 'Rp 264.000' : 'Rp 470.000',
-        period: cycleInfo.textSuffix,
-        quota: billingCycle === '1M' ? '50.000' :
-               billingCycle === '3M' ? '150.000' :
-               billingCycle === '6M' ? '300.000' : '600.000',
-        quotaNum: billingCycle === '1M' ? 50000 :
-                  billingCycle === '3M' ? 150000 :
-                  billingCycle === '6M' ? 300000 : 600000,
-        description: 'Untuk content creator aktif dengan video yang sering ramai komentar.',
-        features: [
-          `Jatah ${billingCycle === '1M' ? '50.000' : billingCycle === '3M' ? '150.000' : billingCycle === '6M' ? '300.000' : '600.000'} poin untuk ${cycleInfo.label}`,
-          'Semua fitur Free',
-          'Penyaringan Otomatis (Tahan & Hapus)',
-          'Pemeriksaan otomatis tiap 2 menit',
-          'Pilih banyak video & hapus massal sekaligus',
-          'Layanan bantuan prioritas',
-        ],
-        disabled: [],
-        cta: `Pilih Pro (${cycleInfo.label === 'bulan' ? '1 Bulan' : cycleInfo.label === 'tahun' ? '1 Tahun' : billingCycle.replace('M', ' Bulan')})`,
-        badge: '🔥 Paling Populer',
-        tier: 'PRO',
-        originalPrice: billingCycle === '1M' ? null :
-                       billingCycle === '3M' ? 'Rp 147.000' :
-                       billingCycle === '6M' ? 'Rp 294.000' : 'Rp 588.000',
-        savedAmount: billingCycle === '1M' ? null :
-                     billingCycle === '3M' ? 'Rp 8.000' :
-                     billingCycle === '6M' ? 'Rp 30.000' : 'Rp 118.000',
-      },
-      {
-        key: `ENTERPRISE_${billingCycle}`,
-        name: 'Enterprise',
-        price: billingCycle === '1M' ? 'Rp 149.000' :
-               billingCycle === '3M' ? 'Rp 424.000' :
-               billingCycle === '6M' ? 'Rp 804.000' : 'Rp 1.430.000',
-        period: cycleInfo.textSuffix,
-        quota: 'Bebas Kuota YouTube*',
-        quotaNum: 999999,
-        description: 'Untuk agency atau channel dengan volume komentar sangat tinggi.',
-        features: [
-          'Bebas dari batasan kuota YouTube*',
-          'Semua fitur Pro',
-          'Gunakan Kunci Akses YouTube Sendiri (Gratis)',
-          'Grafik laporan statistik lengkap',
-          'Unduh laporan ke Excel (CSV)',
-          'Layanan bantuan khusus',
-        ],
-        disabled: [],
-        cta: `Pilih Enterprise (${cycleInfo.label === 'bulan' ? '1 Bulan' : cycleInfo.label === 'tahun' ? '1 Tahun' : billingCycle.replace('M', ' Bulan')})`,
-        badge: '⭐ Terlengkap',
-        tier: 'ENTERPRISE',
-        originalPrice: billingCycle === '1M' ? null :
-                       billingCycle === '3M' ? 'Rp 447.000' :
-                       billingCycle === '6M' ? 'Rp 894.000' : 'Rp 1.788.000',
-        savedAmount: billingCycle === '1M' ? null :
-                     billingCycle === '3M' ? 'Rp 23.000' :
-                     billingCycle === '6M' ? 'Rp 90.000' : 'Rp 358.000',
-      },
-    ];
+  const formatIDR = (num) => {
+    return new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(num);
   };
 
-  const PLANS = getDynamicPlans();
+  useEffect(() => {
+    async function loadPackages() {
+      try {
+        const response = await fetch('/api/plans');
+        const json = await response.json();
+        if (json.success) {
+          setPlans(json.plans);
+          setTopups(json.topups);
+        } else {
+          toast.error(json.error || 'Gagal memuat paket pricing');
+        }
+      } catch (error) {
+        console.error('Fetch pricing error:', error);
+        toast.error('Koneksi internet bermasalah');
+      } finally {
+        setLoadingPackages(false);
+      }
+    }
+    loadPackages();
+  }, [toast]);
+
+  const multipliers = {
+    '1M': { label: 'bulan', days: 30, discount: 0, textSuffix: '/ bulan' },
+    '3M': { label: '3 bulan', days: 90, discount: 5, textSuffix: '/ 3 bulan' },
+    '6M': { label: '6 bulan', days: 180, discount: 10, textSuffix: '/ 6 bulan' },
+    '12M': { label: 'tahun', days: 360, discount: 20, textSuffix: '/ tahun' }
+  };
+
+  const cycleInfo = multipliers[billingCycle] || multipliers['1M'];
+
+  const PLANS = plans
+    .filter(plan => plan.tier === 'FREE' || plan.billing_cycle === billingCycle)
+    .map(plan => {
+      const isFree = plan.tier === 'FREE';
+      return {
+        key: plan.id,
+        name: plan.name,
+        price: plan.price === 0 ? 'Rp 0' : formatIDR(plan.price),
+        period: isFree ? 'Sekali Pakai' : cycleInfo.textSuffix,
+        quota: plan.tier === 'ENTERPRISE' ? 'Bebas Kuota YouTube*' : plan.quota_units.toLocaleString('id-ID'),
+        quotaNum: plan.quota_units,
+        description: plan.description,
+        features: plan.features || [],
+        disabled: plan.disabled_features || [],
+        cta: isFree ? 'Paket Saat Ini' : `Pilih ${plan.name} (${cycleInfo.label === 'bulan' ? '1 Bulan' : cycleInfo.label === 'tahun' ? '1 Tahun' : billingCycle.replace('M', ' Bulan')})`,
+        badge: plan.badge,
+        tier: plan.tier,
+        originalPrice: plan.original_price ? formatIDR(plan.original_price) : null,
+        savedAmount: plan.original_price && plan.original_price > plan.price ? formatIDR(plan.original_price - plan.price) : null,
+      };
+    });
+
+  const TOP_UP_PACKAGES = topups.map(pkg => ({
+    key: pkg.id,
+    units: pkg.quota_units,
+    price: formatIDR(pkg.price),
+    label: pkg.name,
+    color: pkg.color || 'blue',
+    badge: pkg.badge
+  }));
 
   // Menangani inisialisasi checkout pembayaran Midtrans Snap (Aman & Server-Verified)
   const handlePurchase = async (packageId) => {
@@ -223,14 +188,9 @@ export default function PricingPage() {
   // Mengambil harga secara dinamis dari SECURE_PACKAGES (checkout route) agar tidak hardcode
   const syncPaymentStatus = async (orderId, packageId) => {
     try {
-      // Lookup harga dari definisi paket yang sudah ada di frontend
-      const allPackages = {
-        'PRO': 49000, 'ENTERPRISE': 149000,
-        'PRO_1M': 49000, 'PRO_3M': 139000, 'PRO_6M': 264000, 'PRO_12M': 470000,
-        'ENTERPRISE_1M': 149000, 'ENTERPRISE_3M': 424000, 'ENTERPRISE_6M': 804000, 'ENTERPRISE_12M': 1430000,
-        'topup-starter': 15000, 'topup-standard': 50000, 'topup-power': 120000,
-      };
-      const mockAmount = allPackages[packageId] || 15000;
+      // Lookup harga secara dinamis dari state paket yang dimuat
+      const matchedPkg = [...plans, ...topups].find(p => p.id === packageId);
+      const mockAmount = matchedPkg ? matchedPkg.price : 15000;
 
       await fetch('/api/payment/notification', {
         method: 'POST',
@@ -372,8 +332,15 @@ export default function PricingPage() {
           )}
         </div>
 
-        {/* ── PLANS TAB ────────────────────────────────────────── */}
-        {activeTab === 'plans' && (
+        {loadingPackages ? (
+          <div className="flex flex-col items-center justify-center py-20 space-y-4">
+            <div className="w-10 h-10 border-4 border-indigo-500/30 border-t-indigo-600 rounded-full animate-spin" />
+            <p className="text-xs text-secondary">Memuat paket pricing...</p>
+          </div>
+        ) : (
+          <>
+            {/* ── PLANS TAB ────────────────────────────────────────── */}
+            {activeTab === 'plans' && (
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             {PLANS.map((plan) => {
               const isCurrentTier = profile?.tier === plan.tier;
@@ -560,6 +527,8 @@ export default function PricingPage() {
               })}
             </div>
           </div>
+        )}
+          </>
         )}
 
         {/* ── Tabel Biaya API ──────────────────────────────────── */}
