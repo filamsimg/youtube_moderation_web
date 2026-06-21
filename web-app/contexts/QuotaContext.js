@@ -66,8 +66,8 @@ export function QuotaProvider({ children }) {
 
   // Pengecekan status fitur dibatasi (Feature Gating) secara dinamis
   const isFeatureDisabled = useCallback((featureKey) => {
-    return checkIsFeatureDisabled(featureKey, profile?.disabled_features || []);
-  }, [profile?.disabled_features]);
+    return checkIsFeatureDisabled(featureKey, profile);
+  }, [profile]);
 
   return (
     <QuotaContext.Provider value={{ profile, loading, fetchQuota, deductQuota, isFeatureDisabled }}>

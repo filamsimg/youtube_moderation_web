@@ -162,7 +162,6 @@ export default function ProfilePage() {
         'PRO': 49000, 'ENTERPRISE': 149000,
         'PRO_1M': 49000, 'PRO_3M': 139000, 'PRO_6M': 264000, 'PRO_12M': 470000,
         'ENTERPRISE_1M': 149000, 'ENTERPRISE_3M': 424000, 'ENTERPRISE_6M': 804000, 'ENTERPRISE_12M': 1430000,
-        'topup-starter': 15000, 'topup-standard': 50000, 'topup-power': 120000,
       };
       const mockAmount = allPackages[packageId] || 15000;
 
@@ -258,23 +257,13 @@ export default function ProfilePage() {
     
     if (profile.tier === 'FREE') {
       const totalBalance = profile.quota_balance || 0;
-      const hasTopup = (profile.topup_credits || 0) > 0;
       
       if (totalBalance <= 0) {
         return {
           text: 'Kuota Habis',
           className: 'text-rose-500 font-bold animate-pulse',
           isWarning: true,
-          message: 'Seluruh kuota Anda telah habis. Silakan lakukan Top-up atau tingkatkan ke paket Pro.'
-        };
-      }
-      
-      if (hasTopup && (profile.trial_quota || 0) <= 0) {
-        return {
-          text: 'Kredit Top-up Aktif',
-          className: 'text-emerald-500 dark:text-emerald-400 font-semibold',
-          isWarning: false,
-          message: null
+          message: 'Seluruh kuota Anda telah habis. Silakan tingkatkan ke paket Pro.'
         };
       }
       
@@ -313,14 +302,14 @@ export default function ProfilePage() {
         text: `Hari ini!`,
         className: 'text-rose-500 font-bold animate-pulse',
         isWarning: true,
-        message: 'Masa aktif paket Anda habis hari ini! Kuota langganan akan hangus — kredit top-up tetap aman.'
+        message: 'Masa aktif paket Anda habis hari ini! Kuota langganan akan hangus.'
       };
     } else if (daysLeft <= 3) {
       return {
         text: `${formattedDate} (${daysLeft} hari lagi!)`,
         className: 'text-rose-400 font-bold animate-pulse',
         isWarning: true,
-        message: `Masa aktif paket tinggal ${daysLeft} hari lagi! Kuota langganan akan hangus saat expire — kredit top-up tetap aman.`
+        message: `Masa aktif paket tinggal ${daysLeft} hari lagi! Kuota langganan akan hangus saat expire.`
       };
     } else if (daysLeft <= 7) {
       return {
@@ -428,15 +417,6 @@ export default function ProfilePage() {
                         <span>Langganan <span className="text-[8px] opacity-60">(hangus saat expire)</span></span>
                       </span>
                       <span className="text-indigo-400 font-bold">{(profile.subscription_quota || 0).toLocaleString('id-ID')}</span>
-                    </div>
-                    
-                    {/* Kredit Top-up */}
-                    <div className="flex items-center justify-between text-[10px]">
-                      <span className="text-muted flex items-center gap-1.5">
-                        <span className="w-2 h-2 rounded-full bg-emerald-500 inline-block flex-shrink-0" />
-                        <span>Top-up <span className="text-[8px] opacity-60">(permanen)</span></span>
-                      </span>
-                      <span className="text-emerald-400 font-bold">{(profile.topup_credits || 0).toLocaleString('id-ID')}</span>
                     </div>
                     
                     {/* Kuota Trial */}
@@ -584,12 +564,10 @@ export default function ProfilePage() {
                               'ENTERPRISE': 'Enterprise (1 Bulan)', 'ENTERPRISE_1M': 'Enterprise (1 Bulan)',
                               'ENTERPRISE_3M': 'Enterprise (3 Bulan)', 'ENTERPRISE_6M': 'Enterprise (6 Bulan)',
                               'ENTERPRISE_12M': 'Enterprise (1 Tahun)',
-                              'topup-starter': 'Top-up Starter', 'topup-standard': 'Top-up Standard',
-                              'topup-power': 'Top-up Power',
                             };
                             const pkgName = packageNames[tx.package_id] || (
                               tx.target_tier === 'PRO' ? 'Pro Upgrade' :
-                              tx.target_tier === 'ENTERPRISE' ? 'Enterprise Upgrade' : 'Top-up'
+                              tx.target_tier === 'ENTERPRISE' ? 'Enterprise Upgrade' : 'Langganan'
                             );
                             const icon = tx.target_tier === 'PRO' ? '💎' : tx.target_tier === 'ENTERPRISE' ? '👑' : '📦';
                             const colorClass = tx.target_tier === 'PRO' ? 'text-amber-500' : tx.target_tier === 'ENTERPRISE' ? 'text-violet-500' : 'text-emerald-500';

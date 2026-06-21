@@ -16,9 +16,9 @@ export async function GET() {
       throw error;
     }
 
-    // Kelompokkan menjadi subscription plans dan topups
+    // Kelompokkan menjadi subscription plans
     const plans = packages.filter((pkg) => pkg.type === 'subscription');
-    const topups = packages.filter((pkg) => pkg.type === 'topup');
+    const topups = []; // Top-up telah dihapus secara menyeluruh
 
     return NextResponse.json({
       success: true,

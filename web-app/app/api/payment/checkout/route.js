@@ -97,32 +97,6 @@ export const SECURE_PACKAGES = {
     durationDays: 360,
     name: 'Enterprise (1 Tahun)',
     type: 'subscription',
-  },
-
-  // --- TOP-UP KREDIT (Sekali Bayar, Tidak Kedaluwarsa) ---
-  'topup-starter': {
-    price: 15000,
-    quotaUnits: 5000,
-    tier: 'FREE',
-    durationDays: 0,
-    name: 'Top-Up Starter (5.000 Kuota)',
-    type: 'topup',
-  },
-  'topup-standard': {
-    price: 50000,
-    quotaUnits: 20000,
-    tier: 'FREE',
-    durationDays: 0,
-    name: 'Top-Up Standard (20.000 Kuota)',
-    type: 'topup',
-  },
-  'topup-power': {
-    price: 120000,
-    quotaUnits: 60000,
-    tier: 'FREE',
-    durationDays: 0,
-    name: 'Top-Up Power (60.000 Kuota)',
-    type: 'topup',
   }
 };
 

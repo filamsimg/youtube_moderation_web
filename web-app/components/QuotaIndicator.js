@@ -72,7 +72,6 @@ export default function QuotaIndicator({ compact = false }) {
   const getExpiryText = () => {
     if (profile.tier === 'FREE') {
       const totalBalance = profile.quota_balance || 0;
-      const hasTopup = (profile.topup_credits || 0) > 0;
       
       if (totalBalance <= 0) {
         return { 
@@ -81,15 +80,8 @@ export default function QuotaIndicator({ compact = false }) {
         };
       }
       
-      if (hasTopup && (profile.trial_quota || 0) <= 0) {
-        return { 
-          text: 'Kredit Top-up Aktif', 
-          className: 'text-emerald-500 dark:text-emerald-400 font-medium' 
-        };
-      }
-      
       return { 
-        text: 'Trial Aktif', 
+        text: 'Trial Uji Coba Aktif', 
         className: 'text-slate-400 font-medium' 
       };
     }
@@ -124,7 +116,6 @@ export default function QuotaIndicator({ compact = false }) {
   // Cek apakah ada breakdown kuota terpisah
   const hasBreakdown = profile.subscription_quota !== undefined;
   const subQuota = profile.subscription_quota || 0;
-  const topupCredits = profile.topup_credits || 0;
   const trialQuota = profile.trial_quota || 0;
 
   return (
@@ -167,7 +158,7 @@ export default function QuotaIndicator({ compact = false }) {
       </div>
 
       {/* Breakdown Kuota Terpisah */}
-      {hasBreakdown && (subQuota > 0 || topupCredits > 0 || trialQuota > 0) && (
+      {hasBreakdown && (subQuota > 0 || trialQuota > 0) && (
         <div className="space-y-1 pt-1.5 border-t border-[var(--border-default)]/40">
           <p className="text-[9px] text-muted uppercase tracking-wider font-semibold">Rincian</p>
           <div className="space-y-0.5">
@@ -178,15 +169,6 @@ export default function QuotaIndicator({ compact = false }) {
                   Langganan
                 </span>
                 <span className="text-indigo-400 font-semibold">{subQuota.toLocaleString('id-ID')}</span>
-              </div>
-            )}
-            {topupCredits > 0 && (
-              <div className="flex items-center justify-between text-[9px] sm:text-[10px]">
-                <span className="text-muted flex items-center gap-1">
-                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 inline-block" />
-                  Top-up
-                </span>
-                <span className="text-emerald-400 font-semibold">{topupCredits.toLocaleString('id-ID')}</span>
               </div>
             )}
             {trialQuota > 0 && (
@@ -216,7 +198,7 @@ export default function QuotaIndicator({ compact = false }) {
           href="/pricing"
           className="block w-full text-center py-1.5 rounded-lg bg-rose-50 border border-rose-200 text-[11px] font-medium text-rose-700 hover:bg-rose-100/50 dark:bg-rose-500/10 dark:border-rose-500/20 dark:text-rose-400 dark:hover:bg-rose-500/15 transition-colors"
         >
-          ⚡ Top-up Kuota
+          ⚡ Upgrade Langganan
         </Link>
       )}
     </div>

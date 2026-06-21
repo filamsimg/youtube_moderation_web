@@ -46,8 +46,8 @@ export async function GET() {
     const allowExportCSV = pkg?.allow_export_csv ?? false;
     const allowAutoModeration = pkg?.allow_auto_moderation ?? false;
 
-    // Compute total balance dari ketiga sumber kuota
-    const totalBalance = profile.subscription_quota + profile.topup_credits + profile.trial_quota;
+    // Compute total balance dari kedua sumber kuota (Langganan & Trial)
+    const totalBalance = profile.subscription_quota + profile.trial_quota;
     const percentage = Math.round((totalBalance / (profile.quota_limit || 1000)) * 100);
 
     return NextResponse.json({
@@ -56,7 +56,7 @@ export async function GET() {
 
       // Breakdown kuota terpisah untuk transparansi UI
       subscription_quota: profile.subscription_quota,
-      topup_credits: profile.topup_credits,
+      topup_credits: 0,
       trial_quota: profile.trial_quota,
 
       // Total balance (computed)

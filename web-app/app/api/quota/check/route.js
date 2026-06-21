@@ -31,8 +31,8 @@ export async function GET(req) {
       return NextResponse.json({ error: 'Profile not found' }, { status: 404 });
     }
 
-    // Compute total balance dari ketiga sumber kuota
-    const totalBalance = profile.subscription_quota + profile.topup_credits + profile.trial_quota;
+    // Compute total balance dari kedua sumber kuota (Langganan & Trial)
+    const totalBalance = profile.subscription_quota + profile.trial_quota;
 
     return NextResponse.json({
       canAfford: totalBalance >= cost,

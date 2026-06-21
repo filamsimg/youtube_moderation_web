@@ -53,7 +53,7 @@ export async function PATCH(request) {
     };
 
     let hasChanges = false;
-    const allowedKeys = ['tier', 'subscription_quota', 'topup_credits', 'trial_quota', 'quota_limit', 'quota_expiry', 'is_active', 'role'];
+    const allowedKeys = ['tier', 'subscription_quota', 'trial_quota', 'quota_limit', 'quota_expiry', 'is_active', 'role'];
 
     allowedKeys.forEach((key) => {
       if (updates[key] !== undefined && updates[key] !== targetProfile[key]) {
@@ -90,7 +90,7 @@ export async function PATCH(request) {
       action = 'CHANGE_USER_ROLE';
     } else if (updates.tier !== undefined && updates.tier !== targetProfile.tier) {
       action = 'CHANGE_USER_TIER';
-    } else if (updates.subscription_quota !== undefined || updates.topup_credits !== undefined) {
+    } else if (updates.subscription_quota !== undefined) {
       action = 'ADJUST_USER_QUOTA';
     }
 

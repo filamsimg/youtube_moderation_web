@@ -8,6 +8,7 @@ import { useSettings } from '@/contexts/SettingsContext';
 import { useToast } from '@/contexts/ToastContext';
 import { useQuota } from '@/contexts/QuotaContext';
 import ConfirmModal from '@/components/ui/ConfirmModal';
+import Link from 'next/link';
 
 export default function PreferensiPage() {
   const { data: session } = useSession();
@@ -253,7 +254,7 @@ export default function PreferensiPage() {
                 <p className="text-sm font-medium flex items-center gap-1.5" style={{ color: 'var(--text-secondary)' }}>
                   Penahanan Otomatis
                   {isFeatureDisabled('auto_moderation') && (
-                    <span className="text-[9px] font-bold text-amber-500 bg-amber-500/10 px-1.5 py-0.5 rounded border border-amber-500/20">PRO / ENT 🔒</span>
+                    <Link href="/pricing" className="text-[9px] font-bold text-amber-500 bg-amber-500/10 px-1.5 py-0.5 rounded border border-amber-500/20 hover:bg-amber-500/20 transition-colors cursor-pointer">PRO / ENT 🔒 Upgrade →</Link>
                   )}
                 </p>
                 <p className="text-[11px] mt-0.5" style={{ color: 'var(--text-muted)' }}>
@@ -273,7 +274,7 @@ export default function PreferensiPage() {
                 <p className="text-sm font-medium flex items-center gap-1.5" style={{ color: 'var(--text-secondary)' }}>
                   Penghapusan Otomatis
                   {isFeatureDisabled('auto_moderation') && (
-                    <span className="text-[9px] font-bold text-amber-500 bg-amber-500/10 px-1.5 py-0.5 rounded border border-amber-500/20">PRO / ENT 🔒</span>
+                    <Link href="/pricing" className="text-[9px] font-bold text-amber-500 bg-amber-500/10 px-1.5 py-0.5 rounded border border-amber-500/20 hover:bg-amber-500/20 transition-colors cursor-pointer">PRO / ENT 🔒 Upgrade →</Link>
                   )}
                 </p>
                 <p className="text-[11px] mt-0.5" style={{ color: 'var(--text-muted)' }}>
@@ -321,14 +322,14 @@ export default function PreferensiPage() {
               <p className="text-sm font-medium flex items-center gap-1.5" style={{ color: 'var(--text-secondary)' }}>
                 Pembersihan Massal Sekaligus
                 {isFeatureDisabled('bulk_moderation') && (
-                  <span className="text-[9px] font-bold text-amber-500 bg-amber-500/10 px-1.5 py-0.5 rounded border border-amber-500/20">PRO / ENT 🔒</span>
+                  <Link href="/pricing" className="text-[9px] font-bold text-amber-500 bg-amber-500/10 px-1.5 py-0.5 rounded border border-amber-500/20 hover:bg-amber-500/20 transition-colors cursor-pointer">PRO / ENT 🔒 Upgrade →</Link>
                 )}
               </p>
               <p className="text-[11px] mt-0.5" style={{ color: 'var(--text-muted)' }}>
                 Kirim instruksi penghapusan untuk banyak komentar sekaligus agar sangat menghemat jatah kuota YouTube.
               </p>
             </div>
-            <Toggle checked={batchModeration} onChange={setBatchModeration} disabled={isFeatureDisabled('bulk_moderation')} />
+            <Toggle checked={isFeatureDisabled('bulk_moderation') ? false : batchModeration} onChange={setBatchModeration} disabled={isFeatureDisabled('bulk_moderation')} />
           </div>
         </div>
 
@@ -380,7 +381,7 @@ export default function PreferensiPage() {
           {
             label: 'Tips Moderasi Efisien',
             icon: <svg className="w-4 h-4" style={iconStyle} fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" d="M8.625 12a.375.375 0 11-.75 0 .375.375 0 01.75 0zm0 0H8.25m4.125 0a.375.375 0 11-.75 0 .375.375 0 01.75 0zm0 0H12m4.125 0a.375.375 0 11-.75 0 .375.375 0 01.75 0zm0 0h-.375M21 12c0 4.556-4.03 8.25-9 8.25a9.764 9.764 0 01-2.555-.337A5.972 5.972 0 015.41 20.97a5.969 5.969 0 01-.474-.065 4.48 4.48 0 00.978-2.025c.09-.457-.133-.901-.467-1.226C3.93 16.178 3 14.189 3 12c0-4.556 4.03-8.25 9-8.25s9 3.694 9 8.25z" /></svg>,
-            content: <ul className="list-decimal ml-4 space-y-1"><li><strong>Optimasi Kuota:</strong> Gunakan interval polling 2-5 menit.</li><li><strong>Batching:</strong> Aktifkan &quot;Moderasi Massal&quot; untuk hemat kuota.</li><li><strong>Auto-Moderasi:</strong> Mulai dengan Ambang Batas tinggi (90%+) untuk Hapus Otomatis.</li></ul>,
+            content: <ul className="list-decimal ml-4 space-y-1"><li><strong>Optimasi Kuota:</strong> Gunakan jeda pemeriksaan otomatis 2-5 menit.</li><li><strong>Batching:</strong> Aktifkan &quot;Moderasi Massal&quot; untuk hemat kuota.</li><li><strong>Auto-Moderasi:</strong> Mulai dengan Ambang Batas tinggi (90%+) untuk Hapus Otomatis.</li></ul>,
           },
         ].map(item => (
           <AccordionItem key={item.label} icon={item.icon} label={item.label}>

@@ -104,7 +104,6 @@ export default function AdminUsersPage() {
         updates: {
           tier: editForm.tier,
           subscription_quota: parseInt(editForm.subscription_quota || '0', 10),
-          topup_credits: parseInt(editForm.topup_credits || '0', 10),
           trial_quota: parseInt(editForm.trial_quota || '0', 10),
           quota_limit: parseInt(editForm.quota_limit || '1000', 10),
           quota_expiry: editForm.quota_expiry ? new Date(editForm.quota_expiry).toISOString() : null,
@@ -235,7 +234,7 @@ export default function AdminUsersPage() {
                 <th className="p-4">Email Pengguna</th>
                 <th className="p-4">Role</th>
                 <th className="p-4">Tier</th>
-                <th className="p-4">Saldo Kuota (Sub / Topup / Trial)</th>
+                <th className="p-4">Saldo Kuota (Langganan / Trial)</th>
                 <th className="p-4">Masa Aktif</th>
                 <th className="p-4">Status</th>
                 <th className="p-4 text-center">Aksi</th>
@@ -264,7 +263,7 @@ export default function AdminUsersPage() {
                     </span>
                   </td>
                   <td className="p-4 text-secondary font-medium">
-                    {user.subscription_quota.toLocaleString()} / {user.topup_credits.toLocaleString()} / {user.trial_quota.toLocaleString()} u
+                    {user.subscription_quota.toLocaleString()} / {user.trial_quota.toLocaleString()} u
                   </td>
                   <td className="p-4 text-muted">
                     {user.quota_expiry ? new Date(user.quota_expiry).toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' }) : 'Tidak Ada'}
@@ -378,25 +377,14 @@ export default function AdminUsersPage() {
               </div>
 
               {/* Quota inputs */}
-              <div className="grid grid-cols-2 gap-3">
-                <div className="space-y-1">
-                  <label className="font-semibold text-secondary">Kuota Langganan</label>
-                  <input
-                    type="number"
-                    value={editForm.subscription_quota}
-                    onChange={(e) => setEditForm({ ...editForm, subscription_quota: e.target.value })}
-                    className="w-full px-3 py-2 border rounded-xl bg-page focus:outline-none text-secondary"
-                  />
-                </div>
-                <div className="space-y-1">
-                  <label className="font-semibold text-secondary">Kredit Top-up</label>
-                  <input
-                    type="number"
-                    value={editForm.topup_credits}
-                    onChange={(e) => setEditForm({ ...editForm, topup_credits: e.target.value })}
-                    className="w-full px-3 py-2 border rounded-xl bg-page focus:outline-none text-secondary"
-                  />
-                </div>
+              <div className="space-y-1">
+                <label className="font-semibold text-secondary">Kuota Langganan</label>
+                <input
+                  type="number"
+                  value={editForm.subscription_quota}
+                  onChange={(e) => setEditForm({ ...editForm, subscription_quota: e.target.value })}
+                  className="w-full px-3 py-2 border rounded-xl bg-page focus:outline-none text-secondary"
+                />
               </div>
 
               <div className="grid grid-cols-2 gap-3">

@@ -136,10 +136,6 @@ export async function POST(req) {
       const targetTier = transaction.target_tier;
       const durationDays = transaction.duration_days;
 
-      // V2: Gunakan transaction_type eksplisit dari DB
-      const txType = transaction.transaction_type || 
-        (durationDays > 0 && targetTier !== 'FREE' ? 'subscription' : 'topup');
-
       // Validasi paket masih terdaftar di database (keamanan tambahan)
       const { data: pkg, error: pkgErr } = await supabaseAdmin
         .from('pricing_packages')
@@ -164,68 +160,42 @@ export async function POST(req) {
         return NextResponse.json({ error: 'User profile not found' }, { status: 404 });
       }
 
-      if (txType === 'subscription') {
-        // ══════════════════════════════════════════════════════════
-        // PAKET LANGGANAN (PRO / ENTERPRISE)
-        // - Tambah subscription_quota
-        // - Set/perpanjang masa aktif (quota_expiry) secara akumulatif
-        // - Upgrade tier
-        // ══════════════════════════════════════════════════════════
-        const currentExpiry = profile.quota_expiry ? new Date(profile.quota_expiry) : null;
-        const baseDate = (currentExpiry && currentExpiry > new Date()) ? currentExpiry : new Date();
-        const newExpiry = new Date(baseDate.getTime() + durationDays * 24 * 60 * 60 * 1000);
+      // ══════════════════════════════════════════════════════════
+      // PROSES PAKET LANGGANAN (PRO / ENTERPRISE)
+      // - Tambah subscription_quota
+      // - Set/perpanjang masa aktif (quota_expiry) secara akumulatif
+      // - Upgrade tier
+      // ══════════════════════════════════════════════════════════
+      const currentExpiry = profile.quota_expiry ? new Date(profile.quota_expiry) : null;
+      const baseDate = (currentExpiry && currentExpiry > new Date()) ? currentExpiry : new Date();
+      const newExpiry = new Date(baseDate.getTime() + durationDays * 24 * 60 * 60 * 1000);
 
-        const newLimit = targetTier === 'ENTERPRISE' ? 999999 : 50000;
+      const newLimit = targetTier === 'ENTERPRISE' ? 999999 : 50000;
 
-        const { error: updateProfileError } = await supabaseAdmin
-          .from('user_profiles')
-          .update({
-            tier: targetTier,
-            subscription_quota: profile.subscription_quota + quotaToAdd,
-            quota_limit: newLimit,
-            quota_expiry: newExpiry.toISOString(),
-            updated_at: now,
-          })
-          .eq('email', email);
+      const { error: updateProfileError } = await supabaseAdmin
+        .from('user_profiles')
+        .update({
+          tier: targetTier,
+          subscription_quota: profile.subscription_quota + quotaToAdd,
+          quota_limit: newLimit,
+          quota_expiry: newExpiry.toISOString(),
+          updated_at: now,
+        })
+        .eq('email', email);
 
-        if (updateProfileError) {
-          console.error('[Notification Webhook] Gagal memproses paket langganan:', updateProfileError);
-          return NextResponse.json({ error: 'Failed to process subscription' }, { status: 500 });
-        }
-
-        console.log(`[Notification Webhook] LANGGANAN SUKSES: ${email} → ${targetTier}, +${quotaToAdd} sub_quota, expiry: ${newExpiry.toISOString()}`);
-
-      } else if (txType === 'topup') {
-        // ══════════════════════════════════════════════════════════
-        // PAKET TOP-UP (Kredit Sekali Bayar)
-        // - Tambah topup_credits (permanen, TIDAK kedaluwarsa)
-        // - Tier dan masa aktif TIDAK berubah
-        // ══════════════════════════════════════════════════════════
-        const { error: updateProfileError } = await supabaseAdmin
-          .from('user_profiles')
-          .update({
-            topup_credits: profile.topup_credits + quotaToAdd,
-            updated_at: now,
-          })
-          .eq('email', email);
-
-        if (updateProfileError) {
-          console.error('[Notification Webhook] Gagal memproses top-up:', updateProfileError);
-          return NextResponse.json({ error: 'Failed to process top-up' }, { status: 500 });
-        }
-
-        console.log(`[Notification Webhook] TOP-UP SUKSES: ${email} → +${quotaToAdd} topup_credits`);
-
-      } else {
-        console.warn(`[Notification Webhook] Jenis transaksi tidak dikenali: txType=${txType}, packageId=${packageId}`);
+      if (updateProfileError) {
+        console.error('[Notification Webhook] Gagal memproses paket langganan:', updateProfileError);
+        return NextResponse.json({ error: 'Failed to process subscription' }, { status: 500 });
       }
+
+      console.log(`[Notification Webhook] LANGGANAN SUKSES: ${email} → ${targetTier}, +${quotaToAdd} sub_quota, expiry: ${newExpiry.toISOString()}`);
 
       // Masukkan log penambahan kuota ke tabel logs
       await supabaseAdmin.from('quota_usage_logs').insert({
         user_email: email,
-        action_name: txType === 'subscription' ? 'SUBSCRIPTION' : 'TOP_UP',
+        action_name: 'SUBSCRIPTION',
         units_spent: -quotaToAdd, // Negatif sebagai representasi penambahan kuota
-        description: `${txType === 'subscription' ? 'Langganan' : 'Top-up'} kuota sukses via Midtrans (${order_id}) — Paket: ${pkg.name}`,
+        description: `Langganan kuota sukses via Midtrans (${order_id}) — Paket: ${pkg.name}`,
       });
     }
 

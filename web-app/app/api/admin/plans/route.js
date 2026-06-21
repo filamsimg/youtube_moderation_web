@@ -64,10 +64,11 @@ export async function POST(request) {
       allow_bulk_moderation,
       allow_export_csv,
       allow_auto_moderation,
+      billing_cycle,
     } = body;
 
-    // Validasi input wajib
-    if (!id || !name || !type || price === undefined || quota_units === undefined || duration_days === undefined) {
+    // Validasi input wajib (tidak lagi mewajibkan type dari request body, melainkan dipaksa 'subscription')
+    if (!id || !name || price === undefined || quota_units === undefined || duration_days === undefined) {
       return NextResponse.json({ error: 'Missing required fields' }, { status: 400 });
     }
 
@@ -77,7 +78,7 @@ export async function POST(request) {
       .insert({
         id,
         name,
-        type,
+        type: 'subscription',
         tier: tier || 'FREE',
         price,
         original_price: original_price || null,
@@ -92,6 +93,7 @@ export async function POST(request) {
         allow_bulk_moderation: allow_bulk_moderation !== undefined ? allow_bulk_moderation : false,
         allow_export_csv: allow_export_csv !== undefined ? allow_export_csv : false,
         allow_auto_moderation: allow_auto_moderation !== undefined ? allow_auto_moderation : false,
+        billing_cycle: billing_cycle || '1M',
       })
       .select()
       .single();
