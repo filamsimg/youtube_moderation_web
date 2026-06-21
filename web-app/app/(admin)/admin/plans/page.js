@@ -7,14 +7,10 @@ import {
   Plus, 
   Edit2, 
   Trash2, 
-  Check, 
-  X, 
   CreditCard, 
-  PlusCircle, 
-  MinusCircle, 
-  ShieldCheck, 
   AlertCircle 
 } from 'lucide-react';
+import PlanFormModal from './PlanFormModal';
 
 export default function AdminPlansPage() {
   const { data: session } = useSession();
@@ -22,7 +18,7 @@ export default function AdminPlansPage() {
   
   const [packages, setPackages] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [activeTab, setActiveTab] = useState('subscription'); // 'subscription' | 'topup'
+  const activeTab = 'subscription';
   
   // Modal states
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -32,16 +28,17 @@ export default function AdminPlansPage() {
   // Selected package for edit/delete
   const [selectedId, setSelectedId] = useState(null);
   
-  // Form states
+  // Form values (passed to modal as initial values)
   const [formValues, setFormValues] = useState({
     id: '',
     name: '',
     type: 'subscription',
     tier: 'FREE',
+    billing_cycle: '1M',
     price: 0,
     original_price: '',
     quota_units: 0,
-    duration_days: 0,
+    duration_days: 30,
     description: '',
     features: [''],
     disabled_features: [''],
@@ -52,6 +49,27 @@ export default function AdminPlansPage() {
     allow_export_csv: false,
     allow_auto_moderation: false
   });
+
+  const defaultFormValues = {
+    id: '',
+    name: '',
+    type: 'subscription',
+    tier: 'FREE',
+    billing_cycle: '1M',
+    price: 0,
+    original_price: '',
+    quota_units: 0,
+    duration_days: 30,
+    description: '',
+    features: [''],
+    disabled_features: [''],
+    badge: '',
+    color: 'blue',
+    is_active: true,
+    allow_bulk_moderation: false,
+    allow_export_csv: false,
+    allow_auto_moderation: false
+  };
 
   const currentAdminRole = session?.user?.role || 'user';
   const isSuperAdmin = currentAdminRole === 'superadmin';
@@ -81,25 +99,7 @@ export default function AdminPlansPage() {
   // Handle opening creation modal
   const handleOpenCreate = () => {
     setModalMode('create');
-    setFormValues({
-      id: '',
-      name: '',
-      type: activeTab,
-      tier: 'FREE',
-      price: 0,
-      original_price: '',
-      quota_units: 0,
-      duration_days: activeTab === 'subscription' ? 30 : 0,
-      description: '',
-      features: [''],
-      disabled_features: activeTab === 'subscription' ? [''] : [],
-      badge: '',
-      color: activeTab === 'topup' ? 'blue' : '',
-      is_active: true,
-      allow_bulk_moderation: false,
-      allow_export_csv: false,
-      allow_auto_moderation: false
-    });
+    setFormValues(defaultFormValues);
     setIsModalOpen(true);
   };
 
@@ -116,6 +116,7 @@ export default function AdminPlansPage() {
       original_price: pkg.original_price !== null ? pkg.original_price : '',
       quota_units: pkg.quota_units,
       duration_days: pkg.duration_days,
+      billing_cycle: pkg.billing_cycle || '1M',
       description: pkg.description || '',
       features: pkg.features && pkg.features.length > 0 ? [...pkg.features] : [''],
       disabled_features: pkg.disabled_features && pkg.disabled_features.length > 0 ? [...pkg.disabled_features] : [],
@@ -263,25 +264,6 @@ export default function AdminPlansPage() {
         )}
       </div>
 
-      {/* Tabs Selector */}
-      <div className="flex border-b border-[var(--border-default)]">
-        {[
-          { key: 'subscription', label: 'Paket Langganan (Subscriptions)' },
-          { key: 'topup', label: 'Paket Top-up Kredit' }
-        ].map(tab => (
-          <button
-            key={tab.key}
-            onClick={() => setActiveTab(tab.key)}
-            className={`px-5 py-3 text-xs font-semibold border-b-2 transition-colors cursor-pointer ${
-              activeTab === tab.key
-                ? 'border-rose-500 text-rose-600 dark:text-rose-400 font-bold'
-                : 'border-transparent text-secondary hover:text-primary hover:bg-card-hover/20'
-            }`}
-          >
-            {tab.label}
-          </button>
-        ))}
-      </div>
 
       {/* Main Table Content */}
       <div className="bg-card border border-[var(--border-default)] rounded-2xl shadow-sm overflow-hidden">
@@ -293,7 +275,7 @@ export default function AdminPlansPage() {
         ) : filteredPackages.length === 0 ? (
           <div className="text-center py-16 text-muted text-xs space-y-2">
             <AlertCircle className="w-8 h-8 text-slate-400 mx-auto" />
-            <p>Belum ada data paket {activeTab === 'subscription' ? 'langganan' : 'top-up'} di database.</p>
+            <p>Belum ada data paket langganan di database.</p>
           </div>
         ) : (
           <div className="overflow-x-auto">
@@ -305,9 +287,7 @@ export default function AdminPlansPage() {
                   <th className="p-4 font-bold text-secondary uppercase tracking-wider text-[10px]">Tier</th>
                   <th className="p-4 font-bold text-secondary uppercase tracking-wider text-[10px]">Harga</th>
                   <th className="p-4 font-bold text-secondary uppercase tracking-wider text-[10px]">Jatah Kuota</th>
-                  {activeTab === 'subscription' && (
-                    <th className="p-4 font-bold text-secondary uppercase tracking-wider text-[10px]">Durasi</th>
-                  )}
+                  <th className="p-4 font-bold text-secondary uppercase tracking-wider text-[10px]">Durasi</th>
                   <th className="p-4 font-bold text-secondary uppercase tracking-wider text-[10px]">Badge</th>
                   <th className="p-4 font-bold text-secondary uppercase tracking-wider text-[10px] text-center">Status</th>
                   <th className="p-4 font-bold text-secondary uppercase tracking-wider text-[10px] text-right">Aksi</th>
@@ -331,18 +311,16 @@ export default function AdminPlansPage() {
                       {pkg.price === 0 ? 'Gratis' : formatIDR(pkg.price)}
                       {pkg.original_price && (
                         <div className="text-[10px] text-dimmed line-through font-normal">
-                          {formatIDR(pkg.original_price)}
+                           {formatIDR(pkg.original_price)}
                         </div>
                       )}
                     </td>
                     <td className="p-4 text-secondary font-medium">
                       {pkg.quota_units.toLocaleString('id-ID')} unit
                     </td>
-                    {activeTab === 'subscription' && (
-                      <td className="p-4 text-secondary font-medium">
-                        {pkg.duration_days} Hari
-                      </td>
-                    )}
+                    <td className="p-4 text-secondary font-medium">
+                      {pkg.duration_days} Hari
+                    </td>
                     <td className="p-4 text-secondary font-medium">
                       {pkg.badge ? (
                         <span className="px-2 py-0.5 rounded-md bg-slate-100 dark:bg-slate-800 font-semibold border border-slate-200 dark:border-slate-700 text-[10px]">
@@ -388,348 +366,15 @@ export default function AdminPlansPage() {
       </div>
 
       {/* === MODAL TAMBAH/EDIT PAKET === */}
-      {isModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-          {/* Overlay */}
-          <div className="fixed inset-0 bg-black/60 backdrop-blur-sm" onClick={() => setIsModalOpen(false)} />
-          
-          {/* Modal Container */}
-          <div className="bg-card border border-[var(--border-default)] rounded-3xl w-full max-w-2xl max-h-[85vh] overflow-y-auto relative z-10 shadow-2xl flex flex-col p-6 space-y-6 animate-fade-in-up">
-            
-            {/* Modal Header */}
-            <div className="flex items-center justify-between border-b pb-4 border-[var(--border-default)]/60">
-              <h2 className="text-base font-bold text-primary flex items-center gap-2">
-                <ShieldCheck className="w-5 h-5 text-rose-500" />
-                {modalMode === 'create' ? 'Tambah Paket Pricing Baru' : 'Edit Detail Paket'}
-              </h2>
-              <button
-                onClick={() => setIsModalOpen(false)}
-                className="p-1 rounded-lg text-secondary hover:text-primary hover:bg-card-hover transition-all cursor-pointer"
-              >
-                <X className="w-4 h-4" />
-              </button>
-            </div>
-
-            {/* Modal Form */}
-            <form onSubmit={handleSubmit} className="space-y-4 text-xs">
-              
-              {/* ID & Name */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <div>
-                  <label className="block font-semibold text-secondary mb-1.5">ID Paket / Unique Key *</label>
-                  <input
-                    type="text"
-                    required
-                    disabled={modalMode === 'edit'}
-                    placeholder="Contoh: PRO_3M, topup-extreme"
-                    className="w-full px-3.5 py-2.5 rounded-xl border bg-card-hover/30 border-[var(--border-default)] text-primary font-mono focus:outline-none focus:ring-1 focus:ring-rose-500 disabled:opacity-60 disabled:cursor-not-allowed"
-                    value={formValues.id}
-                    onChange={(e) => setFormValues({ ...formValues, id: e.target.value })}
-                  />
-                </div>
-                <div>
-                  <label className="block font-semibold text-secondary mb-1.5">Nama Paket *</label>
-                  <input
-                    type="text"
-                    required
-                    placeholder="Contoh: Pro, Enterprise, Starter"
-                    className="w-full px-3.5 py-2.5 rounded-xl border bg-card-hover/30 border-[var(--border-default)] text-primary focus:outline-none focus:ring-1 focus:ring-rose-500"
-                    value={formValues.name}
-                    onChange={(e) => setFormValues({ ...formValues, name: e.target.value })}
-                  />
-                </div>
-              </div>
-
-              {/* Type, Tier & billing_cycle */}
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                <div>
-                  <label className="block font-semibold text-secondary mb-1.5">Tipe Paket *</label>
-                  <select
-                    className="w-full px-3.5 py-2.5 rounded-xl border bg-card/50 border-[var(--border-default)] text-primary focus:outline-none focus:ring-1 focus:ring-rose-500"
-                    value={formValues.type}
-                    onChange={(e) => setFormValues({ ...formValues, type: e.target.value })}
-                  >
-                    <option value="subscription">Subscription (Langganan)</option>
-                    <option value="topup">Top-Up Kredit</option>
-                  </select>
-                </div>
-                <div>
-                  <label className="block font-semibold text-secondary mb-1.5">Tier Target *</label>
-                  <select
-                    className="w-full px-3.5 py-2.5 rounded-xl border bg-card/50 border-[var(--border-default)] text-primary focus:outline-none focus:ring-1 focus:ring-rose-500"
-                    value={formValues.tier}
-                    onChange={(e) => setFormValues({ ...formValues, tier: e.target.value })}
-                  >
-                    <option value="FREE">FREE</option>
-                    <option value="PRO">PRO</option>
-                    <option value="ENTERPRISE">ENTERPRISE</option>
-                  </select>
-                </div>
-                {formValues.type === 'subscription' ? (
-                  <div>
-                    <label className="block font-semibold text-secondary mb-1.5">Siklus Tagihan *</label>
-                    <select
-                      className="w-full px-3.5 py-2.5 rounded-xl border bg-card/50 border-[var(--border-default)] text-primary focus:outline-none focus:ring-1 focus:ring-rose-500"
-                      value={formValues.billing_cycle || '1M'}
-                      onChange={(e) => setFormValues({ ...formValues, billing_cycle: e.target.value })}
-                    >
-                      <option value="1M">1 Bulan (1M)</option>
-                      <option value="3M">3 Bulan (3M)</option>
-                      <option value="6M">6 Bulan (6M)</option>
-                      <option value="12M">1 Tahun (12M)</option>
-                    </select>
-                  </div>
-                ) : (
-                  <div>
-                    <label className="block font-semibold text-secondary mb-1.5">Warna Top-up *</label>
-                    <select
-                      className="w-full px-3.5 py-2.5 rounded-xl border bg-card/50 border-[var(--border-default)] text-primary focus:outline-none focus:ring-1 focus:ring-rose-500"
-                      value={formValues.color || 'blue'}
-                      onChange={(e) => setFormValues({ ...formValues, color: e.target.value })}
-                    >
-                      <option value="emerald">Emerald (Green)</option>
-                      <option value="blue">Blue (Indigo)</option>
-                      <option value="violet">Violet (Purple)</option>
-                    </select>
-                  </div>
-                )}
-              </div>
-
-              {/* Price, Original Price, Quota & Duration */}
-              <div className="grid grid-cols-1 sm:grid-cols-4 gap-4">
-                <div>
-                  <label className="block font-semibold text-secondary mb-1.5">Harga Rupiah *</label>
-                  <input
-                    type="number"
-                    required
-                    min={0}
-                    className="w-full px-3.5 py-2.5 rounded-xl border bg-card-hover/30 border-[var(--border-default)] text-primary focus:outline-none focus:ring-1 focus:ring-rose-500"
-                    value={formValues.price}
-                    onChange={(e) => setFormValues({ ...formValues, price: e.target.value })}
-                  />
-                </div>
-                <div>
-                  <label className="block font-semibold text-secondary mb-1.5">Harga Sebelum Diskon</label>
-                  <input
-                    type="number"
-                    min={0}
-                    placeholder="Kosongkan jika tak diskon"
-                    className="w-full px-3.5 py-2.5 rounded-xl border bg-card-hover/30 border-[var(--border-default)] text-primary focus:outline-none focus:ring-1 focus:ring-rose-500"
-                    value={formValues.original_price}
-                    onChange={(e) => setFormValues({ ...formValues, original_price: e.target.value })}
-                  />
-                </div>
-                <div>
-                  <label className="block font-semibold text-secondary mb-1.5">Volume Kuota (Unit) *</label>
-                  <input
-                    type="number"
-                    required
-                    min={0}
-                    className="w-full px-3.5 py-2.5 rounded-xl border bg-card-hover/30 border-[var(--border-default)] text-primary focus:outline-none focus:ring-1 focus:ring-rose-500"
-                    value={formValues.quota_units}
-                    onChange={(e) => setFormValues({ ...formValues, quota_units: e.target.value })}
-                  />
-                </div>
-                <div>
-                  <label className="block font-semibold text-secondary mb-1.5">Durasi Hari *</label>
-                  <input
-                    type="number"
-                    required
-                    min={0}
-                    disabled={formValues.type === 'topup'}
-                    className="w-full px-3.5 py-2.5 rounded-xl border bg-card-hover/30 border-[var(--border-default)] text-primary focus:outline-none focus:ring-1 focus:ring-rose-500 disabled:opacity-50"
-                    value={formValues.type === 'topup' ? 0 : formValues.duration_days}
-                    onChange={(e) => setFormValues({ ...formValues, duration_days: e.target.value })}
-                  />
-                </div>
-              </div>
-
-              {/* Badge & Description */}
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                <div className="sm:col-span-1">
-                  <label className="block font-semibold text-secondary mb-1.5">Badge Promo</label>
-                  <input
-                    type="text"
-                    placeholder="Misal: Terpopuler, Hemat 20%"
-                    className="w-full px-3.5 py-2.5 rounded-xl border bg-card-hover/30 border-[var(--border-default)] text-primary focus:outline-none focus:ring-1 focus:ring-rose-500"
-                    value={formValues.badge}
-                    onChange={(e) => setFormValues({ ...formValues, badge: e.target.value })}
-                  />
-                </div>
-                <div className="sm:col-span-2">
-                  <label className="block font-semibold text-secondary mb-1.5">Deskripsi Paket</label>
-                  <input
-                    type="text"
-                    placeholder="Keterangan singkat paket pricing"
-                    className="w-full px-3.5 py-2.5 rounded-xl border bg-card-hover/30 border-[var(--border-default)] text-primary focus:outline-none focus:ring-1 focus:ring-rose-500"
-                    value={formValues.description}
-                    onChange={(e) => setFormValues({ ...formValues, description: e.target.value })}
-                  />
-                </div>
-              </div>
-
-              {/* Active Toggle Switch */}
-              <div className="flex items-center gap-3 py-2">
-                <input
-                  type="checkbox"
-                  id="is_active"
-                  className="w-4 h-4 rounded text-rose-500 focus:ring-rose-500 cursor-pointer"
-                  checked={formValues.is_active}
-                  onChange={(e) => setFormValues({ ...formValues, is_active: e.target.checked })}
-                />
-                <label htmlFor="is_active" className="font-semibold text-primary cursor-pointer select-none">
-                  Paket Pricing Aktif (Ditampilkan ke pengguna di halaman pricing)
-                </label>
-              </div>
-
-              {/* Hak Akses Fitur Teknis (Aplikasi) */}
-              <div className="border-t pt-4 border-[var(--border-default)]/60 space-y-3">
-                <div>
-                  <p className="font-bold text-primary">Konfigurasi Akses Fitur Teknis (Aplikasi)</p>
-                  <p className="text-[10px] text-muted">Aktifkan atau matikan modul fitur aplikasi secara langsung (Best-Practice Gating).</p>
-                </div>
-                
-                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 py-1">
-                  <label className="flex items-center gap-2.5 p-3 rounded-2xl border border-[var(--border-default)] hover:bg-card-hover/20 cursor-pointer transition-all">
-                    <input
-                      type="checkbox"
-                      className="w-4 h-4 rounded text-rose-500 focus:ring-rose-500 cursor-pointer"
-                      checked={formValues.allow_bulk_moderation}
-                      onChange={(e) => setFormValues({ ...formValues, allow_bulk_moderation: e.target.checked })}
-                    />
-                    <div className="leading-tight">
-                      <p className="font-semibold text-primary">Bulk Moderasi</p>
-                      <p className="text-[9px] text-muted">Moderasi massal</p>
-                    </div>
-                  </label>
-
-                  <label className="flex items-center gap-2.5 p-3 rounded-2xl border border-[var(--border-default)] hover:bg-card-hover/20 cursor-pointer transition-all">
-                    <input
-                      type="checkbox"
-                      className="w-4 h-4 rounded text-rose-500 focus:ring-rose-500 cursor-pointer"
-                      checked={formValues.allow_export_csv}
-                      onChange={(e) => setFormValues({ ...formValues, allow_export_csv: e.target.checked })}
-                    />
-                    <div className="leading-tight">
-                      <p className="font-semibold text-primary">Ekspor CSV</p>
-                      <p className="text-[9px] text-muted">Unduh laporan</p>
-                    </div>
-                  </label>
-
-                  <label className="flex items-center gap-2.5 p-3 rounded-2xl border border-[var(--border-default)] hover:bg-card-hover/20 cursor-pointer transition-all">
-                    <input
-                      type="checkbox"
-                      className="w-4 h-4 rounded text-rose-500 focus:ring-rose-500 cursor-pointer"
-                      checked={formValues.allow_auto_moderation}
-                      onChange={(e) => setFormValues({ ...formValues, allow_auto_moderation: e.target.checked })}
-                    />
-                    <div className="leading-tight">
-                      <p className="font-semibold text-primary">Auto Moderasi</p>
-                      <p className="text-[9px] text-muted">Siklus otomatisasi</p>
-                    </div>
-                  </label>
-                </div>
-              </div>
-
-              {/* Feature checkmarks list */}
-              <div className="border-t pt-4 border-[var(--border-default)]/60 space-y-4">
-                <div>
-                  <p className="font-bold text-primary">Daftar Fitur (Checkmark Hijau)</p>
-                  <p className="text-[10px] text-muted">Daftar baris poin yang aktif/unlocked pada paket pricing ini.</p>
-                </div>
-                
-                <div className="space-y-2">
-                  {formValues.features.map((feature, idx) => (
-                    <div key={idx} className="flex items-center gap-2">
-                      <input
-                        type="text"
-                        placeholder="Misal: Pemeriksaan otomatis tiap 2 menit"
-                        className="flex-1 px-3.5 py-2 rounded-xl border bg-card-hover/30 border-[var(--border-default)] text-primary focus:outline-none"
-                        value={feature}
-                        onChange={(e) => handleArrayChange(idx, e.target.value, 'features')}
-                      />
-                      <button
-                        type="button"
-                        onClick={() => removeArrayField(idx, 'features')}
-                        className="text-rose-500 hover:text-rose-700 cursor-pointer transition-colors p-1"
-                      >
-                        <MinusCircle className="w-5 h-5" />
-                      </button>
-                    </div>
-                  ))}
-                  
-                  <button
-                    type="button"
-                    onClick={() => addArrayField('features')}
-                    className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-slate-200 dark:border-slate-800 text-rose-600 dark:text-rose-400 font-bold transition-all hover:bg-slate-500/5 cursor-pointer mt-1"
-                  >
-                    <PlusCircle className="w-4 h-4" />
-                    Tambah Baris Fitur
-                  </button>
-                </div>
-              </div>
-
-              {/* Disabled features list (Crossmark grey) - Only relevant for subscription */}
-              {formValues.type === 'subscription' && (
-                <div className="border-t pt-4 border-[var(--border-default)]/60 space-y-4">
-                  <div>
-                    <p className="font-bold text-primary">Fitur Tidak Tersedia (Silang Abu-abu)</p>
-                    <p className="text-[10px] text-muted">Fitur yang dicoret pada paket ini (misal di paket Free).</p>
-                  </div>
-                  
-                  <div className="space-y-2">
-                    {formValues.disabled_features.map((feature, idx) => (
-                      <div key={idx} className="flex items-center gap-2">
-                        <input
-                          type="text"
-                          placeholder="Misal: Penyaringan Otomatis"
-                          className="flex-1 px-3.5 py-2 rounded-xl border bg-card-hover/30 border-[var(--border-default)] text-primary focus:outline-none"
-                          value={feature}
-                          onChange={(e) => handleArrayChange(idx, e.target.value, 'disabled_features')}
-                        />
-                        <button
-                          type="button"
-                          onClick={() => removeArrayField(idx, 'disabled_features')}
-                          className="text-rose-500 hover:text-rose-700 cursor-pointer transition-colors p-1"
-                        >
-                          <MinusCircle className="w-5 h-5" />
-                        </button>
-                      </div>
-                    ))}
-                    
-                    <button
-                      type="button"
-                      onClick={() => addArrayField('disabled_features')}
-                      className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-slate-200 dark:border-slate-800 text-rose-600 dark:text-rose-400 font-bold transition-all hover:bg-slate-500/5 cursor-pointer mt-1"
-                    >
-                      <PlusCircle className="w-4 h-4" />
-                      Tambah Baris Coretan
-                    </button>
-                  </div>
-                </div>
-              )}
-
-              {/* Modal Actions */}
-              <div className="border-t pt-4 border-[var(--border-default)]/60 flex items-center justify-end gap-3.5">
-                <button
-                  type="button"
-                  onClick={() => setIsModalOpen(false)}
-                  className="px-4 py-2.5 rounded-xl border border-[var(--border-default)] hover:bg-card-hover text-secondary font-bold cursor-pointer transition-all active:scale-95"
-                >
-                  Batal
-                </button>
-                <button
-                  type="submit"
-                  disabled={!isSuperAdmin}
-                  className="px-5 py-2.5 bg-rose-600 hover:bg-rose-700 disabled:bg-slate-300 disabled:cursor-not-allowed text-white rounded-xl font-bold shadow-md cursor-pointer transition-all active:scale-95"
-                >
-                  Simpan Perubahan
-                </button>
-              </div>
-            </form>
-          </div>
-        </div>
-      )}
+      <PlanFormModal
+        isOpen={isModalOpen}
+        onClose={() => setIsModalOpen(false)}
+        mode={modalMode}
+        selectedId={selectedId}
+        initialValues={formValues}
+        isSuperAdmin={isSuperAdmin}
+        onSuccess={fetchPackages}
+      />
 
       {/* === MODAL CONFIRM DELETE === */}
       {isDeleteModalOpen && (
