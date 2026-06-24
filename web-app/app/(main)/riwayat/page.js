@@ -7,6 +7,10 @@ import PaginationControls from '@/components/PaginationControls';
 import { useToast } from '@/contexts/ToastContext';
 import { useQuota } from '@/contexts/QuotaContext';
 import Link from 'next/link';
+import StatusBadge from '@/components/ui/StatusBadge';
+import EmptyState from '@/components/ui/EmptyState';
+import LoadingState from '@/components/ui/LoadingState';
+import { formatDateTime } from '@/lib/utils';
 
 export default function RiwayatPage() {
   const { data: session } = useSession();
@@ -96,25 +100,6 @@ export default function RiwayatPage() {
   const getActionLabel = (action) => {
     const map = { published: 'Aman', rejected: 'Ditolak', heldForReview: 'Ditahan' };
     return map[action] || action;
-  };
-
-  const getActionBadge = (action) => {
-    const label = getActionLabel(action);
-    const cls = {
-      published:     'badge badge-success',
-      rejected:      'badge badge-danger',
-      heldForReview: 'badge badge-warning',
-    }[action] || 'badge badge-muted';
-    return (
-      <span className={cls}>
-        <span className={`w-1.5 h-1.5 rounded-full ${
-          action === 'published' ? 'bg-emerald-500' :
-          action === 'rejected'  ? 'bg-rose-500' :
-          'bg-amber-500'
-        }`} />
-        {label}
-      </span>
-    );
   };
 
   const filtered = activities.filter(a => {
@@ -250,23 +235,19 @@ export default function RiwayatPage() {
 
       {/* ── List / Loading / Empty ────────────────────────────── */}
       {loading ? (
-        <div className="bento-card flex flex-col items-center justify-center py-20">
-          <div className="relative mb-3">
-            <div className="absolute inset-0 rounded-full bg-indigo-500/20 blur-lg animate-pulse" />
-            <img src="/logo.webp" className="relative w-10 h-10 animate-float" />
-          </div>
-          <p className="text-xs" style={{ color: 'var(--text-muted)' }}>Sinkronisasi data database...</p>
+        <div className="bento-card">
+          <LoadingState variant="logo" message="Sinkronisasi data database..." />
         </div>
       ) : filtered.length === 0 ? (
-        <div className="empty-state py-16">
-          <svg className="w-12 h-12 mb-3" style={{ color: 'var(--border-hover)' }} fill="none" viewBox="0 0 24 24" strokeWidth={1} stroke="currentColor">
-            <path strokeLinecap="round" strokeLinejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 11-18 0 9 9 0 0118 0z" />
-          </svg>
-          <p className="text-sm font-medium" style={{ color: 'var(--text-secondary)' }}>Belum ada tindakan penyaringan</p>
-          <p className="text-xs mt-1" style={{ color: 'var(--text-muted)' }}>
-            Riwayat tindakan Anda akan otomatis muncul di sini setelah Anda memeriksa komentar.
-          </p>
-        </div>
+        <EmptyState
+          icon={
+            <svg className="w-12 h-12" fill="none" viewBox="0 0 24 24" strokeWidth={1} stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+          }
+          title="Belum ada tindakan penyaringan"
+          description="Riwayat tindakan Anda akan otomatis muncul di sini setelah Anda memeriksa komentar."
+        />
       ) : (
         <>
           {/* Desktop Table */}
@@ -291,10 +272,12 @@ export default function RiwayatPage() {
                     >
                       {/* Waktu */}
                       <td className="px-5 py-3 text-[11px] whitespace-nowrap" style={{ color: 'var(--text-muted)' }}>
-                        {new Date(item.timestamp).toLocaleString('id-ID')}
+                        {formatDateTime(item.timestamp)}
                       </td>
                       {/* Tindakan */}
-                      <td className="px-5 py-3">{getActionBadge(item.action)}</td>
+                      <td className="px-5 py-3">
+                        <StatusBadge type="status" value={item.action} />
+                      </td>
                       {/* Komentar */}
                       <td className="px-5 py-3">
                         <p className="text-xs line-clamp-2 max-w-[250px]" style={{ color: 'var(--text-secondary)' }} title={item.commentText}>
@@ -304,18 +287,9 @@ export default function RiwayatPage() {
                       {/* Hasil AI */}
                       <td className="px-5 py-3">
                         <div className="flex flex-col gap-1">
-                          <span className={`badge ${item.aiLabel?.toLowerCase() === 'spam' ? 'badge-danger' : 'badge-success'}`}>
-                            {item.aiLabel === 'Spam' ? '🚨 Spam Judol' : '✅ Normal'}
-                          </span>
+                          <StatusBadge type="ai_label" value={item.aiLabel || 'normal'} />
                           {item.aiLabel !== 'Spam' && item.sentiment && (
-                            <span className={`badge ${
-                              item.sentiment === 'positive' ? 'badge-success' :
-                              item.sentiment === 'negative' ? 'badge-danger' :
-                              'badge-muted'
-                            }`}>
-                              {item.sentiment === 'positive' ? '😊 Positif' :
-                               item.sentiment === 'negative' ? '😠 Negatif' : '😐 Netral'}
-                            </span>
+                            <StatusBadge type="sentiment" value={item.sentiment} />
                           )}
                         </div>
                       </td>
@@ -339,26 +313,18 @@ export default function RiwayatPage() {
             {paginatedActivities.map((item, i) => (
               <div key={i} className="bento-card p-4 space-y-2">
                 <div className="flex items-center justify-between">
-                  {getActionBadge(item.action)}
+                  <StatusBadge type="status" value={item.action} />
                   <span className="text-[10px]" style={{ color: 'var(--text-muted)' }}>
-                    {new Date(item.timestamp).toLocaleString('id-ID')}
+                    {formatDateTime(item.timestamp)}
                   </span>
                 </div>
                 <p className="text-xs line-clamp-2" style={{ color: 'var(--text-secondary)' }}>
                   {item.commentText || '-'}
                 </p>
                 <div className="flex items-center gap-2 flex-wrap">
-                  <span className={`badge ${item.aiLabel?.toLowerCase() === 'spam' ? 'badge-danger' : 'badge-success'}`}>
-                    {item.aiLabel === 'Spam' ? '🚨 Spam Judol' : '✅ Normal'}
-                  </span>
+                  <StatusBadge type="ai_label" value={item.aiLabel || 'normal'} />
                   {item.aiLabel !== 'Spam' && item.sentiment && (
-                    <span className={`badge ${
-                      item.sentiment === 'positive' ? 'badge-success' :
-                      item.sentiment === 'negative' ? 'badge-danger' : 'badge-muted'
-                    }`}>
-                      {item.sentiment === 'positive' ? '😊 Positif' :
-                       item.sentiment === 'negative' ? '😠 Negatif' : '😐 Netral'}
-                    </span>
+                    <StatusBadge type="sentiment" value={item.sentiment} />
                   )}
                 </div>
                 <div className="flex items-center justify-between pt-2 border-t" style={{ borderColor: 'var(--border-default)' }}>

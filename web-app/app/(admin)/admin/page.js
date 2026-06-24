@@ -4,6 +4,9 @@ import { useState, useEffect } from 'react';
 import { useToast } from '@/contexts/ToastContext';
 import { Users, CreditCard, MessageSquare, Database, TrendingUp, ShieldCheck } from 'lucide-react';
 import Link from 'next/link';
+import StatCard from '@/components/ui/StatCard';
+import LoadingState from '@/components/ui/LoadingState';
+import { formatIDR } from '@/lib/utils';
 
 export default function AdminOverviewPage() {
   const [data, setData] = useState(null);
@@ -31,22 +34,12 @@ export default function AdminOverviewPage() {
   }, [toast]);
 
   if (loading) {
-    return (
-      <div className="flex flex-col items-center justify-center min-h-[60vh] space-y-4">
-        <div className="w-12 h-12 border-4 border-rose-500/30 border-t-rose-600 rounded-full animate-spin" />
-        <p className="text-xs text-muted">Memuat statistik global...</p>
-      </div>
-    );
+    return <LoadingState message="Memuat statistik global..." className="min-h-[60vh]" />;
   }
 
   if (!data) return null;
 
   const { stats, newestUsers, registrationTrend } = data;
-
-  // Format currency
-  const formatIDR = (num) => {
-    return new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(num);
-  };
 
   // Find max registration for SVG graph scaling
   const maxTrendVal = Math.max(...registrationTrend.map(t => t.count), 1);
@@ -81,71 +74,50 @@ export default function AdminOverviewPage() {
       {/* Grid Stat Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         {/* Total Users */}
-        <div className="p-5 rounded-2xl border bg-card border-[var(--border-default)] shadow-sm hover:shadow-md transition-all relative overflow-hidden group">
-          <div className="absolute top-0 right-0 w-24 h-24 bg-indigo-500/5 rounded-bl-full translate-x-4 -translate-y-4 transition-transform group-hover:scale-110" />
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-xs text-muted font-medium">Total Pengguna</p>
-              <h3 className="text-2xl font-bold tracking-tight mt-1 text-primary">{stats.totalUsers}</h3>
+        <StatCard
+          label="Total Pengguna"
+          value={stats.totalUsers}
+          sub={
+            <div className="flex gap-2.5 mt-2 text-[10px] text-muted">
+              <span>Free: <strong className="text-secondary">{stats.tierCounts.FREE}</strong></span>
+              <span>Pro: <strong className="text-indigo-500">{stats.tierCounts.PRO}</strong></span>
+              <span>Ent: <strong className="text-emerald-500">{stats.tierCounts.ENTERPRISE}</strong></span>
             </div>
-            <div className="p-3 rounded-xl bg-indigo-500/10 text-indigo-600 dark:text-indigo-400">
-              <Users className="w-5 h-5" />
-            </div>
-          </div>
-          <div className="flex gap-2.5 mt-3 text-[10px] text-muted">
-            <span>Free: <strong className="text-secondary">{stats.tierCounts.FREE}</strong></span>
-            <span>Pro: <strong className="text-indigo-500">{stats.tierCounts.PRO}</strong></span>
-            <span>Ent: <strong className="text-emerald-500">{stats.tierCounts.ENTERPRISE}</strong></span>
-          </div>
-        </div>
+          }
+          color="indigo"
+          icon={<Users className="w-5 h-5" />}
+        />
 
         {/* Total Revenue */}
-        <div className="p-5 rounded-2xl border bg-card border-[var(--border-default)] shadow-sm hover:shadow-md transition-all relative overflow-hidden group">
-          <div className="absolute top-0 right-0 w-24 h-24 bg-emerald-500/5 rounded-bl-full translate-x-4 -translate-y-4 transition-transform group-hover:scale-110" />
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-xs text-muted font-medium">Total Pendapatan</p>
-              <h3 className="text-2xl font-bold tracking-tight mt-1 text-primary">{formatIDR(stats.totalRevenue)}</h3>
-            </div>
-            <div className="p-3 rounded-xl bg-emerald-500/10 text-emerald-600 dark:text-emerald-400">
-              <CreditCard className="w-5 h-5" />
-            </div>
-          </div>
-          <p className="text-[10px] text-emerald-500 font-medium mt-3">Transaksi Settlement Midtrans</p>
-        </div>
+        <StatCard
+          label="Total Pendapatan"
+          value={formatIDR(stats.totalRevenue)}
+          sub="Transaksi Settlement Midtrans"
+          color="emerald"
+          icon={<CreditCard className="w-5 h-5" />}
+        />
 
         {/* Total Comments Moderated */}
-        <div className="p-5 rounded-2xl border bg-card border-[var(--border-default)] shadow-sm hover:shadow-md transition-all relative overflow-hidden group">
-          <div className="absolute top-0 right-0 w-24 h-24 bg-rose-500/5 rounded-bl-full translate-x-4 -translate-y-4 transition-transform group-hover:scale-110" />
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-xs text-muted font-medium">Komentar Dimoderasi</p>
-              <h3 className="text-2xl font-bold tracking-tight mt-1 text-primary">{stats.totalComments.toLocaleString()}</h3>
-            </div>
-            <div className="p-3 rounded-xl bg-rose-50/20 text-rose-600 dark:text-rose-400">
-              <MessageSquare className="w-5 h-5" />
-            </div>
-          </div>
-          <p className="text-[10px] text-rose-500 font-medium mt-3">Total Volume Spam Judol Tersaring</p>
-        </div>
+        <StatCard
+          label="Komentar Dimoderasi"
+          value={stats.totalComments.toLocaleString()}
+          sub="Total Volume Spam Judol Tersaring"
+          color="rose"
+          icon={<MessageSquare className="w-5 h-5" />}
+        />
 
         {/* Global Quota Consumed */}
-        <div className="p-5 rounded-2xl border bg-card border-[var(--border-default)] shadow-sm hover:shadow-md transition-all relative overflow-hidden group">
-          <div className="absolute top-0 right-0 w-24 h-24 bg-amber-500/5 rounded-bl-full translate-x-4 -translate-y-4 transition-transform group-hover:scale-110" />
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-xs text-muted font-medium">Kuota Google API Hari Ini</p>
-              <h3 className="text-xl font-bold tracking-tight mt-1 text-primary">
-                {stats.todayQuotaUsed.toLocaleString()} <span className="text-[10px] text-muted font-normal">/ 10.000 unit</span>
-              </h3>
-            </div>
-            <div className="p-3 rounded-xl bg-amber-500/10 text-amber-600 dark:text-amber-400">
-              <Database className="w-5 h-5" />
-            </div>
-          </div>
-          
-          {/* Progress Bar Visual */}
-          {(() => {
+        <StatCard
+          label="Kuota Google API Hari Ini"
+          value={
+            <>
+              {stats.todayQuotaUsed.toLocaleString()}{' '}
+              <span className="text-[10px] text-muted font-normal">/ 10.000 unit</span>
+            </>
+          }
+          color="amber"
+          icon={<Database className="w-5 h-5" />}
+          sub={(() => {
             const percentage = Math.min(Math.round((stats.todayQuotaUsed / 10000) * 100), 100);
             const barColor = percentage > 90 ? 'bg-rose-500' : percentage > 70 ? 'bg-amber-500' : 'bg-emerald-500';
             const textColor = percentage > 90 ? 'text-rose-500' : percentage > 70 ? 'text-amber-500' : 'text-emerald-500';
@@ -161,7 +133,7 @@ export default function AdminOverviewPage() {
               </div>
             );
           })()}
-        </div>
+        />
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">

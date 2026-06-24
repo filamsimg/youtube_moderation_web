@@ -13,6 +13,8 @@ import { historyService } from '@/services/historyService';
 
 import { useYouTube } from '@/contexts/YouTubeContext';
 import { useTheme } from '@/components/ThemeProvider';
+import StatCard from '@/components/ui/StatCard';
+import LoadingState from '@/components/ui/LoadingState';
 
 // ── Dark Tooltip untuk Pie Chart ─────────────────────────────
 const CustomPieTooltip = ({ active, payload }) => {
@@ -43,46 +45,6 @@ const CustomBarTooltip = ({ active, payload, label }) => {
   }
   return null;
 };
-
-// ── Stat Card Component ───────────────────────────────────────
-function StatCard({ label, value, sub, icon, color, delay = 0 }) {
-  const glowColor = {
-    blue: 'rgba(59, 130, 246, 0.12)',
-    emerald: 'rgba(16, 185, 129, 0.12)',
-    amber: 'rgba(245, 158, 11, 0.12)',
-    rose: 'rgba(244, 63, 94, 0.12)',
-  }[color] || 'rgba(99, 102, 241, 0.12)';
-
-  const iconBg = {
-    blue: 'bg-blue-50 border-blue-200 text-blue-600 dark:bg-blue-500/10 dark:border-blue-500/20 dark:text-blue-400',
-    emerald: 'bg-emerald-50 border-emerald-200 text-emerald-600 dark:bg-emerald-500/10 dark:border-emerald-500/20 dark:text-emerald-400',
-    amber: 'bg-amber-50 border-amber-200 text-amber-600 dark:bg-amber-500/10 dark:border-amber-500/20 dark:text-amber-400',
-    rose: 'bg-rose-50 border-rose-200 text-rose-600 dark:bg-rose-500/10 dark:border-rose-500/20 dark:text-rose-400',
-  }[color] || 'bg-indigo-50 border-indigo-200 text-indigo-600 dark:bg-indigo-500/10 dark:border-indigo-500/20 dark:text-indigo-400';
-
-  return (
-    <div
-      className="bento-card bento-card-glow p-5 group relative overflow-hidden animate-fade-in-up"
-      style={{ animationDelay: `${delay}ms` }}
-    >
-      {/* Corner glow */}
-      <div
-        className="absolute -right-8 -top-8 w-28 h-28 rounded-full blur-2xl transition-all duration-500 group-hover:scale-125"
-        style={{ background: glowColor }}
-      />
-      <div className="relative z-10">
-        <div className="flex items-center justify-between mb-3">
-          <p className="text-xs font-medium text-secondary uppercase tracking-wider">{label}</p>
-          <div className={`p-1.5 rounded-lg border ${iconBg}`}>
-            {icon}
-          </div>
-        </div>
-        <p className="stat-value">{value}</p>
-        <p className="text-[11px] text-muted mt-1">{sub}</p>
-      </div>
-    </div>
-  );
-}
 
 export default function DashboardPage() {
   const { data: session } = useSession();
@@ -196,19 +158,7 @@ export default function DashboardPage() {
   const axisTick = { fontSize: 10, fill: '#475569' };
 
   if (loading) {
-    return (
-      <div className="flex justify-center items-center h-64">
-        <div className="flex flex-col items-center gap-3">
-          <div className="relative">
-            <div className="absolute inset-0 rounded-full bg-indigo-500/20 blur-lg animate-pulse" />
-            <img src="/logo.webp" className="relative w-10 h-10 animate-float" />
-          </div>
-          <div className="w-24 h-1 rounded-full overflow-hidden" style={{ background: 'var(--border-default)' }}>
-            <div className="h-full w-2/3 bg-indigo-500 rounded-full animate-pulse" />
-          </div>
-        </div>
-      </div>
-    );
+    return <LoadingState variant="logo" message="Sinkronisasi data dashboard..." className="h-64" />;
   }
 
   return (

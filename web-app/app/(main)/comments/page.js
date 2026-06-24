@@ -5,6 +5,9 @@ import { useRouter } from 'next/navigation';
 import { useModeration } from '@/contexts/ModerationContext';
 import { useYouTube } from '@/contexts/YouTubeContext';
 import { useQuota } from '@/contexts/QuotaContext';
+import StatusBadge from '@/components/ui/StatusBadge';
+import EmptyState from '@/components/ui/EmptyState';
+import UserAvatar from '@/components/ui/UserAvatar';
 
 export default function CommentsPage() {
   const router = useRouter();
@@ -90,20 +93,6 @@ export default function CommentsPage() {
     await handleAction(commentId, action);
   };
 
-  const getInitialAvatar = (name) => {
-    const initial = name ? name.charAt(0).toUpperCase() : '?';
-    const charCode = initial.charCodeAt(0);
-    const hue = (charCode * 35) % 360;
-    return (
-      <div
-        className="w-7 h-7 rounded-full flex items-center justify-center text-[11px] font-bold text-white flex-shrink-0"
-        style={{ backgroundColor: `hsl(${hue}, 60%, 40%)` }}
-      >
-        {initial}
-      </div>
-    );
-  };
-
   const getModeratedComments = () => {
     const merged = new Map();
     dbHistory.forEach(h => {
@@ -166,16 +155,6 @@ export default function CommentsPage() {
     }
     return true;
   });
-
-  const getStatusBadge = (status) => {
-    const map = {
-      published: { label: 'Diterbitkan', cls: 'badge badge-success' },
-      heldForReview: { label: 'Ditahan (Perlu Ditinjau)', cls: 'badge badge-warning' },
-      rejected: { label: 'Telah Dihapus', cls: 'badge badge-danger' },
-    };
-    const s = map[status] || map.published;
-    return <span className={s.cls}>{s.label}</span>;
-  };
 
   // Video unik dari komentar yang sudah dimuat (untuk dropdown filter)
   const loadedVideos = [...new Map(
@@ -399,21 +378,23 @@ export default function CommentsPage() {
     // 1. Belum ada video dipilih
     if (selectedVideoIds.size === 0) {
       return (
-        <div className="flex flex-col items-center justify-center h-full py-20 text-center">
-          <div className="w-16 h-16 rounded-2xl flex items-center justify-center mb-4" style={{ background: 'var(--bg-card-hover)' }}>
-            <svg className="w-8 h-8" style={{ color: 'var(--border-hover)' }} fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
+        <EmptyState
+          icon={
+            <svg className="w-8 h-8" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" d="M5.25 5.653c0-.856.917-1.398 1.667-.986l11.54 6.348a1.125 1.125 0 010 1.971l-11.54 6.347a1.125 1.125 0 01-1.667-.985V5.653z" />
             </svg>
-          </div>
-          <p className="text-sm font-medium" style={{ color: 'var(--text-secondary)' }}>Belum ada video dipilih</p>
-          <p className="text-xs mt-1" style={{ color: 'var(--text-muted)' }}>Centang satu atau beberapa video di panel kiri,<br />lalu klik &quot;Muat Komentar&quot;</p>
-          <button
-            onClick={() => setShowVideoPanel(true)}
-            className="mt-4 lg:hidden px-4 py-2 bg-amber-600 text-white text-xs font-medium rounded-lg hover:bg-amber-700 transition-all"
-          >
-            Pilih Video
-          </button>
-        </div>
+          }
+          title="Belum ada video dipilih"
+          description="Centang satu atau beberapa video di panel kiri, lalu klik &quot;Muat Komentar&quot;"
+          actionButton={
+            <button
+              onClick={() => setShowVideoPanel(true)}
+              className="lg:hidden px-4 py-2 bg-amber-600 text-white text-xs font-medium rounded-lg hover:bg-amber-700 transition-all"
+            >
+              Pilih Video
+            </button>
+          }
+        />
       );
     }
 
@@ -653,29 +634,25 @@ export default function CommentsPage() {
             // ── TAB 1: BELUM DIMODERASI ──────────────────────────────
             filteredComments.length === 0 ? (
               comments.length === 0 ? (
-                <div className="flex flex-col items-center justify-center py-20 px-4 text-center max-w-md mx-auto animate-fade-in">
-                  <div className="w-16 h-16 rounded-2xl flex items-center justify-center mb-5 bg-emerald-50 border border-emerald-200 text-emerald-600 dark:bg-emerald-500/10 dark:text-emerald-400 dark:border-transparent">
-                    <svg className="w-8 h-8" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
+                <EmptyState
+                  icon={
+                    <svg className="w-8 h-8 text-emerald-500" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
                       <path strokeLinecap="round" strokeLinejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12c0 1.268-.63 2.39-1.593 3.068a3.745 3.745 0 01-1.043 3.296 3.745 3.745 0 01-3.296 1.043A3.745 3.745 0 0112 21c-1.268 0-2.39-.63-3.068-1.593a3.746 3.746 0 01-3.296-1.043 3.745 3.745 0 01-1.043-3.296A3.745 3.745 0 013 12c0-1.268.63-2.39 1.593-3.068a3.745 3.745 0 011.043-3.296 3.746 3.746 0 013.296-1.043A3.746 3.746 0 0112 3c1.268 0 2.39.63 3.068 1.593a3.746 3.746 0 013.296 1.043 3.746 3.746 0 011.043 3.296A3.745 3.745 0 0121 12z" />
                     </svg>
-                  </div>
-                  <h3 className="text-sm font-semibold" style={{ color: 'var(--text-primary)' }}>Semua Komentar Bersih &amp; Aman!</h3>
-                  <p className="text-xs mt-2 leading-relaxed" style={{ color: 'var(--text-muted)' }}>
-                    Seluruh komentar baru dari video yang dipilih telah berhasil dimoderasi atau memang tidak ada komentar baru yang masuk.
-                  </p>
-                </div>
+                  }
+                  title="Semua Komentar Bersih & Aman!"
+                  description="Seluruh komentar baru dari video yang dipilih telah berhasil dimoderasi atau memang tidak ada komentar baru yang masuk."
+                />
               ) : (
-                <div className="flex flex-col items-center justify-center py-20 px-4 text-center max-w-md mx-auto animate-fade-in">
-                  <div className="w-16 h-16 rounded-2xl flex items-center justify-center mb-5 bg-[var(--bg-card-hover)] text-amber-500">
-                    <svg className="w-8 h-8" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
+                <EmptyState
+                  icon={
+                    <svg className="w-8 h-8 text-amber-500" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
                       <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v3.75m9-.75a9 9 0 11-18 0 9 9 0 0118 0zm-9 3.75h.008v.008H12v-.008z" />
                     </svg>
-                  </div>
-                  <h3 className="text-sm font-semibold" style={{ color: 'var(--text-primary)' }}>Tidak Ada Komentar Sesuai Filter</h3>
-                  <p className="text-xs mt-2 leading-relaxed" style={{ color: 'var(--text-muted)' }}>
-                    Komentar terdeteksi ada, namun tidak memenuhi kriteria filter aktif Anda ({filter !== 'semua' ? `kategori ${filter}` : ''} {videoFilter !== 'all' ? 'video tertentu' : ''}). Coba ubah opsi filter di atas.
-                  </p>
-                </div>
+                  }
+                  title="Tidak Ada Komentar Sesuai Filter"
+                  description={`Komentar terdeteksi ada, namun tidak memenuhi kriteria filter aktif Anda (${filter !== 'semua' ? `kategori ${filter}` : ''} ${videoFilter !== 'all' ? 'video tertentu' : ''}). Coba ubah opsi filter di atas.`}
+                />
               )
             ) : (
               <>
@@ -715,7 +692,7 @@ export default function CommentsPage() {
                             </td>
                             <td className="px-4 py-3">
                               <div className="flex items-center gap-2">
-                                <img className="w-7 h-7 rounded-full flex-shrink-0 animate-fade-in" src={comment.authorProfileImageUrl} alt="" />
+                                <UserAvatar name={comment.authorDisplayName} src={comment.authorProfileImageUrl} className="w-7 h-7 animate-fade-in" />
                                 <div>
                                   <p className="text-xs font-semibold whitespace-nowrap" style={{ color: 'var(--text-primary)' }}>{comment.authorDisplayName}</p>
                                   <p className="text-[10px]" style={{ color: 'var(--text-muted)' }}>{new Date(comment.publishedAt).toLocaleDateString('id-ID')}</p>
@@ -738,16 +715,9 @@ export default function CommentsPage() {
                                 </div>
                               ) : (
                                 <div>
-                                  <span className={`badge ${isSpam ? 'badge-danger' : 'badge-success'}`}>
-                                    {isSpam ? '🚨 Spam Judol' : '✅ Normal'}
-                                  </span>
+                                  <StatusBadge type="ai_label" value={prediction.label} />
                                   {!isSpam && prediction.sentiment && (
-                                    <span className={`ml-1 badge ${prediction.sentiment === 'positive' ? 'badge-success'
-                                      : prediction.sentiment === 'negative' ? 'badge-danger'
-                                        : 'badge-muted'
-                                      }`}>
-                                      {prediction.sentiment === 'positive' ? '😊 Positif' : prediction.sentiment === 'negative' ? '😠 Negatif' : '😐 Netral'}
-                                    </span>
+                                    <StatusBadge type="sentiment" value={prediction.sentiment} className="ml-1" />
                                   )}
                                   <p className="text-[10px] mt-1" style={{ color: 'var(--text-muted)' }}>
                                     {Math.round(prediction.confidence * 100)}%
@@ -756,7 +726,9 @@ export default function CommentsPage() {
                                 </div>
                               )}
                             </td>
-                            <td className="px-4 py-3">{getStatusBadge(commentStatus)}</td>
+                            <td className="px-4 py-3">
+                              <StatusBadge type="status" value={commentStatus} label={commentStatus === 'published' ? 'Diterbitkan' : commentStatus === 'heldForReview' ? 'Ditahan (Perlu Ditinjau)' : 'Telah Dihapus'} />
+                            </td>
                             <td className="px-4 py-3 text-right">
                               <div className="flex items-center justify-end gap-0.5 opacity-30 group-hover:opacity-100 transition-opacity">
                                 {commentStatus !== 'published' && (
@@ -809,13 +781,13 @@ export default function CommentsPage() {
                               onChange={() => toggleSelectComment(comment.id)}
                               className="w-3.5 h-3.5 rounded accent-indigo-500 cursor-pointer flex-shrink-0 mr-1"
                             />
-                            <img className="w-7 h-7 rounded-full flex-shrink-0" src={comment.authorProfileImageUrl} alt="" />
+                            <UserAvatar name={comment.authorDisplayName} src={comment.authorProfileImageUrl} className="w-7 h-7" />
                             <div>
                               <p className="text-xs font-medium" style={{ color: 'var(--text-primary)' }}>{comment.authorDisplayName}</p>
                               <p className="text-[10px]" style={{ color: 'var(--text-muted)' }}>{new Date(comment.publishedAt).toLocaleDateString('id-ID')}</p>
                             </div>
                           </div>
-                          {getStatusBadge(commentStatus)}
+                          <StatusBadge type="status" value={commentStatus} label={commentStatus === 'published' ? 'Diterbitkan' : commentStatus === 'heldForReview' ? 'Ditahan (Perlu Ditinjau)' : 'Telah Dihapus'} />
                         </div>
 
                         {loadedVideos.length > 1 && (
@@ -839,19 +811,12 @@ export default function CommentsPage() {
                             ) : (
                               <div className="flex flex-col gap-1">
                                 <div className="flex items-center gap-1.5">
-                                  <span className={`text-[11px] font-semibold px-2 py-0.5 rounded-full ${isSpam ? 'bg-red-100 text-red-700' : 'bg-green-100 text-green-700'}`}>
-                                    {isSpam ? '🚨 Spam Judol' : '✅ Normal'}
-                                  </span>
+                                  <StatusBadge type="ai_label" value={prediction.label} />
                                   <span className="text-[10px] text-muted">{Math.round(prediction.confidence * 100)}%</span>
                                 </div>
                                 {!isSpam && prediction.sentiment && (
                                   <div className="flex items-center gap-1.5 mt-0.5">
-                                    <span className={`badge ${prediction.sentiment === 'positive' ? 'badge-success'
-                                      : prediction.sentiment === 'negative' ? 'badge-danger'
-                                        : 'badge-muted'
-                                      }`}>
-                                      {prediction.sentiment === 'positive' ? '😊 Positif' : prediction.sentiment === 'negative' ? '😠 Negatif' : '😐 Netral'}
-                                    </span>
+                                    <StatusBadge type="sentiment" value={prediction.sentiment} />
                                     <span className="text-[10px]" style={{ color: 'var(--text-muted)' }}>{Math.round(prediction.sentiment_score * 100)}%</span>
                                   </div>
                                 )}
@@ -911,29 +876,25 @@ export default function CommentsPage() {
             // ── TAB 2: SUDAH DIMODERASI (RIWAYAT) ─────────────────────
             filteredModeratedComments.length === 0 ? (
               moderatedCommentsList.length === 0 ? (
-                <div className="flex flex-col items-center justify-center py-20 px-4 text-center max-w-md mx-auto animate-fade-in">
-                  <div className="w-16 h-16 rounded-2xl flex items-center justify-center mb-5 bg-[var(--bg-card-hover)] text-[var(--text-muted)]">
-                    <svg className="w-8 h-8" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
+                <EmptyState
+                  icon={
+                    <svg className="w-8 h-8 text-[var(--text-muted)]" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
                       <path strokeLinecap="round" strokeLinejoin="round" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01" />
                     </svg>
-                  </div>
-                  <h3 className="text-sm font-semibold" style={{ color: 'var(--text-primary)' }}>Belum Ada Riwayat Tindakan</h3>
-                  <p className="text-xs mt-2 leading-relaxed" style={{ color: 'var(--text-muted)' }}>
-                    Anda belum melakukan tindakan penyaringan apa pun pada video yang dipilih dalam sesi ini maupun riwayat sebelumnya.
-                  </p>
-                </div>
+                  }
+                  title="Belum Ada Riwayat Tindakan"
+                  description="Anda belum melakukan tindakan penyaringan apa pun pada video yang dipilih dalam sesi ini maupun riwayat sebelumnya."
+                />
               ) : (
-                <div className="flex flex-col items-center justify-center py-20 px-4 text-center max-w-md mx-auto animate-fade-in">
-                  <div className="w-16 h-16 rounded-2xl flex items-center justify-center mb-5 bg-[var(--bg-card-hover)] text-amber-500">
-                    <svg className="w-8 h-8" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
+                <EmptyState
+                  icon={
+                    <svg className="w-8 h-8 text-amber-500" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
                       <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v3.75m9-.75a9 9 0 11-18 0 9 9 0 0118 0zm-9 3.75h.008v.008H12v-.008z" />
                     </svg>
-                  </div>
-                  <h3 className="text-sm font-semibold" style={{ color: 'var(--text-primary)' }}>Tidak Ada Riwayat Sesuai Filter</h3>
-                  <p className="text-xs mt-2 leading-relaxed" style={{ color: 'var(--text-muted)' }}>
-                    Riwayat penyaringan ditemukan, namun tidak memenuhi kriteria filter aktif Anda. Coba ubah opsi filter di atas.
-                  </p>
-                </div>
+                  }
+                  title="Tidak Ada Riwayat Sesuai Filter"
+                  description="Riwayat penyaringan ditemukan, namun tidak memenuhi kriteria filter aktif Anda. Coba ubah opsi filter di atas."
+                />
               )
             ) : (
               <>
@@ -954,11 +915,7 @@ export default function CommentsPage() {
                           <tr key={comment.id} className="transition-colors group hover:bg-[var(--bg-card-hover)] border-b" style={{ borderColor: 'var(--border-default)' }}>
                             <td className="px-4 py-3">
                               <div className="flex items-center gap-2">
-                                {comment.authorProfileImageUrl ? (
-                                  <img className="w-7 h-7 rounded-full flex-shrink-0 animate-fade-in" src={comment.authorProfileImageUrl} alt="" />
-                                ) : (
-                                  getInitialAvatar(comment.authorDisplayName)
-                                )}
+                                <UserAvatar name={comment.authorDisplayName} src={comment.authorProfileImageUrl} className="w-7 h-7 animate-fade-in" />
                                 <div>
                                   <p className="text-xs font-semibold whitespace-nowrap" style={{ color: 'var(--text-primary)' }}>{comment.authorDisplayName}</p>
                                   <p className="text-[10px]" style={{ color: 'var(--text-muted)' }}>{new Date(comment.createdAt || comment.publishedAt).toLocaleDateString('id-ID')}</p>
@@ -976,16 +933,9 @@ export default function CommentsPage() {
                             <td className="px-4 py-3">
                               {comment.aiLabel ? (
                                 <div>
-                                  <span className={`badge ${comment.aiLabel.toLowerCase() === 'spam' ? 'badge-danger' : 'badge-success'}`}>
-                                    {comment.aiLabel.toLowerCase() === 'spam' ? '🚨 Spam Judol' : '✅ Normal'}
-                                  </span>
+                                  <StatusBadge type="ai_label" value={comment.aiLabel} />
                                   {comment.sentiment && (
-                                    <span className={`ml-1 badge ${comment.sentiment === 'positive' ? 'badge-success'
-                                      : comment.sentiment === 'negative' ? 'badge-danger'
-                                        : 'badge-muted'
-                                      }`}>
-                                      {comment.sentiment === 'positive' ? '😊 Positif' : comment.sentiment === 'negative' ? '😠 Negatif' : '😐 Netral'}
-                                    </span>
+                                    <StatusBadge type="sentiment" value={comment.sentiment} className="ml-1" />
                                   )}
                                   <p className="text-[10px] mt-1" style={{ color: 'var(--text-muted)' }}>
                                     {Math.round(comment.aiConfidence * 100)}%
@@ -998,7 +948,7 @@ export default function CommentsPage() {
                             </td>
                             <td className="px-4 py-3">
                               <div className="flex items-center gap-1.5">
-                                {getStatusBadge(comment.status)}
+                                <StatusBadge type="status" value={comment.status} label={comment.status === 'published' ? 'Diterbitkan' : comment.status === 'heldForReview' ? 'Ditahan (Perlu Ditinjau)' : 'Telah Dihapus'} />
                                 {isProcessing && (
                                   <div className="animate-spin rounded-full h-3 w-3 border-b-2 border-indigo-500" />
                                 )}
@@ -1079,18 +1029,14 @@ export default function CommentsPage() {
                       <div key={comment.id} className="rounded-xl border p-3.5 space-y-2.5" style={{ background: 'var(--bg-card-hover)', borderColor: 'var(--border-default)' }}>
                         <div className="flex items-center justify-between">
                           <div className="flex items-center gap-2">
-                            {comment.authorProfileImageUrl ? (
-                              <img className="w-7 h-7 rounded-full flex-shrink-0 animate-fade-in" src={comment.authorProfileImageUrl} alt="" />
-                            ) : (
-                              getInitialAvatar(comment.authorDisplayName)
-                            )}
+                            <UserAvatar name={comment.authorDisplayName} src={comment.authorProfileImageUrl} className="w-7 h-7 animate-fade-in" />
                             <div>
                               <p className="text-xs font-medium" style={{ color: 'var(--text-primary)' }}>{comment.authorDisplayName}</p>
                               <p className="text-[10px]" style={{ color: 'var(--text-muted)' }}>{new Date(comment.createdAt || comment.publishedAt).toLocaleDateString('id-ID')}</p>
                             </div>
                           </div>
                           <div className="flex items-center gap-1">
-                            {getStatusBadge(comment.status)}
+                            <StatusBadge type="status" value={comment.status} label={comment.status === 'published' ? 'Diterbitkan' : comment.status === 'heldForReview' ? 'Ditahan (Perlu Ditinjau)' : 'Telah Dihapus'} />
                             {isProcessing && (
                               <div className="animate-spin rounded-full h-3 w-3 border-b-2 border-indigo-500" />
                             )}
@@ -1113,19 +1059,12 @@ export default function CommentsPage() {
                             {comment.aiLabel ? (
                               <div className="flex flex-col gap-1">
                                 <div className="flex items-center gap-1.5">
-                                  <span className={`text-[11px] font-semibold px-2 py-0.5 rounded-full ${comment.aiLabel.toLowerCase() === 'spam' ? 'bg-red-100 text-red-700' : 'bg-green-100 text-green-700'}`}>
-                                    {comment.aiLabel.toLowerCase() === 'spam' ? '🚨 Spam Judol' : '✅ Normal'}
-                                  </span>
+                                  <StatusBadge type="ai_label" value={comment.aiLabel} />
                                   <span className="text-[10px] text-muted">{Math.round(comment.aiConfidence * 100)}%</span>
                                 </div>
                                 {comment.sentiment && (
                                   <div className="flex items-center gap-1.5 mt-0.5">
-                                    <span className={`badge ${comment.sentiment === 'positive' ? 'badge-success'
-                                      : comment.sentiment === 'negative' ? 'badge-danger'
-                                        : 'badge-muted'
-                                      }`}>
-                                      {comment.sentiment === 'positive' ? '😊 Positif' : comment.sentiment === 'negative' ? '😠 Negatif' : '😐 Netral'}
-                                    </span>
+                                    <StatusBadge type="sentiment" value={comment.sentiment} />
                                     <span className="text-[10px]" style={{ color: 'var(--text-muted)' }}>{Math.round(comment.sentimentScore * 100)}%</span>
                                   </div>
                                 )}
