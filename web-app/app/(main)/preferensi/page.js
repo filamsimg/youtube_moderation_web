@@ -261,9 +261,9 @@ export default function PreferensiPage() {
                   Amankan komentar ke folder tinjauan jika tingkat kecurigaan AI melewati batas kepekaan.
                 </p>
               </div>
-              <Toggle checked={autoTahan} onChange={setAutoTahan} disabled={isFeatureDisabled('auto_moderation')} />
+              <Toggle checked={isFeatureDisabled('auto_moderation') ? false : autoTahan} onChange={setAutoTahan} disabled={isFeatureDisabled('auto_moderation')} />
             </div>
-            {autoTahan && (
+            {autoTahan && !isFeatureDisabled('auto_moderation') && (
               <Slider label="Sensitivitas Penahanan Komentar (Mencurigakan)" value={thresholdHold} onChange={setThresholdHold} min={50} max={95} disabled={isFeatureDisabled('auto_moderation')} />
             )}
           </div>
@@ -281,9 +281,9 @@ export default function PreferensiPage() {
                   Langsung hapus komentar dari YouTube jika AI sangat yakin komentar tersebut berisi iklan judi.
                 </p>
               </div>
-              <Toggle checked={autoHapus} onChange={setAutoHapus} disabled={isFeatureDisabled('auto_moderation')} />
+              <Toggle checked={isFeatureDisabled('auto_moderation') ? false : autoHapus} onChange={setAutoHapus} disabled={isFeatureDisabled('auto_moderation')} />
             </div>
-            {autoHapus && (
+            {autoHapus && !isFeatureDisabled('auto_moderation') && (
               <Slider label="Sensitivitas Penghapusan Otomatis (Sangat Yakin)" value={thresholdReject} onChange={setThresholdReject} min={70} max={99} disabled={isFeatureDisabled('auto_moderation')} />
             )}
           </div>
