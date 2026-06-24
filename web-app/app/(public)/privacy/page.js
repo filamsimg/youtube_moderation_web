@@ -45,7 +45,7 @@ export default function PrivacyPolicy() {
               <h4 className="text-xs font-bold text-indigo-300 uppercase tracking-wider mb-2">
                 Kepatuhan Kebijakan Data Pengguna Layanan Google API
               </h4>
-              <p className="text-xs leading-relaxed text-indigo-200/90 mb-2 font-mono bg-indigo-950/40 p-3 rounded border border-indigo-500/10">
+              <p className="text-xs leading-relaxed text-indigo-200/90 mb-2 italic bg-indigo-950/40 p-3 rounded border border-indigo-500/10">
                 Athena Shield&apos;s use and transfer to any other app of information received from Google APIs will adhere to the <a href="https://developers.google.com/terms/api-services-user-data-policy" target="_blank" rel="noopener noreferrer" className="underline hover:text-white transition-colors">Google API Services User Data Policy</a>, including the Limited Use requirements.
               </p>
               <p className="text-xs leading-relaxed text-indigo-200/80">
@@ -61,7 +61,7 @@ export default function PrivacyPolicy() {
           {/* Bagian 1 */}
           <section className="space-y-3">
             <h2 className="text-lg font-semibold text-primary flex items-center gap-2">
-              <span className="text-indigo-400 text-xs font-mono">01.</span>
+              <span className="text-indigo-400 text-xs font-semibold">01.</span>
               Pendahuluan
             </h2>
             <p>
@@ -72,7 +72,7 @@ export default function PrivacyPolicy() {
           {/* Bagian 2 */}
           <section className="space-y-3">
             <h2 className="text-lg font-semibold text-primary flex items-center gap-2">
-              <span className="text-indigo-400 text-xs font-mono">02.</span>
+              <span className="text-indigo-400 text-xs font-semibold">02.</span>
               Informasi yang Kami Kumpulkan
             </h2>
             <p>
@@ -103,7 +103,7 @@ export default function PrivacyPolicy() {
           {/* Bagian 3 */}
           <section className="space-y-3">
             <h2 className="text-lg font-semibold text-primary flex items-center gap-2">
-              <span className="text-indigo-400 text-xs font-mono">03.</span>
+              <span className="text-indigo-400 text-xs font-semibold">03.</span>
               Bagaimana Kami Menggunakan Informasi Anda
             </h2>
             <p>
@@ -119,7 +119,7 @@ export default function PrivacyPolicy() {
           {/* Bagian 4 */}
           <section className="space-y-3">
             <h2 className="text-lg font-semibold text-primary flex items-center gap-2">
-              <span className="text-indigo-400 text-xs font-mono">04.</span>
+              <span className="text-indigo-400 text-xs font-semibold">04.</span>
               Perlindungan & Penyimpanan Data
             </h2>
             <p>
@@ -134,7 +134,7 @@ export default function PrivacyPolicy() {
           {/* Bagian 5 */}
           <section className="space-y-3">
             <h2 className="text-lg font-semibold text-primary flex items-center gap-2">
-              <span className="text-indigo-400 text-xs font-mono">05.</span>
+              <span className="text-indigo-400 text-xs font-semibold">05.</span>
               Kebijakan Tanpa Berbagi Data
             </h2>
             <p className="font-semibold text-indigo-400">
@@ -148,7 +148,7 @@ export default function PrivacyPolicy() {
           {/* Bagian 6 */}
           <section className="space-y-3">
             <h2 className="text-lg font-semibold text-primary flex items-center gap-2">
-              <span className="text-indigo-400 text-xs font-mono">06.</span>
+              <span className="text-indigo-400 text-xs font-semibold">06.</span>
               Hak Anda & Penghapusan Data
             </h2>
             <p>
@@ -163,7 +163,7 @@ export default function PrivacyPolicy() {
           {/* Bagian 7 */}
           <section className="space-y-3">
             <h2 className="text-lg font-semibold text-primary flex items-center gap-2">
-              <span className="text-indigo-400 text-xs font-mono">07.</span>
+              <span className="text-indigo-400 text-xs font-semibold">07.</span>
               Kontak Pengembang
             </h2>
             <p>
