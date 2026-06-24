@@ -90,6 +90,7 @@ export default function PublicLayout({ children }) {
           </p>
           <div className="flex items-center gap-4">
             <Link href="/pricing" className="text-[11px] text-muted hover:text-primary transition-colors">Harga</Link>
+            <Link href="/privacy" className="text-[11px] text-muted hover:text-primary transition-colors">Privasi</Link>
             <Link href="/login" className="text-[11px] text-muted hover:text-primary transition-colors">Login</Link>
           </div>
         </div>
