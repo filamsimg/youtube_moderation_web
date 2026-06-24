@@ -179,6 +179,7 @@ export async function POST(req) {
           subscription_quota: profile.subscription_quota + quotaToAdd,
           quota_limit: newLimit,
           quota_expiry: newExpiry.toISOString(),
+          active_package_id: packageId,
           updated_at: now,
         })
         .eq('email', email);

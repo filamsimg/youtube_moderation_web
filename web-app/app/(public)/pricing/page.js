@@ -282,10 +282,61 @@ export default function PricingPage() {
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             {PLANS.map((plan) => {
-              const isCurrentTier = profile?.tier === plan.tier;
+              const userTier = profile?.tier || 'FREE';
+              const activePackageId = profile?.active_package_id;
+              
+              const isCurrentTier = userTier === plan.tier;
+              const isCurrentPackage = activePackageId === plan.key;
+              
               const isFree = plan.tier === 'FREE';
               const isPro = plan.tier === 'PRO';
               const isEnterprise = plan.tier === 'ENTERPRISE';
+
+              // Tentukan relasi paket untuk downgrade/upgrade
+              let isDowngrade = false;
+              let isUpgrade = false;
+
+              if (userTier === 'ENTERPRISE') {
+                if (plan.tier === 'PRO' || plan.tier === 'FREE') {
+                  isDowngrade = true;
+                }
+              } else if (userTier === 'PRO') {
+                if (plan.tier === 'FREE') {
+                  isDowngrade = true;
+                } else if (plan.tier === 'ENTERPRISE') {
+                  isUpgrade = true;
+                }
+              } else if (userTier === 'FREE') {
+                if (plan.tier !== 'FREE') {
+                  isUpgrade = true;
+                }
+              }
+
+              // Tentukan label dan status disabled untuk tombol CTA
+              let ctaLabel = plan.cta;
+              let isBtnDisabled = false;
+
+              if (isFree) {
+                if (userTier === 'FREE') {
+                  ctaLabel = '✓ Paket Saat Ini';
+                  isBtnDisabled = true;
+                } else {
+                  ctaLabel = 'Kembali ke Free (Saat Expired)';
+                  isBtnDisabled = true;
+                }
+              } else if (isCurrentPackage) {
+                ctaLabel = '✓ Paket Aktif Anda';
+                isBtnDisabled = true;
+              } else if (isCurrentTier && !isCurrentPackage) {
+                ctaLabel = 'Perpanjang / Ubah Siklus';
+                isBtnDisabled = false;
+              } else if (isDowngrade) {
+                ctaLabel = 'Downgrade Otomatis (Saat Expired)';
+                isBtnDisabled = true;
+              } else if (isUpgrade) {
+                ctaLabel = plan.cta;
+                isBtnDisabled = false;
+              }
 
               return (
                 <div
@@ -295,7 +346,7 @@ export default function PricingPage() {
                       : isEnterprise
                         ? 'bg-card/75 bg-gradient-to-b from-purple-500/10 to-purple-500/[0.02] border-purple-500/30 shadow-[0_0_30px_rgba(168,85,247,0.08)]'
                         : 'bg-card/60 border-[var(--border-default)]'
-                    } ${isCurrentTier ? 'ring-2 ring-indigo-500/40' : ''}`}
+                    } ${isCurrentPackage ? 'ring-2 ring-indigo-500/40' : ''}`}
                 >
                   {/* Popular Badge */}
                   {plan.badge && (
@@ -370,16 +421,16 @@ export default function PricingPage() {
 
                   {/* CTA */}
                   <button
-                    disabled={isCurrentTier || isFree || loadingTx !== null}
+                    disabled={isBtnDisabled || loadingTx !== null}
                     onClick={() => handlePurchase(plan.key)}
-                    className={`relative overflow-hidden w-full py-3 rounded-2xl text-xs font-bold transition-all duration-300 cursor-pointer select-none ${isCurrentTier || isFree
+                    className={`relative overflow-hidden w-full py-3 rounded-2xl text-xs font-bold transition-all duration-300 cursor-pointer select-none ${isBtnDisabled
                         ? 'bg-card-hover text-muted cursor-default border border-[var(--border-default)]'
                         : isPro
                           ? 'bg-gradient-to-r from-indigo-600 to-violet-600 text-white hover:shadow-[0_0_24px_rgba(99,102,241,0.45)] hover:-translate-y-0.5 active:scale-98'
                           : 'bg-gradient-to-r from-purple-600 to-indigo-600 text-white hover:shadow-[0_0_24px_rgba(168,85,247,0.4)] hover:-translate-y-0.5 active:scale-98'
                       } disabled:opacity-50 disabled:cursor-not-allowed`}
                   >
-                    {!isCurrentTier && !isFree && (
+                    {!isBtnDisabled && (
                       <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent -translate-x-full hover:translate-x-full transition-transform duration-700" />
                     )}
                     <span className="relative">
@@ -388,10 +439,8 @@ export default function PricingPage() {
                           <span className="w-3.5 h-3.5 border-2 border-white border-t-transparent rounded-full animate-spin" />
                           Inisialisasi...
                         </span>
-                      ) : isCurrentTier ? (
-                        '✓ Paket Aktif Anda'
                       ) : (
-                        plan.cta
+                        ctaLabel
                       )}
                     </span>
                   </button>
