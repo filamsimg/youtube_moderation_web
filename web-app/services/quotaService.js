@@ -27,9 +27,9 @@ export const quotaService = {
       });
       if (error) throw error;
 
-      // Compute total balance dari 3 sumber kuota terpisah
+      // Compute total balance dari sumber kuota aktif
       if (data) {
-        data.quota_balance = (data.subscription_quota || 0) + (data.topup_credits || 0) + (data.trial_quota || 0);
+        data.quota_balance = (data.subscription_quota || 0) + (data.trial_quota || 0);
       }
 
       return data;

@@ -53,10 +53,10 @@ export async function GET() {
     return NextResponse.json({
       email: profile.email,
       tier: profile.tier,
+      active_package_id: profile.active_package_id,
 
       // Breakdown kuota terpisah untuk transparansi UI
       subscription_quota: profile.subscription_quota,
-      topup_credits: 0,
       trial_quota: profile.trial_quota,
 
       // Total balance (computed)

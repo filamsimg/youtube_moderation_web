@@ -9,7 +9,7 @@ import { supabaseAdmin } from '@/lib/supabaseAdmin';
  * Mengecek apakah user punya saldo cukup untuk suatu aksi.
  * Response: { canAfford: bool, balance: int, cost: int, action: string }
  * 
- * Balance dihitung dari: subscription_quota + topup_credits + trial_quota
+ * Balance dihitung dari: subscription_quota + trial_quota
  */
 export async function GET(req) {
   try {

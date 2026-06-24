@@ -21,10 +21,6 @@ CREATE TABLE IF NOT EXISTS public.user_profiles (
   -- HANGUS saat masa aktif habis (auto-downgrade ke FREE)
   subscription_quota INTEGER NOT NULL DEFAULT 0,
 
-  -- === KREDIT TOP-UP (Purchased Credits) ===
-  -- Diatur ke 0 secara default (logika top-up dihapus, dipertahankan untuk kompatibilitas skema/API lama)
-  topup_credits      INTEGER NOT NULL DEFAULT 0,
-
   -- === KUOTA TRIAL AWAL (One-Time Trial) ===
   -- Diberikan 1x saat pertama kali registrasi
   -- Tidak bisa diisi ulang, bertahan selamanya (selama berstatus FREE)
@@ -37,6 +33,9 @@ CREATE TABLE IF NOT EXISTS public.user_profiles (
   -- NULL = tidak ada langganan aktif (tier FREE / trial)
   -- Timestamp = tanggal kedaluwarsa subscription PRO/ENTERPRISE
   quota_expiry       TIMESTAMPTZ DEFAULT NULL,
+
+  -- === ID PAKET AKTIF ===
+  active_package_id  TEXT REFERENCES public.pricing_packages(id) ON DELETE SET NULL DEFAULT NULL,
 
   last_reset         TIMESTAMPTZ DEFAULT now(),
   created_at         TIMESTAMPTZ DEFAULT now(),
@@ -324,11 +323,10 @@ BEGIN
     END IF;
   END IF;
 
-  -- Simpan perubahan saldo ke database (selalu paksa topup_credits ke 0)
+  -- Simpan perubahan saldo ke database
   UPDATE public.user_profiles
   SET subscription_quota = v_sub_quota,
       trial_quota = v_trial,
-      topup_credits = 0,
       updated_at = now()
   WHERE email = p_email;
 
@@ -362,6 +360,7 @@ BEGIN
       quota_limit = 1000,
       subscription_quota = 0,
       quota_expiry = NULL,
+      active_package_id = NULL,
       updated_at = now()
   WHERE email = p_email
     AND tier IN ('PRO', 'ENTERPRISE')
@@ -407,7 +406,7 @@ INSERT INTO public.pricing_packages (
      'Penyaringan Otomatis (Tahan & Hapus)',
      'Pemeriksaan otomatis tiap 2 menit',
      'Pilih banyak video & hapus massal sekaligus',
-     'Layanan bantuan prioritas'
+     
    ],
    ARRAY[]::TEXT[],
    '🔥 Paling Populer', true, true, true, true),
@@ -421,7 +420,7 @@ INSERT INTO public.pricing_packages (
      'Penyaringan Otomatis (Tahan & Hapus)',
      'Pemeriksaan otomatis tiap 2 menit',
      'Pilih banyak video & hapus massal sekaligus',
-     'Layanan bantuan prioritas'
+     
    ],
    ARRAY[]::TEXT[],
    '🔥 Paling Populer', true, true, true, true),
@@ -435,7 +434,7 @@ INSERT INTO public.pricing_packages (
      'Penyaringan Otomatis (Tahan & Hapus)',
      'Pemeriksaan otomatis tiap 2 menit',
      'Pilih banyak video & hapus massal sekaligus',
-     'Layanan bantuan prioritas'
+     
    ],
    ARRAY[]::TEXT[],
    '🔥 Paling Populer', true, true, true, true),
@@ -449,7 +448,7 @@ INSERT INTO public.pricing_packages (
      'Penyaringan Otomatis (Tahan & Hapus)',
      'Pemeriksaan otomatis tiap 2 menit',
      'Pilih banyak video & hapus massal sekaligus',
-     'Layanan bantuan prioritas'
+     
    ],
    ARRAY[]::TEXT[],
    '🔥 Paling Populer', true, true, true, true),
@@ -461,9 +460,7 @@ INSERT INTO public.pricing_packages (
      'Bebas dari batasan kuota YouTube*',
      'Semua fitur Pro',
      'Gunakan Kunci Akses YouTube Sendiri (Gratis)',
-     'Grafik laporan statistik lengkap',
-     'Unduh laporan ke Excel (CSV)',
-     'Layanan bantuan khusus'
+     
    ],
    ARRAY[]::TEXT[],
    '⭐ Terlengkap', true, true, true, true),
@@ -475,9 +472,7 @@ INSERT INTO public.pricing_packages (
      'Bebas dari batasan kuota YouTube*',
      'Semua fitur Pro',
      'Gunakan Kunci Akses YouTube Sendiri (Gratis)',
-     'Grafik laporan statistik lengkap',
-     'Unduh laporan ke Excel (CSV)',
-     'Layanan bantuan khusus'
+     
    ],
    ARRAY[]::TEXT[],
    '⭐ Terlengkap', true, true, true, true),
@@ -489,9 +484,7 @@ INSERT INTO public.pricing_packages (
      'Bebas dari batasan kuota YouTube*',
      'Semua fitur Pro',
      'Gunakan Kunci Akses YouTube Sendiri (Gratis)',
-     'Grafik laporan statistik lengkap',
-     'Unduh laporan ke Excel (CSV)',
-     'Layanan bantuan khusus'
+     
    ],
    ARRAY[]::TEXT[],
    '⭐ Terlengkap', true, true, true, true),
@@ -503,9 +496,7 @@ INSERT INTO public.pricing_packages (
      'Bebas dari batasan kuota YouTube*',
      'Semua fitur Pro',
      'Gunakan Kunci Akses YouTube Sendiri (Gratis)',
-     'Grafik laporan statistik lengkap',
-     'Unduh laporan ke Excel (CSV)',
-     'Layanan bantuan khusus'
+     
    ],
    ARRAY[]::TEXT[],
    '⭐ Terlengkap', true, true, true, true)

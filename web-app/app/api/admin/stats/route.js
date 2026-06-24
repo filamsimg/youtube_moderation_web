@@ -68,7 +68,7 @@ export async function GET(request) {
     // 5. 5 Newest Registered Users
     const { data: newestUsers, error: newUsersError } = await supabaseAdmin
       .from('user_profiles')
-      .select('email, tier, created_at, subscription_quota, topup_credits, trial_quota')
+      .select('email, tier, created_at, subscription_quota, trial_quota')
       .order('created_at', { ascending: false })
       .limit(5);
 

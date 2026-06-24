@@ -5,6 +5,8 @@ import { useToast } from '@/contexts/ToastContext';
 import { useSession } from 'next-auth/react';
 import { Search, Filter, Edit3, ShieldAlert, CheckCircle, UserPlus, X, HelpCircle } from 'lucide-react';
 import ConfirmModal from '@/components/ui/ConfirmModal';
+import StatusBadge from '@/components/ui/StatusBadge';
+import PaginationControls from '@/components/PaginationControls';
 
 export default function AdminUsersPage() {
   const { data: session } = useSession();
@@ -22,7 +24,6 @@ export default function AdminUsersPage() {
   const [editForm, setEditForm] = useState({
     tier: 'FREE',
     subscription_quota: 0,
-    topup_credits: 0,
     trial_quota: 1000,
     quota_limit: 1000,
     quota_expiry: '',
@@ -81,7 +82,6 @@ export default function AdminUsersPage() {
     setEditForm({
       tier: user.tier || 'FREE',
       subscription_quota: user.subscription_quota || 0,
-      topup_credits: user.topup_credits || 0,
       trial_quota: user.trial_quota || 0,
       quota_limit: user.quota_limit || 1000,
       quota_expiry: user.quota_expiry ? new Date(user.quota_expiry).toISOString().substring(0, 10) : '',
@@ -245,22 +245,10 @@ export default function AdminUsersPage() {
                 <tr key={user.email} className={`hover:bg-muted/10 transition-colors ${!user.is_active ? 'opacity-60 bg-rose-500/5' : ''}`}>
                   <td className="p-4 font-bold text-primary">{user.email}</td>
                   <td className="p-4">
-                    <span className={`px-2 py-0.5 rounded-full font-bold text-[10px] uppercase ${
-                      user.role === 'superadmin' ? 'bg-rose-500/10 text-rose-600 dark:text-rose-400 border border-rose-500/20' :
-                      user.role === 'admin' ? 'bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/20' :
-                      'bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-400'
-                    }`}>
-                      {user.role}
-                    </span>
+                    <StatusBadge type="role" value={user.role} />
                   </td>
                   <td className="p-4">
-                    <span className={`px-2 py-0.5 rounded-full font-bold text-[10px] uppercase ${
-                      user.tier === 'FREE' ? 'bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-300' :
-                      user.tier === 'PRO' ? 'bg-indigo-50 text-indigo-600 dark:bg-indigo-500/10 dark:text-indigo-300' :
-                      'bg-emerald-50 text-emerald-600 dark:bg-emerald-500/10 dark:text-emerald-300'
-                    }`}>
-                      {user.tier}
-                    </span>
+                    <StatusBadge type="tier" value={user.tier} />
                   </td>
                   <td className="p-4 text-secondary font-medium">
                     {user.subscription_quota.toLocaleString()} / {user.trial_quota.toLocaleString()} u
@@ -322,27 +310,11 @@ export default function AdminUsersPage() {
         </div>
 
         {/* Pagination Footer */}
-        {pagination.totalPages > 1 && (
-          <div className="p-4 border-t border-[var(--border-default)] flex items-center justify-between text-xs text-muted">
-            <span>Halaman {pagination.page} dari {pagination.totalPages} (Total {pagination.totalItems} Pengguna)</span>
-            <div className="flex items-center gap-1">
-              <button
-                onClick={() => setPage(p => Math.max(p - 1, 1))}
-                disabled={page === 1}
-                className="px-2.5 py-1.5 rounded-lg border hover:bg-muted/30 disabled:opacity-40 disabled:pointer-events-none transition-colors cursor-pointer"
-              >
-                Sebelumnya
-              </button>
-              <button
-                onClick={() => setPage(p => Math.min(p + 1, pagination.totalPages))}
-                disabled={page === pagination.totalPages}
-                className="px-2.5 py-1.5 rounded-lg border hover:bg-muted/30 disabled:opacity-40 disabled:pointer-events-none transition-colors cursor-pointer"
-              >
-                Selanjutnya
-              </button>
-            </div>
-          </div>
-        )}
+        <PaginationControls
+          currentPage={page}
+          totalPages={pagination.totalPages}
+          onPageChange={setPage}
+        />
       </div>
 
       {/* Edit User Modal */}
