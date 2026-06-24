@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useToast } from '@/contexts/ToastContext';
 import { Search, ShieldAlert, ArrowRight, Eye, EyeOff, Calendar } from 'lucide-react';
 import StatusBadge from '@/components/ui/StatusBadge';
@@ -12,18 +12,19 @@ export default function AdminAuditPage() {
   const [logs, setLogs] = useState([]);
   const [loading, setLoading] = useState(true);
   const [pagination, setPagination] = useState({ page: 1, totalPages: 1, limit: 10 });
-  const [search, setSearch] = useState('');
+  const [searchVal, setSearchVal] = useState('');
+  const [searchQuery, setSearchQuery] = useState('');
   const [page, setPage] = useState(1);
   const [expandedLogId, setExpandedLogId] = useState(null);
   const toast = useToast();
 
-  async function fetchAuditLogs() {
+  const fetchAuditLogs = useCallback(async () => {
     setLoading(true);
     try {
       const params = new URLSearchParams({
         page: page.toString(),
         limit: pagination.limit.toString(),
-        search,
+        search: searchQuery,
       });
 
       const response = await fetch(`/api/admin/audit-logs?${params.toString()}`);
@@ -41,16 +42,16 @@ export default function AdminAuditPage() {
     } finally {
       setLoading(false);
     }
-  }
+  }, [page, pagination.limit, searchQuery, toast]);
 
   useEffect(() => {
     fetchAuditLogs();
-  }, [page]);
+  }, [fetchAuditLogs]);
 
   const handleSearchSubmit = (e) => {
     e.preventDefault();
     setPage(1);
-    fetchAuditLogs();
+    setSearchQuery(searchVal);
   };
 
   const toggleExpandLog = (id) => {
@@ -69,8 +70,6 @@ export default function AdminAuditPage() {
       default: return action;
     }
   };
-
-
 
   return (
     <div className="space-y-6 animate-fade-in">
@@ -91,8 +90,8 @@ export default function AdminAuditPage() {
             <input
               type="text"
               placeholder="Cari berdasarkan email admin pelaksana atau target user..."
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
+              value={searchVal}
+              onChange={(e) => setSearchVal(e.target.value)}
               className="w-full pl-9 pr-4 py-2 text-xs rounded-xl border border-[var(--border-default)] bg-page focus:outline-none focus:ring-1 focus:ring-rose-500/50 focus:border-rose-500/50"
             />
           </div>

@@ -52,7 +52,7 @@ export default function PricingPage() {
       }
     }
     loadPackages();
-  }, []);
+  }, [toast]);
 
   const multipliers = {
     '1M': { label: 'bulan', days: 30, discount: 0, textSuffix: '/ bulan' },

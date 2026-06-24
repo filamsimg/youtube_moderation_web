@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useToast } from '@/contexts/ToastContext';
 import { useSession } from 'next-auth/react';
 import { Search, Filter, Edit3, ShieldAlert, CheckCircle, UserPlus, X, HelpCircle } from 'lucide-react';
@@ -15,7 +15,9 @@ export default function AdminUsersPage() {
   const [users, setUsers] = useState([]);
   const [loading, setLoading] = useState(true);
   const [pagination, setPagination] = useState({ page: 1, totalPages: 1, limit: 10 });
-  const [filters, setFilters] = useState({ search: '', tier: '', role: '', status: '' });
+  const [searchVal, setSearchVal] = useState('');
+  const [searchQuery, setSearchQuery] = useState('');
+  const [filters, setFilters] = useState({ tier: '', role: '', status: '' });
   const [page, setPage] = useState(1);
   const toast = useToast();
 
@@ -36,13 +38,13 @@ export default function AdminUsersPage() {
   const [suspendingUser, setSuspendingUser] = useState(null);
 
   // Fetch users data
-  async function fetchUsers() {
+  const fetchUsers = useCallback(async () => {
     setLoading(true);
     try {
       const params = new URLSearchParams({
         page: page.toString(),
         limit: pagination.limit.toString(),
-        search: filters.search,
+        search: searchQuery,
         tier: filters.tier,
         role: filters.role,
         status: filters.status,
@@ -63,17 +65,17 @@ export default function AdminUsersPage() {
     } finally {
       setLoading(false);
     }
-  }
+  }, [page, pagination.limit, searchQuery, filters.tier, filters.role, filters.status, toast]);
 
   useEffect(() => {
     fetchUsers();
-  }, [page, filters.tier, filters.role, filters.status]);
+  }, [fetchUsers]);
 
   // Handle Search Trigger on Enter or click
   const handleSearchSubmit = (e) => {
     e.preventDefault();
     setPage(1);
-    fetchUsers();
+    setSearchQuery(searchVal);
   };
 
   // Open Edit Modal
@@ -94,33 +96,22 @@ export default function AdminUsersPage() {
     setEditingUser(null);
   };
 
-  // Submit Update User
-  const handleUpdateUser = async (e) => {
+  // Handle Edit User Form Submit
+  const handleEditSubmit = async (e) => {
     e.preventDefault();
     setIsUpdating(true);
+    
     try {
-      const payload = {
-        target_email: editingUser.email,
-        updates: {
-          tier: editForm.tier,
-          subscription_quota: parseInt(editForm.subscription_quota || '0', 10),
-          trial_quota: parseInt(editForm.trial_quota || '0', 10),
-          quota_limit: parseInt(editForm.quota_limit || '1000', 10),
-          quota_expiry: editForm.quota_expiry ? new Date(editForm.quota_expiry).toISOString() : null,
-          role: editForm.role,
-        },
-      };
-
-      const response = await fetch('/api/admin/users/update', {
+      const response = await fetch(`/api/admin/users/${editingUser.id}`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(payload),
+        body: JSON.stringify(editForm),
       });
-
       const json = await response.json();
+
       if (json.success) {
         toast.success(`Akun ${editingUser.email} berhasil diperbarui`);
-        closeEditModal();
+        setEditingUser(null);
         fetchUsers();
       } else {
         toast.error(json.error || 'Gagal memperbarui pengguna');
@@ -133,25 +124,23 @@ export default function AdminUsersPage() {
     }
   };
 
-  // Handle Toggle Active/Suspend Status
-  const handleToggleSuspend = async (user) => {
+  // Toggle user active status (Suspend/Unsuspend)
+  const handleToggleSuspend = async () => {
+    const user = suspendingUser;
+    if (!user) return;
+
+    const action = user.status === 'suspended' ? 'unsuspend' : 'suspend';
+    const actionText = action === 'suspend' ? 'dinonaktifkan' : 'diaktifkan kembali';
+    
     try {
-      const payload = {
-        target_email: user.email,
-        updates: {
-          is_active: !user.is_active,
-        },
-      };
-
-      const response = await fetch('/api/admin/users/update', {
-        method: 'PATCH',
+      const response = await fetch(`/api/admin/users/${user.id}/status`, {
+        method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(payload),
+        body: JSON.stringify({ action }),
       });
-
       const json = await response.json();
+
       if (json.success) {
-        const actionText = user.is_active ? 'dinonaktifkan (suspend)' : 'diaktifkan kembali';
         toast.success(`Akun ${user.email} berhasil ${actionText}`);
         fetchUsers();
       } else {
@@ -182,8 +171,8 @@ export default function AdminUsersPage() {
             <input
               type="text"
               placeholder="Cari berdasarkan email..."
-              value={filters.search}
-              onChange={(e) => setFilters({ ...filters, search: e.target.value })}
+              value={searchVal}
+              onChange={(e) => setSearchVal(e.target.value)}
               className="w-full pl-9 pr-4 py-2 text-xs rounded-xl border border-[var(--border-default)] bg-page focus:outline-none focus:ring-1 focus:ring-rose-500/50 focus:border-rose-500/50"
             />
           </div>
@@ -333,7 +322,7 @@ export default function AdminUsersPage() {
             </h3>
             <p className="text-[10px] text-muted mt-0.5 truncate">{editingUser.email}</p>
 
-            <form onSubmit={handleUpdateUser} className="space-y-4 mt-4 text-xs">
+            <form onSubmit={handleEditSubmit} className="space-y-4 mt-4 text-xs">
               {/* Tier Selection */}
               <div className="space-y-1">
                 <label className="font-semibold text-secondary">Tier Langganan</label>

@@ -1,7 +1,7 @@
 'use client';
 
 import { useSession, signOut } from 'next-auth/react';
-import { useState, useEffect, useMemo, useRef } from 'react';
+import { useState, useEffect, useMemo, useRef, useCallback } from 'react';
 import { youtubeService } from '@/services/youtubeService';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
@@ -59,19 +59,8 @@ export default function DashboardPage() {
   const [history, setHistory] = useState([]);
   const [chartVideoFilter, setChartVideoFilter] = useState('all');
 
-  useEffect(() => {
-    if (session?.accessToken && channels.length === 0) {
-      fetchChannel();
-    }
-  }, [session?.accessToken, fetchChannel, channels.length]);
-
-  useEffect(() => {
-    if (channelInfo && session?.accessToken) {
-      loadHistoryAndVideos();
-    }
-  }, [channelInfo, session?.accessToken]);
-
-  const loadHistoryAndVideos = async () => {
+  const loadHistoryAndVideos = useCallback(async () => {
+    if (!channelInfo?.id) return;
     try {
       setLoading(true);
       await fetchVideos(channelInfo.id);
@@ -95,7 +84,19 @@ export default function DashboardPage() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [channelInfo?.id, fetchVideos, session?.user?.email]);
+
+  useEffect(() => {
+    if (session?.accessToken && channels.length === 0) {
+      fetchChannel();
+    }
+  }, [session?.accessToken, fetchChannel, channels.length]);
+
+  useEffect(() => {
+    if (channelInfo && session?.accessToken) {
+      loadHistoryAndVideos();
+    }
+  }, [channelInfo, session?.accessToken, loadHistoryAndVideos]);
 
   const filteredHistory = useMemo(() => {
     if (chartVideoFilter === 'all') return history;
@@ -593,10 +594,12 @@ export default function DashboardPage() {
                     className="flex items-center gap-3 p-2.5 rounded-xl hover:bg-card-hover border border-transparent hover:border-[var(--border-default)] transition-all cursor-pointer group"
                   >
                     <div className="w-10 h-10 bg-card rounded-lg overflow-hidden flex-shrink-0 border border-[var(--border-default)]">
+                      {/* eslint-disable-next-line @next/next/no-img-element */}
                       <img
                         src={video.snippet.thumbnails.default.url}
                         alt=""
                         className="w-full h-full object-cover"
+                        loading="lazy"
                       />
                     </div>
                     <div className="flex-1 min-w-0">

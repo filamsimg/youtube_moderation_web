@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useToast } from '@/contexts/ToastContext';
 import { Search, Filter, ShieldAlert, CheckCircle, Clock } from 'lucide-react';
 import PaginationControls from '@/components/PaginationControls';
@@ -9,17 +9,19 @@ export default function AdminModerationPage() {
   const [history, setHistory] = useState([]);
   const [loading, setLoading] = useState(true);
   const [pagination, setPagination] = useState({ page: 1, totalPages: 1, limit: 10 });
-  const [filters, setFilters] = useState({ search: '', label: '', action: '' });
+  const [searchVal, setSearchVal] = useState('');
+  const [searchQuery, setSearchQuery] = useState('');
+  const [filters, setFilters] = useState({ label: '', action: '' });
   const [page, setPage] = useState(1);
   const toast = useToast();
 
-  async function fetchHistory() {
+  const fetchHistory = useCallback(async () => {
     setLoading(true);
     try {
       const params = new URLSearchParams({
         page: page.toString(),
         limit: pagination.limit.toString(),
-        search: filters.search,
+        search: searchQuery,
         label: filters.label,
         action: filters.action,
       });
@@ -39,16 +41,16 @@ export default function AdminModerationPage() {
     } finally {
       setLoading(false);
     }
-  }
+  }, [page, pagination.limit, searchQuery, filters.label, filters.action, toast]);
 
   useEffect(() => {
     fetchHistory();
-  }, [page, filters.label, filters.action]);
+  }, [fetchHistory]);
 
   const handleSearchSubmit = (e) => {
     e.preventDefault();
     setPage(1);
-    fetchHistory();
+    setSearchQuery(searchVal);
   };
 
   return (
@@ -68,8 +70,8 @@ export default function AdminModerationPage() {
             <input
               type="text"
               placeholder="Cari berdasarkan teks, author, email user, atau video..."
-              value={filters.search}
-              onChange={(e) => setFilters({ ...filters, search: e.target.value })}
+              value={searchVal}
+              onChange={(e) => setSearchVal(e.target.value)}
               className="w-full pl-9 pr-4 py-2 text-xs rounded-xl border border-[var(--border-default)] bg-page focus:outline-none focus:ring-1 focus:ring-rose-500/50 focus:border-rose-500/50"
             />
           </div>

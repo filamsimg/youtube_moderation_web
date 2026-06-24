@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useSession } from 'next-auth/react';
 import { historyService } from '@/services/historyService';
 import PaginationControls from '@/components/PaginationControls';
@@ -30,12 +30,8 @@ export default function RiwayatPage() {
     setCurrentPage(1);
   }, [searchQuery, filterAction]);
 
-  useEffect(() => {
-    if (session?.user?.email) loadHistory();
-    else setLoading(false);
-  }, [session?.user?.email]);
-
-  const loadHistory = async () => {
+  const loadHistory = useCallback(async () => {
+    if (!session?.user?.email) return;
     setLoading(true);
     const data = await historyService.getHistory(session.user.email);
     const mapped = data.map(item => ({
@@ -49,7 +45,12 @@ export default function RiwayatPage() {
     }));
     setActivities(mapped);
     setLoading(false);
-  };
+  }, [session?.user?.email]);
+
+  useEffect(() => {
+    if (session?.user?.email) loadHistory();
+    else setLoading(false);
+  }, [session?.user?.email, loadHistory]);
 
   const handleExportCSV = () => {
     if (isFeatureDisabled('export_csv')) {
