@@ -1,6 +1,7 @@
 'use client';
 
 import Link from 'next/link';
+import Image from 'next/image';
 import { useSession } from 'next-auth/react';
 import { usePathname } from 'next/navigation';
 
@@ -19,7 +20,7 @@ export default function PublicLayout({ children }) {
         <div className="max-w-6xl mx-auto px-4 sm:px-6 h-14 flex items-center justify-between">
           {/* Logo */}
           <Link href="/" className="flex items-center gap-2 group">
-            <img src="/logo.webp" alt="Athena Shield" className="w-7 h-7 object-contain" />
+            <Image src="/logo.webp" alt="Athena Shield" width={28} height={28} className="w-7 h-7 object-contain" />
             <span className="text-sm font-semibold text-primary">Athena Shield</span>
           </Link>
 
@@ -82,7 +83,7 @@ export default function PublicLayout({ children }) {
       <footer className="border-t bg-card" style={{ borderColor: 'var(--border-default)' }}>
         <div className="max-w-6xl mx-auto px-4 sm:px-6 py-8 flex flex-col sm:flex-row items-center justify-between gap-4">
           <div className="flex items-center gap-2">
-            <img src="/logo.webp" alt="Athena Shield" className="w-6 h-6 object-contain grayscale opacity-70" />
+            <Image src="/logo.webp" alt="Athena Shield" width={24} height={24} className="w-6 h-6 object-contain grayscale opacity-70" />
             <span className="text-xs font-semibold text-secondary">Athena Shield</span>
           </div>
           <p className="text-[11px] text-muted">

@@ -297,11 +297,15 @@ export default function CommentsPage() {
                     />
                     <div className="w-12 h-9 rounded-md overflow-hidden flex-shrink-0 bg-card-hover border border-border-default">
                       {video?.snippet?.thumbnails?.default?.url ? (
-                        <img
-                          src={video.snippet.thumbnails.default.url}
-                          alt=""
-                          className="w-full h-full object-cover"
-                        />
+                        <>
+                          {/* eslint-disable-next-line @next/next/no-img-element */}
+                          <img
+                            src={video.snippet.thumbnails.default.url}
+                            alt=""
+                            className="w-full h-full object-cover"
+                            loading="lazy"
+                          />
+                        </>
                       ) : (
                         <div className="w-full h-full bg-[var(--bg-card-hover)] flex items-center justify-center text-[10px] text-[var(--text-muted)]">No Image</div>
                       )}

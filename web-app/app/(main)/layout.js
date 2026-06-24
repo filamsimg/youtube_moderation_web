@@ -1,6 +1,7 @@
 'use client';
 
 import Sidebar from '@/components/Sidebar';
+import Image from 'next/image';
 import QuotaIndicator from '@/components/QuotaIndicator';
 import OnboardingTour from '@/components/OnboardingTour';
 import { useSession, signOut } from 'next-auth/react';
@@ -51,12 +52,14 @@ export default function MainLayout({ children }) {
           <div className="relative">
             <div className="absolute inset-0 rounded-full bg-indigo-500/25 blur-xl animate-pulse" />
             <div className="relative animate-float">
-              <img
-                src="/logo.webp"
-                alt="Athena Shield Logo"
-                className="w-16 h-16 object-contain drop-shadow-2xl"
-              />
-            </div>
+            <Image
+              src="/logo.webp"
+              alt="Athena Shield Logo"
+              width={64}
+              height={64}
+              className="w-16 h-16 object-contain drop-shadow-2xl"
+            />
+          </div>
           </div>
 
           {/* Text Details */}
@@ -139,6 +142,7 @@ export default function MainLayout({ children }) {
                   className="flex items-center focus:outline-none cursor-pointer"
                   aria-label="Menu Profil"
                 >
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
                   <img
                     src={
                       session?.user?.image ||
@@ -147,6 +151,7 @@ export default function MainLayout({ children }) {
                     alt="avatar"
                     className="w-8 h-8 rounded-full flex-shrink-0 ring-2 hover:opacity-95 transition-opacity"
                     style={{ borderColor: 'var(--border-accent)', outlineColor: 'var(--accent-ai-soft)' }}
+                    loading="lazy"
                   />
                 </button>
 
@@ -155,6 +160,7 @@ export default function MainLayout({ children }) {
                   <div className="absolute right-0 top-9 mt-1 w-64 bg-card rounded-xl border border-[var(--border-default)] shadow-2xl p-4 z-50 animate-fade-in text-left">
                     {/* Header inside popover */}
                     <div className="flex items-center gap-3 pb-3 border-b border-[var(--border-default)]">
+                      {/* eslint-disable-next-line @next/next/no-img-element */}
                       <img
                         src={
                           session?.user?.image ||
@@ -162,6 +168,7 @@ export default function MainLayout({ children }) {
                         }
                         alt="avatar"
                         className="w-10 h-10 rounded-full border border-indigo-500/20 object-cover flex-shrink-0"
+                        loading="lazy"
                       />
                       <div className="min-w-0">
                         <p className="text-xs font-bold text-primary truncate">

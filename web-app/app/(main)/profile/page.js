@@ -368,10 +368,12 @@ export default function ProfilePage() {
           <div className="space-y-6">
             <div className="flex items-center gap-4">
               {/* Avatar Google HD */}
+              {/* eslint-disable-next-line @next/next/no-img-element */}
               <img
                 src={session?.user?.image || `https://ui-avatars.com/api/?name=${encodeURIComponent(session?.user?.name || 'User')}&background=6366f1&color=fff&size=64`}
                 alt="user avatar"
                 className="w-16 h-16 rounded-full border-2 border-indigo-500/30 object-cover shadow-lg"
+                loading="lazy"
               />
               <div className="min-w-0">
                 <div className="flex items-center gap-2 flex-wrap">

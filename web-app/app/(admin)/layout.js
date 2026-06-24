@@ -139,6 +139,7 @@ export default function AdminLayout({ children }) {
                   className="flex items-center focus:outline-none cursor-pointer"
                   aria-label="Menu Profil Admin"
                 >
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
                   <img
                     src={
                       session?.user?.image ||
@@ -146,12 +147,14 @@ export default function AdminLayout({ children }) {
                     }
                     alt="avatar"
                     className="w-8 h-8 rounded-full flex-shrink-0 ring-2 hover:opacity-95 transition-opacity ring-rose-500/50"
+                    loading="lazy"
                   />
                 </button>
 
                 {isDropdownOpen && (
                   <div className="absolute right-0 top-9 mt-1 w-64 bg-card rounded-xl border border-[var(--border-default)] shadow-2xl p-4 z-50 animate-fade-in text-left">
                     <div className="flex items-center gap-3 pb-3 border-b border-[var(--border-default)]">
+                      {/* eslint-disable-next-line @next/next/no-img-element */}
                       <img
                         src={
                           session?.user?.image ||
@@ -159,6 +162,7 @@ export default function AdminLayout({ children }) {
                         }
                         alt="avatar"
                         className="w-10 h-10 rounded-full border border-rose-500/20 object-cover flex-shrink-0"
+                        loading="lazy"
                       />
                       <div className="min-w-0">
                         <p className="text-xs font-bold text-primary truncate">

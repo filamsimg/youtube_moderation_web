@@ -3,11 +3,15 @@ import React from 'react';
 export default function UserAvatar({ name, src, className = 'w-7 h-7' }) {
   if (src) {
     return (
-      <img
-        src={src}
-        alt={name || 'Avatar'}
-        className={`rounded-full flex-shrink-0 object-cover ${className}`}
-      />
+      <>
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img
+          src={src}
+          alt={name || 'Avatar'}
+          className={`rounded-full flex-shrink-0 object-cover ${className}`}
+          loading="lazy"
+        />
+      </>
     );
   }
 

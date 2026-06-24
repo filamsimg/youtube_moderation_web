@@ -4,6 +4,7 @@ import { signIn, useSession } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
+import Image from 'next/image';
 import KineticGrid from '@/components/KineticGrid';
 
 export default function LoginPage() {
@@ -21,7 +22,7 @@ export default function LoginPage() {
     return (
       <div className="flex h-screen w-full items-center justify-center bg-screen">
         <div className="flex flex-col items-center gap-4 animate-pulse-glow p-8 rounded-full">
-          <img src="/logo.webp" alt="Loading" className="w-12 h-12 animate-spin-slow" />
+          <Image src="/logo.webp" alt="Loading" width={48} height={48} className="w-12 h-12 animate-spin-slow" />
           <p className="text-secondary text-sm">Memuat...</p>
         </div>
       </div>

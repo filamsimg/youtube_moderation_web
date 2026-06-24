@@ -1,4 +1,5 @@
 import React from 'react';
+import Image from 'next/image';
 
 export default function LoadingState({ message = 'Memuat data...', className = '', variant = 'spinner' }) {
   if (variant === 'logo') {
@@ -7,7 +8,7 @@ export default function LoadingState({ message = 'Memuat data...', className = '
         <div className="flex flex-col items-center gap-3">
           <div className="relative">
             <div className="absolute inset-0 rounded-full bg-indigo-500/20 blur-lg animate-pulse" />
-            <img src="/logo.webp" alt="Athena Logo" className="relative w-10 h-10 animate-float" />
+            <Image src="/logo.webp" alt="Athena Logo" width={40} height={40} className="relative w-10 h-10 animate-float" />
           </div>
           {message && <p className="text-xs text-muted" style={{ color: 'var(--text-muted)' }}>{message}</p>}
           <div className="w-24 h-1 rounded-full overflow-hidden" style={{ background: 'var(--border-default)' }}>

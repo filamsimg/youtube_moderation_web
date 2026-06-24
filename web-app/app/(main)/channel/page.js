@@ -57,10 +57,12 @@ export default function ChannelPage() {
             className="group relative bg-card p-5 rounded-xl border border-[var(--border-default)] hover:shadow-md hover:border-amber-500/50 cursor-pointer transition-all hover:-translate-y-0.5"
           >
             <div className="flex items-center gap-3 mb-3">
+              {/* eslint-disable-next-line @next/next/no-img-element */}
               <img
                 src={channel.snippet.thumbnails.default.url}
                 alt={channel.snippet.title}
                 className="w-12 h-12 rounded-full border-2 border-amber-50 flex-shrink-0"
+                loading="lazy"
               />
               <div className="flex-1">
                 <h3 className="text-sm font-bold text-primary truncate group-hover:text-amber-500 transition-colors">

@@ -2,6 +2,7 @@
 
 import { usePathname } from 'next/navigation';
 import Link from 'next/link';
+import Image from 'next/image';
 import { useState, useEffect, useRef } from 'react';
 import QuotaIndicator from '@/components/QuotaIndicator';
 import { useSidebar } from '@/contexts/SidebarContext';
@@ -123,9 +124,11 @@ export default function Sidebar() {
           <div className="relative flex-shrink-0">
             {/* Glow behind logo */}
             <div className="absolute inset-0 rounded-full bg-indigo-500/25 blur-md" />
-            <img
+            <Image
               src="/logo.webp"
               alt="Athena Shield"
+              width={36}
+              height={36}
               className="relative w-9 h-9 object-contain drop-shadow-lg"
             />
           </div>
