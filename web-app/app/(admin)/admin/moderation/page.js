@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import { useToast } from '@/contexts/ToastContext';
 import { Search, Filter, ShieldAlert, CheckCircle, Clock } from 'lucide-react';
+import PaginationControls from '@/components/PaginationControls';
 
 export default function AdminModerationPage() {
   const [history, setHistory] = useState([]);
@@ -177,28 +178,12 @@ export default function AdminModerationPage() {
           </table>
         </div>
 
-        {/* Pagination Footer */}
-        {pagination.totalPages > 1 && (
-          <div className="p-4 border-t border-[var(--border-default)] flex items-center justify-between text-xs text-muted">
-            <span>Halaman {pagination.page} dari {pagination.totalPages} (Total {pagination.totalItems} Log)</span>
-            <div className="flex items-center gap-1">
-              <button
-                onClick={() => setPage(p => Math.max(p - 1, 1))}
-                disabled={page === 1}
-                className="px-2.5 py-1.5 rounded-lg border hover:bg-muted/30 disabled:opacity-40 disabled:pointer-events-none transition-colors cursor-pointer"
-              >
-                Sebelumnya
-              </button>
-              <button
-                onClick={() => setPage(p => Math.min(p + 1, pagination.totalPages))}
-                disabled={page === pagination.totalPages}
-                className="px-2.5 py-1.5 rounded-lg border hover:bg-muted/30 disabled:opacity-40 disabled:pointer-events-none transition-colors cursor-pointer"
-              >
-                Selanjutnya
-              </button>
-            </div>
-          </div>
-        )}
+        {/* Pagination Controls */}
+        <PaginationControls
+          currentPage={page}
+          totalPages={pagination.totalPages}
+          onPageChange={setPage}
+        />
       </div>
     </div>
   );

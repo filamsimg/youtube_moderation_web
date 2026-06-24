@@ -1,8 +1,12 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useToast } from '@/contexts/ToastContext';
 import { Search, ShieldAlert, ArrowRight, Eye, EyeOff, Calendar } from 'lucide-react';
+import StatusBadge from '@/components/ui/StatusBadge';
+import EmptyState from '@/components/ui/EmptyState';
+import PaginationControls from '@/components/PaginationControls';
+import { formatDateTime } from '@/lib/utils';
 
 export default function AdminAuditPage() {
   const [logs, setLogs] = useState([]);
@@ -66,13 +70,7 @@ export default function AdminAuditPage() {
     }
   };
 
-  // Badge color for actions
-  const getActionBadgeColor = (action) => {
-    if (action.includes('SUSPEND')) return 'bg-rose-500/10 text-rose-600 dark:text-rose-400 border border-rose-500/20';
-    if (action.includes('ROLE')) return 'bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/20';
-    if (action.includes('TIER') || action.includes('QUOTA')) return 'bg-indigo-50 text-indigo-600 dark:bg-indigo-500/10 dark:text-indigo-300 border border-indigo-500/25';
-    return 'bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-400 border';
-  };
+
 
   return (
     <div className="space-y-6 animate-fade-in">
@@ -123,25 +121,16 @@ export default function AdminAuditPage() {
             </thead>
             <tbody className="divide-y divide-[var(--border-default)]">
               {logs.map((log) => (
-                <optgroup key={log.id} label={log.id} className="p-0 m-0 border-none font-normal">
+                <React.Fragment key={log.id}>
                   <tr className="hover:bg-muted/5 transition-colors">
                     <td className="p-4 font-bold text-primary">{log.admin_email}</td>
                     <td className="p-4">
-                      <span className={`px-2.5 py-0.5 rounded-full font-bold text-[9px] uppercase ${getActionBadgeColor(log.action)}`}>
-                        {translateAction(log.action)}
-                      </span>
+                      <StatusBadge type="audit_action" value={log.action} label={translateAction(log.action)} />
                     </td>
                     <td className="p-4 text-secondary font-medium">{log.target_email || '-'}</td>
                     <td className="p-4 text-muted">{log.ip_address || '127.0.0.1'}</td>
                     <td className="p-4 text-muted">
-                      {log.created_at ? new Date(log.created_at).toLocaleString('id-ID', {
-                        day: 'numeric',
-                        month: 'short',
-                        year: 'numeric',
-                        hour: '2-digit',
-                        minute: '2-digit',
-                        second: '2-digit',
-                      }) : '-'}
+                      {formatDateTime(log.created_at)}
                     </td>
                     <td className="p-4 text-center">
                       <button
@@ -159,14 +148,20 @@ export default function AdminAuditPage() {
                     <tr className="bg-muted/10">
                       <td colSpan="6" className="p-4">
                         <div className="p-4 rounded-xl border border-[var(--border-default)] bg-card text-xs space-y-3 shadow-inner">
-                          <h4 className="font-bold text-primary border-b pb-1.5 border-[var(--border-default)]">Detail Perubahan Konfigurasi</h4>
+                          <h4 className="font-bold text-primary border-b pb-1.5 border-[var(--border-default)]">
+                            Detail Perubahan Konfigurasi {log.details?.package_id ? `(Package ID: ${log.details.package_id})` : ''}
+                          </h4>
                           
                           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                             {/* Before State */}
                             <div className="space-y-1">
                               <p className="font-semibold text-rose-600 dark:text-rose-400">Sebelumnya (Sebelum Perubahan):</p>
                               <pre className="p-2.5 rounded-lg bg-page font-mono text-[10px] text-muted overflow-auto max-h-[150px]">
-                                {log.details?.before ? JSON.stringify(log.details.before, null, 2) : 'Tidak ada data'}
+                                {log.details?.changes?.before 
+                                  ? JSON.stringify(log.details.changes.before, null, 2) 
+                                  : log.details?.before 
+                                    ? JSON.stringify(log.details.before, null, 2) 
+                                    : 'Tidak ada data'}
                               </pre>
                             </div>
 
@@ -174,7 +169,11 @@ export default function AdminAuditPage() {
                             <div className="space-y-1">
                               <p className="font-semibold text-emerald-600 dark:text-emerald-400">Sesudahnya (Setelah Perubahan):</p>
                               <pre className="p-2.5 rounded-lg bg-page font-mono text-[10px] text-secondary overflow-auto max-h-[150px]">
-                                {log.details?.after ? JSON.stringify(log.details.after, null, 2) : 'Tidak ada data'}
+                                {log.details?.changes?.after 
+                                  ? JSON.stringify(log.details.changes.after, null, 2) 
+                                  : log.details?.after 
+                                    ? JSON.stringify(log.details.after, null, 2) 
+                                    : 'Tidak ada data'}
                               </pre>
                             </div>
                           </div>
@@ -182,12 +181,16 @@ export default function AdminAuditPage() {
                       </td>
                     </tr>
                   )}
-                </optgroup>
+                </React.Fragment>
               ))}
               {logs.length === 0 && !loading && (
                 <tr>
-                  <td colSpan="6" className="p-8 text-center text-muted text-xs">
-                    Log audit tidak ditemukan.
+                  <td colSpan="6">
+                    <EmptyState
+                      icon={<ShieldAlert className="w-12 h-12 text-muted" />}
+                      title="Log audit tidak ditemukan"
+                      description="Tidak ada rekam jejak aktivitas admin yang cocok dengan kriteria pencarian Anda."
+                    />
                   </td>
                 </tr>
               )}
@@ -196,27 +199,11 @@ export default function AdminAuditPage() {
         </div>
 
         {/* Pagination Footer */}
-        {pagination.totalPages > 1 && (
-          <div className="p-4 border-t border-[var(--border-default)] flex items-center justify-between text-xs text-muted">
-            <span>Halaman {pagination.page} dari {pagination.totalPages} (Total {pagination.totalItems} Log Tindakan)</span>
-            <div className="flex items-center gap-1">
-              <button
-                onClick={() => setPage(p => Math.max(p - 1, 1))}
-                disabled={page === 1}
-                className="px-2.5 py-1.5 rounded-lg border hover:bg-muted/30 disabled:opacity-40 disabled:pointer-events-none transition-colors cursor-pointer"
-              >
-                Sebelumnya
-              </button>
-              <button
-                onClick={() => setPage(p => Math.min(p + 1, pagination.totalPages))}
-                disabled={page === pagination.totalPages}
-                className="px-2.5 py-1.5 rounded-lg border hover:bg-muted/30 disabled:opacity-40 disabled:pointer-events-none transition-colors cursor-pointer"
-              >
-                Selanjutnya
-              </button>
-            </div>
-          </div>
-        )}
+        <PaginationControls
+          currentPage={page}
+          totalPages={pagination.totalPages}
+          onPageChange={setPage}
+        />
       </div>
     </div>
   );
