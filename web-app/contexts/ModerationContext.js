@@ -39,6 +39,11 @@ export function ModerationProvider({ children }) {
   const [canLoadMore, setCanLoadMore] = useState(false);
   const [loadingMore, setLoadingMore] = useState(false);
 
+  // Polling status states (untuk feedback visual di UI)
+  const [pollingStatus, setPollingStatus] = useState('idle'); // 'idle' | 'fetching' | 'analyzing' | 'moderating'
+  const [nextPollAt, setNextPollAt] = useState(null); // timestamp Unix ms kapan poll berikutnya
+  const [lastPollingResult, setLastPollingResult] = useState(null); // { found, autoModerated }
+
   const sessionRef = useRef(session);
   const predictionsRef = useRef({});
   const selectedVideoIdsRef = useRef(selectedVideoIds);
@@ -209,6 +214,9 @@ export function ModerationProvider({ children }) {
 
     isFetchingRef.current = true;
     
+    // Update pollingStatus saat berjalan di background (silent)
+    if (isSilent) setPollingStatus('fetching');
+    
     if (loadMore) {
       setLoadingMore(true);
     } else {
@@ -252,7 +260,7 @@ export function ModerationProvider({ children }) {
           const currentToken = loadMore ? nextPageTokens[videoId] : null;
           const data = await youtubeService.getComments(videoId, sessionRef.current?.accessToken, currentToken);
           const normalized = (data.items || []).map(item => ({
-            id: item.id,
+            id: item.snippet.topLevelComment.id,
             ...item.snippet.topLevelComment.snippet,
             videoId,
             videoTitle
@@ -284,6 +292,9 @@ export function ModerationProvider({ children }) {
         } else {
           if (!isSilent) setComments(allNewComments);
         }
+
+        // Update status ke 'analyzing' setelah komentar berhasil diambil
+        if (isSilent) setPollingStatus('analyzing');
 
         let newPredictions = {};
         if (settings.batchModeration) {
@@ -334,6 +345,8 @@ export function ModerationProvider({ children }) {
 
         // Auto-Moderation Engine
         if ((settings.autoTahan || settings.autoHapus) && !isFeatureDisabled('auto_moderation')) {
+          // Update status ke 'moderating' setelah analisis selesai
+          if (isSilent) setPollingStatus('moderating');
           const pendingHold = [];
           const pendingReject = [];
           allNewComments.forEach(c => {
@@ -351,11 +364,11 @@ export function ModerationProvider({ children }) {
           const userEmail = sessionRef.current?.user?.email;
 
           if (pendingHold.length > 0 && tok) {
-            await youtubeService.moderateCommentsBatch(pendingHold, 'heldForReview', tok);
             const heldComments = [];
-            pendingHold.forEach(cid => {
+            // 1. Simpan ke DB dulu & update UI (agar komentar tidak muncul lagi di antrian)
+            for (const cid of pendingHold) {
               const commentObj = allNewComments.find(c => c.id === cid);
-              historyService.saveAction(userEmail, {
+              await historyService.saveAction(userEmail, {
                 channelId: selectedChannelId,
                 commentId: cid,
                 action: 'heldForReview',
@@ -363,7 +376,7 @@ export function ModerationProvider({ children }) {
                 author: commentObj?.authorDisplayName || 'Auto-Mod',
                 videoTitle: commentObj?.videoTitle || 'auto',
                 aiLabel: 'Spam',
-                aiConfidence: newPredictions[cid].score,
+                aiConfidence: newPredictions[cid]?.score || 0,
               });
               if (commentObj) {
                 heldComments.push({
@@ -373,25 +386,31 @@ export function ModerationProvider({ children }) {
                   createdAt: new Date().toISOString()
                 });
               }
-            });
+            }
             setSessionHistory(prev => [...heldComments, ...prev]);
             setComments(prev => prev.filter(c => !pendingHold.includes(c.id)));
+            // 2. Baru kirim ke YouTube API (best-effort, tidak batalkan proses jika gagal)
+            try {
+              await youtubeService.moderateCommentsBatch(pendingHold, 'heldForReview', tok);
+            } catch (ytErr) {
+              console.error('[Auto-Mod] Gagal sinkronisasi hold ke YouTube:', ytErr);
+            }
           }
 
           if (pendingReject.length > 0 && tok) {
-            await youtubeService.moderateCommentsBatch(pendingReject, 'rejected', tok);
             const rejectedComments = [];
-            pendingReject.forEach(cid => {
+            // 1. Simpan ke DB dulu & update UI
+            for (const cid of pendingReject) {
               const commentObj = allNewComments.find(c => c.id === cid);
-              historyService.saveAction(userEmail, {
+              await historyService.saveAction(userEmail, {
                 channelId: selectedChannelId,
                 commentId: cid,
                 action: 'rejected',
-                commentText: commentObj?.textOriginal || 'Dihapus otomatis',
+                commentText: commentObj?.textOriginal || 'Disembunyikan otomatis',
                 author: commentObj?.authorDisplayName || 'Auto-Mod',
                 videoTitle: commentObj?.videoTitle || 'auto',
                 aiLabel: 'Spam',
-                aiConfidence: newPredictions[cid].score,
+                aiConfidence: newPredictions[cid]?.score || 0,
               });
               if (commentObj) {
                 rejectedComments.push({
@@ -401,13 +420,39 @@ export function ModerationProvider({ children }) {
                   createdAt: new Date().toISOString()
                 });
               }
-            });
+            }
             setSessionHistory(prev => [...rejectedComments, ...prev]);
             setComments(prev => prev.filter(c => !pendingReject.includes(c.id)));
+            // 2. Baru kirim ke YouTube API (best-effort)
+            try {
+              await youtubeService.moderateCommentsBatch(pendingReject, 'rejected', tok);
+            } catch (ytErr) {
+              console.error('[Auto-Mod] Gagal sinkronisasi reject ke YouTube:', ytErr);
+            }
           }
+
+          // Simpan hasil siklus polling terakhir untuk UI feedback
+          if (isSilent) {
+            setLastPollingResult({
+              found: allNewComments.length,
+              autoModerated: pendingHold.length + pendingReject.length,
+              at: new Date().toISOString()
+            });
+          }
+        } else if (isSilent) {
+          // Tidak ada auto-mod tapi tetap simpan hasil polling
+          setLastPollingResult({
+            found: allNewComments.length,
+            autoModerated: 0,
+            at: new Date().toISOString()
+          });
         }
       } else {
         if (!isSilent && !loadMore) setComments([]);
+        // Polling tidak menemukan komentar baru
+        if (isSilent) {
+          setLastPollingResult({ found: 0, autoModerated: 0, at: new Date().toISOString() });
+        }
       }
 
       if (!loadMore) {
@@ -421,6 +466,8 @@ export function ModerationProvider({ children }) {
       setCommentsLoading(false);
       setLoadingMore(false);
       isFetchingRef.current = false;
+      // Reset pollingStatus ke idle setelah siklus selesai
+      if (isSilent) setPollingStatus('idle');
     }
   }, [selectedChannelId, videosCache, settings, deductQuota, toast, nextPageTokens]);
 
@@ -429,11 +476,18 @@ export function ModerationProvider({ children }) {
     let intervalId;
     if (isPolling && session?.accessToken && selectedVideoIds.size > 0) {
       const interval = (settings.pollingInterval || 120) * 1000;
+      // Set kapan poll pertama akan terjadi
+      setNextPollAt(Date.now() + interval);
       intervalId = setInterval(() => {
         if (!isFetchingRef.current && selectedVideoIdsRef.current.size > 0) {
+          // Reset countdown untuk siklus berikutnya
+          setNextPollAt(Date.now() + interval);
           handleLoadSelected(true);
         }
       }, interval);
+    } else {
+      setNextPollAt(null);
+      setPollingStatus('idle');
     }
     return () => clearInterval(intervalId);
   }, [isPolling, session, selectedVideoIds.size, settings.pollingInterval, handleLoadSelected]);
@@ -472,14 +526,16 @@ export function ModerationProvider({ children }) {
       const ok = await deductQuota('MODERATE_SINGLE', `Aksi: ${action}`);
       if (!ok) return;
 
-      await youtubeService.moderateComment(commentId, statusMap[action], sessionRef.current.accessToken);
-
       const prediction = predictionsRef.current[commentId];
+      const targetStatus = statusMap[action];
+
+      // === LANGKAH 1: Simpan ke database DULU ===
+      // Ini kritis! Bahkan jika YouTube API gagal, komentar tidak akan muncul lagi di antrian
       if (sessionRef.current?.user?.email) {
         await historyService.saveAction(sessionRef.current.user.email, {
           channelId: selectedChannelId,
           commentId: comment.id,
-          action: statusMap[action],
+          action: targetStatus,
           commentText: comment.textOriginal,
           author: comment.authorDisplayName,
           videoTitle: comment.videoTitle || 'unknown',
@@ -490,11 +546,12 @@ export function ModerationProvider({ children }) {
         });
       }
 
+      // === LANGKAH 2: Update state UI ===
       setSessionHistory(prev => [
         {
           ...comment,
-          status: statusMap[action],
-          action: statusMap[action],
+          status: targetStatus,
+          action: targetStatus,
           aiLabel: prediction?.label || 'Normal',
           aiConfidence: prediction?.confidence || prediction?.score || 0,
           sentiment: prediction?.sentiment || null,
@@ -510,7 +567,7 @@ export function ModerationProvider({ children }) {
           comment_id: comment.id,
           user_email: sessionRef.current?.user?.email,
           channel_id: selectedChannelId,
-          action: statusMap[action],
+          action: targetStatus,
           comment_text: comment.textOriginal,
           author: comment.authorDisplayName,
           video_title: comment.videoTitle || 'unknown',
@@ -523,8 +580,20 @@ export function ModerationProvider({ children }) {
         ...prev.filter(h => h.comment_id !== comment.id)
       ]);
 
+      // Hapus dari antrian moderasi
       setComments(prev => prev.filter(c => c.id !== commentId));
-      toast.success(`Komentar berhasil di-${action}`);
+
+      // === LANGKAH 3: Kirim ke YouTube API (best-effort) ===
+      // Jika gagal, tidak membatalkan proses — data sudah tersimpan di DB
+      try {
+        await youtubeService.moderateComment(commentId, targetStatus, sessionRef.current.accessToken);
+        const actionLabel = action === 'reject' ? 'disembunyikan dari publik' : `di-${action}`;
+        toast.success(`Komentar berhasil ${actionLabel}`);
+      } catch (ytErr) {
+        console.error(`YouTube API error saat ${action}:`, ytErr);
+        toast.warning(`Tersimpan di riwayat, namun gagal sinkronisasi ke YouTube. Coba muat ulang halaman.`);
+      }
+
     } catch (err) {
       console.error(`Action ${action} error:`, err);
       toast.error(`Gagal melakukan aksi pada komentar`);
@@ -561,14 +630,11 @@ export function ModerationProvider({ children }) {
       const ok = await deductQuota('MODERATE_BATCH', `${commentIds.length} Komentar`);
       if (!ok) return false;
 
-      // Kirim request batch ke YouTube API
-      await youtubeService.moderateCommentsBatch(commentIds, targetStatus, sessionRef.current.accessToken);
-
       // Cari semua objek komentar yang diproses dari state comments
       const batchComments = comments.filter(c => commentIds.includes(c.id));
       const nowString = new Date().toISOString();
 
-      // Siapkan item riwayat untuk Supabase
+      // === LANGKAH 1: Simpan batch ke database DULU ===
       const historyItems = batchComments.map(comment => {
         const prediction = predictionsRef.current[comment.id];
         return {
@@ -585,12 +651,11 @@ export function ModerationProvider({ children }) {
         };
       });
 
-      // Simpan batch ke Supabase
       if (sessionRef.current?.user?.email && historyItems.length > 0) {
         await historyService.saveBatchActions(sessionRef.current.user.email, historyItems);
       }
 
-      // Update session history state dengan field AI utuh
+      // === LANGKAH 2: Update state UI ===
       const newSessionItems = batchComments.map(comment => {
         const prediction = predictionsRef.current[comment.id];
         return {
@@ -634,10 +699,19 @@ export function ModerationProvider({ children }) {
         ...prev.filter(h => !commentIds.includes(h.comment_id))
       ]);
 
-      // Hapus komentar dari antrian utama
+      // Hapus dari antrian moderasi
       setComments(prev => prev.filter(c => !commentIds.includes(c.id)));
-      
-      toast.success(`${commentIds.length} komentar berhasil di-${action}`);
+
+      // === LANGKAH 3: Kirim ke YouTube API (best-effort) ===
+      try {
+        await youtubeService.moderateCommentsBatch(commentIds, targetStatus, sessionRef.current.accessToken);
+        const actionLabel = action === 'reject' ? 'disembunyikan dari publik' : `di-${action}`;
+        toast.success(`${commentIds.length} komentar berhasil ${actionLabel}`);
+      } catch (ytErr) {
+        console.error(`YouTube Batch API error saat ${action}:`, ytErr);
+        toast.warning(`Tersimpan di riwayat, namun gagal sinkronisasi ke YouTube. Coba muat ulang halaman.`);
+      }
+
       return true;
     } catch (err) {
       console.error(`Batch Action ${action} error:`, err);
@@ -813,7 +887,8 @@ export function ModerationProvider({ children }) {
         processingComment, handleAction, handleBatchAction,
         fetchProgress, isFetchingMulti, hasLoaded,
         sessionHistory, dbHistory, handleUndoAction, handleChangeAction,
-        canLoadMore, loadingMore
+        canLoadMore, loadingMore,
+        pollingStatus, nextPollAt, lastPollingResult
       }}
     >
       {children}
