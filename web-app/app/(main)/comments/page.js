@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import { useModeration } from '@/contexts/ModerationContext';
 import { useYouTube } from '@/contexts/YouTubeContext';
 import { useQuota } from '@/contexts/QuotaContext';
+import { useSettings } from '@/contexts/SettingsContext';
 import StatusBadge from '@/components/ui/StatusBadge';
 import EmptyState from '@/components/ui/EmptyState';
 import UserAvatar from '@/components/ui/UserAvatar';
@@ -27,6 +28,7 @@ export default function CommentsPage() {
     }
   }, []);
 
+  const { settings } = useSettings();
   const {
     selectedVideoIds, primaryVideo, handleToggleVideo, handleSelectAll, handleDeselectAll,
     comments, commentsLoading, error, predictions,
@@ -34,8 +36,22 @@ export default function CommentsPage() {
     processingComment, handleAction, handleBatchAction,
     fetchProgress, isFetchingMulti, hasLoaded,
     sessionHistory, dbHistory, handleUndoAction, handleChangeAction,
-    canLoadMore, loadingMore
+    canLoadMore, loadingMore,
+    pollingStatus, nextPollAt, lastPollingResult
   } = useModeration();
+
+  // Countdown state: hitung mundur detik menuju poll berikutnya
+  const [countdown, setCountdown] = useState(null);
+  useEffect(() => {
+    if (!isPolling || !nextPollAt) { setCountdown(null); return; }
+    const tick = () => {
+      const remaining = Math.max(0, Math.ceil((nextPollAt - Date.now()) / 1000));
+      setCountdown(remaining);
+    };
+    tick();
+    const id = setInterval(tick, 1000);
+    return () => clearInterval(id);
+  }, [isPolling, nextPollAt]);
 
   const [selectedComments, setSelectedComments] = useState(new Set());
 
@@ -555,6 +571,73 @@ export default function CommentsPage() {
           </div>
         </div>
 
+        {/* ── Polling Status Bar ─────────────────────────────────── */}
+        {isPolling && (
+          <div
+            className="px-4 py-2 flex items-center gap-3 flex-wrap border-b text-[11px]"
+            style={{ background: 'var(--bg-card-hover)', borderColor: 'var(--border-default)' }}
+          >
+            {/* Phase indicator */}
+            <div className="flex items-center gap-1.5">
+              {pollingStatus === 'idle' ? (
+                <>
+                  <span className="relative flex h-2 w-2">
+                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75" />
+                    <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500" />
+                  </span>
+                  <span style={{ color: 'var(--text-muted)' }}>
+                    {countdown !== null
+                      ? `Pemeriksaan berikutnya dalam ${countdown} detik`
+                      : 'Auto-moderasi aktif'}
+                  </span>
+                </>
+              ) : pollingStatus === 'fetching' ? (
+                <>
+                  <div className="animate-spin rounded-full h-2.5 w-2.5 border-b-2 border-blue-400" />
+                  <span className="text-blue-400 font-medium">Mengambil komentar baru...</span>
+                </>
+              ) : pollingStatus === 'analyzing' ? (
+                <>
+                  <div className="animate-spin rounded-full h-2.5 w-2.5 border-b-2 border-amber-400" />
+                  <span className="text-amber-400 font-medium">Menganalisis dengan AI...</span>
+                </>
+              ) : pollingStatus === 'moderating' ? (
+                <>
+                  <div className="animate-spin rounded-full h-2.5 w-2.5 border-b-2 border-rose-400" />
+                  <span className="text-rose-400 font-medium">Menerapkan moderasi otomatis...</span>
+                </>
+              ) : null}
+            </div>
+
+            {/* Separator */}
+            {lastPollingResult && pollingStatus === 'idle' && (
+              <>
+                <span style={{ color: 'var(--border-hover)' }}>•</span>
+                <span style={{ color: 'var(--text-muted)' }}>
+                  Siklus terakhir:
+                  <span className="font-semibold" style={{ color: 'var(--text-secondary)' }}> {lastPollingResult.found} komentar ditemukan</span>
+                  {lastPollingResult.autoModerated > 0 && (
+                    <>, <span className="text-emerald-400 font-semibold">{lastPollingResult.autoModerated} dimoderasi otomatis</span></>
+                  )}
+                </span>
+              </>
+            )}
+
+            {/* Auto-mod config badges */}
+            <div className="ml-auto flex items-center gap-1.5">
+              {settings.autoTahan && !settings.autoHapus && (
+                <span className="px-1.5 py-0.5 rounded text-[10px] font-medium bg-amber-500/10 text-amber-400 border border-amber-500/20">Tahan Otomatis ON</span>
+              )}
+              {settings.autoHapus && (
+                <span className="px-1.5 py-0.5 rounded text-[10px] font-medium bg-rose-500/10 text-rose-400 border border-rose-500/20">Sembunyikan Otomatis ON</span>
+              )}
+              {!settings.autoTahan && !settings.autoHapus && (
+                <span className="px-1.5 py-0.5 rounded text-[10px] font-medium bg-gray-500/10 text-gray-400 border border-gray-500/20">Aksi Otomatis: Nonaktif</span>
+              )}
+            </div>
+          </div>
+        )}
+
         {/* Tab Switcher */}
         <div className="px-4 border-b flex gap-4 flex-shrink-0" style={{ borderColor: 'var(--border-default)', background: 'var(--bg-card)' }}>
           <button
@@ -752,7 +835,7 @@ export default function CommentsPage() {
                                   </button>
                                 )}
                                 {commentStatus !== 'rejected' && (
-                                  <button disabled={isProcessing} onClick={() => handleModerate(comment.id, 'reject')} title="Hapus Komentar"
+                                 <button disabled={isProcessing} onClick={() => handleModerate(comment.id, 'reject')} title="Sembunyikan dari Publik"
                                     className="p-1.5 rounded-md hover:bg-rose-500/10 disabled:opacity-30" style={{ color: 'var(--color-danger-text)' }}>
                                     <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor">
                                       <path strokeLinecap="round" strokeLinejoin="round" d="M9.75 9.75l4.5 4.5m0-4.5l-4.5 4.5M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
@@ -1285,7 +1368,7 @@ export default function CommentsPage() {
                 <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" strokeWidth={2.5} stroke="currentColor">
                   <path strokeLinecap="round" strokeLinejoin="round" d="M9.75 9.75l4.5 4.5m0-4.5l-4.5 4.5M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                 </svg>
-                <span>Hapus</span>
+                <span>Sembunyikan</span>
               </button>
 
               <div className="h-5 w-px mx-0.5" style={{ background: 'var(--border-default)' }} />
