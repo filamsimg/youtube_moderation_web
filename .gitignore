@@ -37,3 +37,11 @@ walkthrough_*
 # OS Files
 .DS_Store
 Thumbs.db
+
+# Microsoft Office temporary files
+~$*.docx
+~$*.xlsx
+~$*.pptx
+~WR*.tmp
+*.tmp
+
