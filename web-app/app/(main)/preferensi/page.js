@@ -67,7 +67,6 @@ export default function PreferensiPage() {
 
   const handleSave = async () => {
     await updateSettings({
-      theme,
       notifKomentar,
       autoTahan,
       autoHapus,
@@ -299,7 +298,7 @@ export default function PreferensiPage() {
           <h2 className="text-sm font-semibold" style={{ color: 'var(--text-primary)' }}>Hemat Jatah Poin YouTube</h2>
         </div>
         <p className="text-xs mb-4" style={{ color: 'var(--text-muted)' }}>
-          Optimalkan jatah harian akun Anda yang dibatasi oleh pihak YouTube (10.000 poin/hari)
+          Optimalkan jatah quota Anda
         </p>
 
         <div className="space-y-6">

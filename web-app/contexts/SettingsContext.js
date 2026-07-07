@@ -58,7 +58,6 @@ export function SettingsProvider({ children }) {
       const data = await settingsService.getSettings(email);
       if (data) {
         const mapped = {
-          theme: data.theme || 'dark',
           autoTahan: data.auto_tahan ?? true,
           autoHapus: data.auto_hapus ?? false,
           thresholdHold: data.threshold_hold ?? 70,
