@@ -55,6 +55,10 @@ export async function GET() {
       tier: profile.tier,
       active_package_id: profile.active_package_id,
 
+      // Role & status akun (dibutuhkan oleh halaman admin untuk cek hak akses secara real-time)
+      role: profile.role,
+      is_active: profile.is_active,
+
       // Breakdown kuota terpisah untuk transparansi UI
       subscription_quota: profile.subscription_quota,
       trial_quota: profile.trial_quota,

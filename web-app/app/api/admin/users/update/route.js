@@ -45,7 +45,7 @@ export async function PATCH(request) {
       }
     }
 
-    // 3. Susun data update dan audit log
+    // 3. Susun data update dan audit log dengan type casting yang aman
     const updatedData = {};
     const auditDetails = {
       before: {},
@@ -56,11 +56,38 @@ export async function PATCH(request) {
     const allowedKeys = ['tier', 'subscription_quota', 'trial_quota', 'quota_limit', 'quota_expiry', 'is_active', 'role'];
 
     allowedKeys.forEach((key) => {
-      if (updates[key] !== undefined && updates[key] !== targetProfile[key]) {
-        updatedData[key] = updates[key];
-        auditDetails.before[key] = targetProfile[key];
-        auditDetails.after[key] = updates[key];
-        hasChanges = true;
+      if (updates[key] !== undefined) {
+        let val = updates[key];
+
+        // Konversi tipe data numerik
+        if (['subscription_quota', 'trial_quota', 'quota_limit'].includes(key)) {
+          val = parseInt(val, 10);
+          if (isNaN(val)) val = 0;
+        }
+
+        // Penanganan tanggal kosong agar tidak memicu error sintaks timestamp di Postgres
+        if (key === 'quota_expiry') {
+          val = val && typeof val === 'string' && val.trim() !== '' ? new Date(val).toISOString() : null;
+        }
+
+        const targetVal = targetProfile[key];
+        
+        // Cek perbedaan nilai secara presisi
+        let isDifferent = false;
+        if (key === 'quota_expiry') {
+          const t1 = targetVal ? new Date(targetVal).getTime() : null;
+          const t2 = val ? new Date(val).getTime() : null;
+          isDifferent = t1 !== t2;
+        } else {
+          isDifferent = targetVal !== val;
+        }
+
+        if (isDifferent) {
+          updatedData[key] = val;
+          auditDetails.before[key] = targetVal;
+          auditDetails.after[key] = val;
+          hasChanges = true;
+        }
       }
     });
 

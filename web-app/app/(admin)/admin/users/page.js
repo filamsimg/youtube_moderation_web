@@ -10,7 +10,18 @@ import PaginationControls from '@/components/PaginationControls';
 
 export default function AdminUsersPage() {
   const { data: session } = useSession();
-  const currentAdminRole = session?.user?.role || 'user';
+  // PENTING: Ambil role dari database langsung, bukan dari JWT session.
+  // JWT session bisa sudah kedaluwarsa jika role baru saja diubah di database.
+  const [currentAdminRole, setCurrentAdminRole] = useState('user');
+
+  useEffect(() => {
+    if (!session?.user?.email) return;
+    // Fetch profil admin aktual dari DB (bukan dari JWT token yang mungkin sudah usang)
+    fetch('/api/quota/profile')
+      .then(r => r.ok ? r.json() : null)
+      .then(data => { if (data?.role) setCurrentAdminRole(data.role); })
+      .catch(() => {});
+  }, [session?.user?.email]);
 
   const [users, setUsers] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -102,10 +113,27 @@ export default function AdminUsersPage() {
     setIsUpdating(true);
     
     try {
-      const response = await fetch(`/api/admin/users/${editingUser.id}`, {
+      // Hanya kirim field yang memang ada di form (role hanya dikirim jika superadmin)
+      const updates = {
+        tier: editForm.tier,
+        subscription_quota: editForm.subscription_quota,
+        trial_quota: editForm.trial_quota,
+        quota_limit: editForm.quota_limit,
+        quota_expiry: editForm.quota_expiry,
+      };
+
+      // Role hanya boleh disertakan jika currentAdminRole adalah superadmin
+      if (currentAdminRole === 'superadmin') {
+        updates.role = editForm.role;
+      }
+
+      const response = await fetch('/api/admin/users/update', {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(editForm),
+        body: JSON.stringify({
+          target_email: editingUser.email,
+          updates,
+        }),
       });
       const json = await response.json();
 
@@ -129,14 +157,19 @@ export default function AdminUsersPage() {
     const user = suspendingUser;
     if (!user) return;
 
-    const action = user.status === 'suspended' ? 'unsuspend' : 'suspend';
+    const action = !user.is_active ? 'unsuspend' : 'suspend';
     const actionText = action === 'suspend' ? 'dinonaktifkan' : 'diaktifkan kembali';
     
     try {
-      const response = await fetch(`/api/admin/users/${user.id}/status`, {
-        method: 'POST',
+      const response = await fetch('/api/admin/users/update', {
+        method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ action }),
+        body: JSON.stringify({
+          target_email: user.email,
+          updates: {
+            is_active: action === 'unsuspend',
+          },
+        }),
       });
       const json = await response.json();
 
