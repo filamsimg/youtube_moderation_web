@@ -9,6 +9,7 @@ import ConfirmModal from '@/components/ui/ConfirmModal';
 import { useToast } from '@/contexts/ToastContext';
 import Link from 'next/link';
 import { User, LogOut, ArrowLeftRight } from 'lucide-react';
+import Footer from '@/components/Footer';
 
 export default function AdminLayout({ children }) {
   const { data: session, status } = useSession();
@@ -200,8 +201,11 @@ export default function AdminLayout({ children }) {
           </header>
 
           {/* Page Content */}
-          <main className="flex-1 p-4 lg:p-6 overflow-y-auto" style={{ background: 'var(--bg-page)' }}>
-            {children}
+          <main className="flex-1 p-4 lg:p-6 overflow-y-auto flex flex-col" style={{ background: 'var(--bg-page)' }}>
+            <div className="flex-1">
+              {children}
+            </div>
+            <Footer variant="dashboard" />
           </main>
         </div>
       </div>

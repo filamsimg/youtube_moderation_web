@@ -4,6 +4,7 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { useSession } from 'next-auth/react';
 import { usePathname } from 'next/navigation';
+import Footer from '@/components/Footer';
 
 /**
  * Layout untuk halaman PUBLIK.
@@ -80,22 +81,7 @@ export default function PublicLayout({ children }) {
       </main>
 
       {/* ── Footer ────────────────────────────────────────────── */}
-      <footer className="border-t bg-card" style={{ borderColor: 'var(--border-default)' }}>
-        <div className="max-w-6xl mx-auto px-4 sm:px-6 py-8 flex flex-col sm:flex-row items-center justify-between gap-4">
-          <div className="flex items-center gap-2">
-            <Image src="/logo.webp" alt="Athena Shield" width={24} height={24} className="w-6 h-6 object-contain grayscale opacity-70" />
-            <span className="text-xs font-semibold text-secondary">Athena Shield</span>
-          </div>
-          <p className="text-[11px] text-muted">
-            © 2026 Athena Shield · Moderasi Komentar Judol berbasis AI
-          </p>
-          <div className="flex items-center gap-4">
-            <Link href="/pricing" className="text-[11px] text-muted hover:text-primary transition-colors">Harga</Link>
-            <Link href="/privacy" className="text-[11px] text-muted hover:text-primary transition-colors">Privasi</Link>
-            <Link href="/login" className="text-[11px] text-muted hover:text-primary transition-colors">Login</Link>
-          </div>
-        </div>
-      </footer>
+      <Footer variant="public" />
     </div>
   );
 }
