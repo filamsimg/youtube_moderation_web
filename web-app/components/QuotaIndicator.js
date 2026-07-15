@@ -73,6 +73,23 @@ export default function QuotaIndicator({ compact = false }) {
     if (profile.tier === 'FREE') {
       const totalBalance = profile.quota_balance || 0;
       
+      if (profile.is_trial_active) {
+        const expiryDate = new Date(profile.quota_expiry);
+        const diffTime = expiryDate - new Date();
+        const daysLeft = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+        return {
+          text: `Trial Premium (${daysLeft > 0 ? `${daysLeft} hari lagi` : 'Hari ini'})`,
+          className: 'text-amber-500 font-semibold'
+        };
+      }
+
+      if (profile.is_trial_expired) {
+        return {
+          text: 'Trial Selesai (Terkunci)',
+          className: 'text-rose-500 font-bold'
+        };
+      }
+
       if (totalBalance <= 0) {
         return { 
           text: 'Kuota Habis', 
@@ -81,7 +98,7 @@ export default function QuotaIndicator({ compact = false }) {
       }
       
       return { 
-        text: 'Trial Uji Coba Aktif', 
+        text: 'Trial Belum Aktif', 
         className: 'text-slate-400 font-medium' 
       };
     }

@@ -9,6 +9,7 @@ import { useSettings } from '@/contexts/SettingsContext';
 import StatusBadge from '@/components/ui/StatusBadge';
 import EmptyState from '@/components/ui/EmptyState';
 import UserAvatar from '@/components/ui/UserAvatar';
+import TrialBanner from '@/components/TrialBanner';
 
 export default function CommentsPage() {
   const router = useRouter();
@@ -1249,6 +1250,11 @@ export default function CommentsPage() {
           </svg>
           <span>{selectedVideoIds.size > 0 ? `${selectedVideoIds.size} Video` : 'Pilih Video'}</span>
         </button>
+      </div>
+
+      {/* Trial Banner */}
+      <div className="px-4 lg:px-6 py-2 flex-shrink-0">
+        <TrialBanner />
       </div>
 
       {/* Split layout */}

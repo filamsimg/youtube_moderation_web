@@ -15,6 +15,7 @@ import { useYouTube } from '@/contexts/YouTubeContext';
 import { useTheme } from '@/components/ThemeProvider';
 import StatCard from '@/components/ui/StatCard';
 import LoadingState from '@/components/ui/LoadingState';
+import TrialBanner from '@/components/TrialBanner';
 
 // ── Dark Tooltip untuk Pie Chart ─────────────────────────────
 const CustomPieTooltip = ({ active, payload }) => {
@@ -191,6 +192,9 @@ export default function DashboardPage() {
           Data berdasarkan riwayat kumulatif pemindaian AI
         </div>
       </div>
+
+      {/* Trial Banner */}
+      <TrialBanner />
 
       {/* ── Error Alert ─────────────────────────────────────── */}
       {error && (

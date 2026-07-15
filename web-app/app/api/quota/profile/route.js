@@ -41,10 +41,27 @@ export async function GET() {
       .limit(1)
       .maybeSingle();
 
-    const disabledFeatures = pkg?.disabled_features || [];
-    const allowBulkModeration = pkg?.allow_bulk_moderation ?? false;
-    const allowExportCSV = pkg?.allow_export_csv ?? false;
-    const allowAutoModeration = pkg?.allow_auto_moderation ?? false;
+    let disabledFeatures = pkg?.disabled_features || [];
+    let allowBulkModeration = pkg?.allow_bulk_moderation ?? false;
+    let allowExportCSV = pkg?.allow_export_csv ?? false;
+    let allowAutoModeration = pkg?.allow_auto_moderation ?? false;
+
+    // Hitung status trial 30 hari secara dinamis (tanpa ubah skema DB)
+    // Mendayagunakan quota_expiry milik tier FREE
+    const isTrialActive = profile.tier === 'FREE' && 
+                          profile.quota_expiry && 
+                          (new Date(profile.quota_expiry) > new Date());
+    
+    const isTrialExpired = profile.tier === 'FREE' && 
+                           profile.quota_expiry && 
+                           (new Date(profile.quota_expiry) <= new Date());
+
+    if (isTrialActive) {
+      disabledFeatures = [];
+      allowBulkModeration = true;
+      allowExportCSV = true;
+      allowAutoModeration = true;
+    }
 
     // Compute total balance dari kedua sumber kuota (Langganan & Trial)
     const totalBalance = profile.subscription_quota + profile.trial_quota;
@@ -67,12 +84,16 @@ export async function GET() {
       quota_balance: totalBalance,
       quota_limit: profile.quota_limit,
 
-      // Masa aktif langganan
+      // Masa aktif langganan / trial
       quota_expiry: profile.quota_expiry,
       last_reset: profile.last_reset,
 
       // Persentase terpakai
       percentage: Math.min(percentage, 100),
+
+      // Status Trial Khusus
+      is_trial_active: isTrialActive,
+      is_trial_expired: isTrialExpired,
 
       // Fitur pemasaran yang dinonaktifkan untuk tier ini (Estetika UI)
       disabled_features: disabledFeatures,

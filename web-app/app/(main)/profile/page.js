@@ -8,6 +8,7 @@ import { useToast } from '@/contexts/ToastContext';
 import PaginationControls from '@/components/PaginationControls';
 import { Tv, CheckCircle2, User, CreditCard, Shield, RefreshCw, X, Play, Ban, Clock, AlertTriangle, ExternalLink } from 'lucide-react';
 import Script from 'next/script';
+import TrialBanner from '@/components/TrialBanner';
 
 export default function ProfilePage() {
   const { data: session } = useSession();
@@ -258,6 +259,27 @@ export default function ProfilePage() {
     if (profile.tier === 'FREE') {
       const totalBalance = profile.quota_balance || 0;
       
+      if (profile.is_trial_active) {
+        const expiryDate = new Date(profile.quota_expiry);
+        const diffTime = expiryDate - new Date();
+        const daysLeft = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+        return {
+          text: `Trial Premium (${daysLeft > 0 ? `${daysLeft} hari lagi` : 'Hari ini'})`,
+          className: 'text-amber-500 font-semibold',
+          isWarning: false,
+          message: null
+        };
+      }
+
+      if (profile.is_trial_expired) {
+        return {
+          text: 'Trial Selesai (Terkunci)',
+          className: 'text-rose-500 font-bold',
+          isWarning: true,
+          message: 'Masa trial fitur premium Anda telah berakhir. Silakan tingkatkan ke paket Pro untuk membuka kembali fitur otomatis.'
+        };
+      }
+
       if (totalBalance <= 0) {
         return {
           text: 'Kuota Habis',
@@ -268,7 +290,7 @@ export default function ProfilePage() {
       }
       
       return {
-        text: 'Trial Uji Coba Aktif',
+        text: 'Trial Belum Aktif',
         className: 'text-slate-400 font-semibold',
         isWarning: false,
         message: null
@@ -356,6 +378,9 @@ export default function ProfilePage() {
           Kelola profil pengguna, beralih kanal YouTube aktif, dan lihat histori transaksi Anda.
         </p>
       </div>
+
+      {/* Trial Banner */}
+      <TrialBanner />
 
       {/* ── Bento Grid: Bagian Atas ────────────────────────────── */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
