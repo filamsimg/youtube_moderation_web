@@ -4,6 +4,8 @@ import { authOptions } from '@/lib/auth';
 import { QUOTA_COSTS } from '@/services/quotaService';
 import { supabaseAdmin } from '@/lib/supabaseAdmin';
 
+export const dynamic = 'force-dynamic';
+
 /**
  * GET /api/quota/check?action=FETCH_COMMENTS
  * Mengecek apakah user punya saldo cukup untuk suatu aksi.

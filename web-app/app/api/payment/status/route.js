@@ -3,6 +3,8 @@ import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
 import { supabaseAdmin } from '@/lib/supabaseAdmin';
 
+export const dynamic = 'force-dynamic';
+
 /**
  * GET /api/payment/status?order_id=ATHENA-TRX-XXX
  * Endpoint untuk memeriksa status terkini transaksi secara realtime.
