@@ -1,0 +1,28 @@
+# Virtual environments
+venv/
+.venv/
+env/
+ENV/
+
+# Python caches and compiles
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.pytest_cache/
+.ipynb_checkpoints/
+
+# Local configuration and logs
+.env
+*.log
+*.sqlite
+
+# Git folders
+.git/
+.gitignore
+.gitattributes
+
+# Docker files (no need to copy inside itself)
+Dockerfile
+docker-compose.yml
+.dockerignore

@@ -1,0 +1,13 @@
+services:
+  model-api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: athena-shield-model-api:latest
+    container_name: athena-shield-model-api
+    ports:
+      - "5000:5000"
+    restart: unless-stopped
+    # Environment variables (can be expanded if needed)
+    environment:
+      - PORT=5000
