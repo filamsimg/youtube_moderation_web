@@ -194,7 +194,7 @@ export default function DashboardPage() {
       </div>
 
       {/* Trial Banner */}
-      <TrialBanner />
+      <TrialBanner dismissible={true} />
 
       {/* ── Error Alert ─────────────────────────────────────── */}
       {error && (

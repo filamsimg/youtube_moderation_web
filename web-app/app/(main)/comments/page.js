@@ -1253,9 +1253,7 @@ export default function CommentsPage() {
       </div>
 
       {/* Trial Banner */}
-      <div className="px-4 lg:px-6 py-2 flex-shrink-0">
-        <TrialBanner />
-      </div>
+      <TrialBanner dismissible={true} className="px-4 lg:px-6 py-2 flex-shrink-0" />
 
       {/* Split layout */}
       <div className="flex flex-1 overflow-hidden">
