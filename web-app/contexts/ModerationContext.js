@@ -4,6 +4,7 @@ import React, { createContext, useContext, useState, useEffect, useCallback, use
 import { useSession } from 'next-auth/react';
 import { youtubeService } from '@/services/youtubeService';
 import { historyService } from '@/services/historyService';
+import { predictionCacheService } from '@/services/predictionCacheService';
 import axios from 'axios';
 import { useToast } from './ToastContext';
 import { useQuota } from './QuotaContext';
@@ -296,23 +297,49 @@ export function ModerationProvider({ children }) {
         // Update status ke 'analyzing' setelah komentar berhasil diambil
         if (isSilent) setPollingStatus('analyzing');
 
-        let newPredictions = {};
-        if (settings.batchModeration) {
-          newPredictions = await performInferenceBatch(allNewComments);
-        } else {
-          for (let i = 0; i < allNewComments.length; i++) {
-            try {
-              const res = await axios.post('/api/predict', { text: allNewComments[i].textOriginal });
-              newPredictions[allNewComments[i].id] = {
-                label: res.data.label,
-                confidence: res.data.confidence,
-                score: res.data.confidence,
-                sentiment: res.data.sentiment,
-                sentiment_score: res.data.sentiment_score
-              };
-            } catch (e) { }
+        // ── REVISI 4: Cek AI Prediction Cache sebelum inference ──────────────
+        // Ambil prediksi yang sudah tersimpan di DB untuk semua komentar baru
+        const allCommentIds = allNewComments.map(c => c.id);
+        const cachedPredictions = await predictionCacheService.getCachedPredictions(allCommentIds);
+
+        // Pisahkan: komentar yang sudah ada di cache vs yang perlu dianalisis AI
+        const commentsNeedingInference = allNewComments.filter(c => !cachedPredictions[c.id]);
+        const cacheHitCount = allNewComments.length - commentsNeedingInference.length;
+
+        if (cacheHitCount > 0) {
+          console.log(`[AI Cache] ${cacheHitCount} komentar dimuat dari cache, ${commentsNeedingInference.length} perlu dianalisis AI baru.`);
+        }
+
+        let freshPredictions = {};
+        if (commentsNeedingInference.length > 0) {
+          // Hanya analisis komentar yang BELUM pernah dianalisis
+          if (settings.batchModeration) {
+            freshPredictions = await performInferenceBatch(commentsNeedingInference);
+          } else {
+            for (let i = 0; i < commentsNeedingInference.length; i++) {
+              try {
+                const res = await axios.post('/api/predict', { text: commentsNeedingInference[i].textOriginal });
+                freshPredictions[commentsNeedingInference[i].id] = {
+                  label: res.data.label,
+                  confidence: res.data.confidence,
+                  score: res.data.confidence,
+                  sentiment: res.data.sentiment,
+                  sentiment_score: res.data.sentiment_score
+                };
+              } catch (e) { console.error('Single inference error:', e); }
+            }
+          }
+
+          // Simpan hasil prediksi baru ke cache DB (background, non-blocking)
+          if (Object.keys(freshPredictions).length > 0) {
+            predictionCacheService.savePredictions(freshPredictions).catch(e =>
+              console.error('[AI Cache] Gagal simpan ke cache:', e)
+            );
           }
         }
+
+        // Gabungkan cache lama + prediksi baru
+        const newPredictions = { ...cachedPredictions, ...freshPredictions };
 
         setPredictions(prev => {
           const merged = { ...prev, ...newPredictions };
@@ -351,7 +378,11 @@ export function ModerationProvider({ children }) {
           const pendingReject = [];
           allNewComments.forEach(c => {
             const pred = newPredictions[c.id];
-            if (!pred || pred.label !== 'Cyberbullying') return;
+            if (!pred) return;
+            const labelLower = String(pred.label || '').toLowerCase();
+            const isSpam = labelLower.includes('spam') || labelLower.includes('judol') || labelLower.includes('cyber');
+            if (!isSpam) return;
+
             const scr = Math.round(pred.score * 100);
             if (settings.autoHapus && scr >= settings.thresholdReject) {
               pendingReject.push(c.id);
@@ -375,7 +406,7 @@ export function ModerationProvider({ children }) {
                 commentText: commentObj?.textOriginal || 'Ditahan otomatis',
                 author: commentObj?.authorDisplayName || 'Auto-Mod',
                 videoTitle: commentObj?.videoTitle || 'auto',
-                aiLabel: 'Spam',
+                aiLabel: 'Spam Judol',
                 aiConfidence: newPredictions[cid]?.score || 0,
               });
               if (commentObj) {
@@ -409,7 +440,7 @@ export function ModerationProvider({ children }) {
                 commentText: commentObj?.textOriginal || 'Disembunyikan otomatis',
                 author: commentObj?.authorDisplayName || 'Auto-Mod',
                 videoTitle: commentObj?.videoTitle || 'auto',
-                aiLabel: 'Spam',
+                aiLabel: 'Spam Judol',
                 aiConfidence: newPredictions[cid]?.score || 0,
               });
               if (commentObj) {

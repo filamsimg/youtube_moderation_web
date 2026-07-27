@@ -369,8 +369,8 @@ export default function CommentsPage() {
             onClick={() => { handleLoadSelected(false); setShowVideoPanel(false); }}
             disabled={selectedVideoIds.size === 0 || isFetchingMulti}
             className={`w-full py-2 px-3 text-white text-xs font-semibold rounded-xl transition-all active:scale-95 disabled:cursor-not-allowed flex items-center justify-center gap-2 disabled:opacity-50 ${selectedVideoIds.size > 0 && !hasLoaded && !isFetchingMulti
-                ? 'bg-indigo-600 hover:bg-indigo-700 animate-pulse shadow-lg shadow-indigo-500/20'
-                : 'bg-indigo-600 hover:bg-indigo-700'
+              ? 'bg-indigo-600 hover:bg-indigo-700 animate-pulse shadow-lg shadow-indigo-500/20'
+              : 'bg-indigo-600 hover:bg-indigo-700'
               }`}
           >
             {isFetchingMulti ? (
@@ -836,7 +836,7 @@ export default function CommentsPage() {
                                   </button>
                                 )}
                                 {commentStatus !== 'rejected' && (
-                                 <button disabled={isProcessing} onClick={() => handleModerate(comment.id, 'reject')} title="Sembunyikan dari Publik"
+                                  <button disabled={isProcessing} onClick={() => handleModerate(comment.id, 'reject')} title="Hapus"
                                     className="p-1.5 rounded-md hover:bg-rose-500/10 disabled:opacity-30" style={{ color: 'var(--color-danger-text)' }}>
                                     <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor">
                                       <path strokeLinecap="round" strokeLinejoin="round" d="M9.75 9.75l4.5 4.5m0-4.5l-4.5 4.5M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
@@ -1298,8 +1298,8 @@ export default function CommentsPage() {
       {/* Floating Action Bar untuk Aksi Massal */}
       <div
         className={`fixed bottom-8 left-1/2 -translate-x-1/2 z-40 transition-all duration-300 ease-out transform flex items-center px-5 py-3 rounded-full border shadow-[0_10px_35px_rgba(0,0,0,0.3)] max-w-2xl w-[calc(100vw-2rem)] md:w-auto ${selectedComments.size > 0 && activeTab === 'belum'
-            ? 'translate-y-0 opacity-100 scale-100'
-            : 'translate-y-24 opacity-0 scale-95 pointer-events-none'
+          ? 'translate-y-0 opacity-100 scale-100'
+          : 'translate-y-24 opacity-0 scale-95 pointer-events-none'
           }`}
         style={{
           background: 'var(--bg-card)',
