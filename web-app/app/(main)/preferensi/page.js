@@ -25,6 +25,7 @@ export default function PreferensiPage() {
   const [thresholdReject, setThresholdReject] = useState(90);
   const [pollingInterval, setPollingInterval] = useState(120);
   const [batchModeration, setBatchModeration] = useState(true);
+  const [showAdvanced, setShowAdvanced] = useState(false);
 
   // Sync local state with context when settings are loaded
   useEffect(() => {
@@ -228,64 +229,242 @@ export default function PreferensiPage() {
         </button>
       </div>
 
-      {/* ── Notifikasi & Otomasi ──────────────────────────────── */}
-      <div className="bento-card p-6">
-        <div className="flex items-center gap-2 mb-1">
-          <svg className="w-5 h-5 text-amber-400" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
-            <path strokeLinecap="round" strokeLinejoin="round" d="M14.857 17.082a23.848 23.848 0 005.454-1.31A8.967 8.967 0 0118 9.75v-.7V9A6 6 0 006 9v.75a8.967 8.967 0 01-2.312 6.022c1.733.64 3.56 1.085 5.455 1.31m5.714 0a24.255 24.255 0 01-5.714 0m5.714 0a3 3 0 11-5.714 0" />
-          </svg>
-          <h2 className="text-sm font-semibold" style={{ color: 'var(--text-primary)' }}>Notifikasi &amp; Otomasi</h2>
-        </div>
-        <div className="space-y-6">
-          <div className="flex items-center justify-between py-2 border-b" style={{ borderColor: 'var(--border-default)' }}>
+      {/* ── Notifikasi & Mode Penyaringan AI ───────────────────── */}
+      <div className="bento-card p-6 space-y-6">
+        {/* Header */}
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <svg className="w-5 h-5 text-amber-400" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" d="M14.857 17.082a23.848 23.848 0 005.454-1.31A8.967 8.967 0 0118 9.75v-.7V9A6 6 0 006 9v.75a8.967 8.967 0 01-2.312 6.022c1.733.64 3.56 1.085 5.455 1.31m5.714 0a24.255 24.255 0 01-5.714 0m5.714 0a3 3 0 11-5.714 0" />
+            </svg>
             <div>
-              <p className="text-sm font-medium" style={{ color: 'var(--text-secondary)' }}>Notifikasi Komentar Baru</p>
-              <p className="text-[11px] mt-0.5" style={{ color: 'var(--text-muted)' }}>
-                Terima pemberitahuan saat ada komentar baru yang perlu ditinjau
-              </p>
+              <h2 className="text-sm font-semibold" style={{ color: 'var(--text-primary)' }}>Notifikasi &amp; Mode Otomasi AI</h2>
+              <p className="text-xs mt-0.5" style={{ color: 'var(--text-muted)' }}>Pilih tingkat kepekaan AI untuk melindungi kolom komentar Anda</p>
             </div>
-            <Toggle checked={notifKomentar} onChange={handleToggleNotif} />
           </div>
+        </div>
 
-          <div className="space-y-4 pt-2">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm font-medium flex items-center gap-1.5" style={{ color: 'var(--text-secondary)' }}>
-                  Penahanan Otomatis
-                  {isFeatureDisabled('auto_moderation') && (
-                    <Link href="/pricing" className="text-[9px] font-bold text-amber-500 bg-amber-500/10 px-1.5 py-0.5 rounded border border-amber-500/20 hover:bg-amber-500/20 transition-colors cursor-pointer">PRO / ENT 🔒 Upgrade →</Link>
-                  )}
-                </p>
-                <p className="text-[11px] mt-0.5" style={{ color: 'var(--text-muted)' }}>
-                  Amankan komentar ke folder tinjauan jika tingkat kecurigaan AI melewati batas kepekaan.
-                </p>
-              </div>
-              <Toggle checked={isFeatureDisabled('auto_moderation') ? false : autoTahan} onChange={setAutoTahan} disabled={isFeatureDisabled('auto_moderation')} />
-            </div>
-            {autoTahan && !isFeatureDisabled('auto_moderation') && (
-              <Slider label="Sensitivitas Penahanan Komentar (Mencurigakan)" value={thresholdHold} onChange={setThresholdHold} min={50} max={95} disabled={isFeatureDisabled('auto_moderation')} />
+        {/* Toggle Notifikasi */}
+        <div className="flex items-center justify-between py-3 border-b" style={{ borderColor: 'var(--border-default)' }}>
+          <div>
+            <p className="text-sm font-medium" style={{ color: 'var(--text-secondary)' }}>Notifikasi Komentar Baru</p>
+            <p className="text-[11px] mt-0.5" style={{ color: 'var(--text-muted)' }}>
+              Terima pemberitahuan browser saat ada komentar baru yang masuk
+            </p>
+          </div>
+          <Toggle checked={notifKomentar} onChange={handleToggleNotif} />
+        </div>
+
+        {/* ── MODE UTAMA (3 KARTU SEDERHANA) ───────────────────────── */}
+        <div className="space-y-3">
+          <div className="flex items-center justify-between">
+            <label className="text-xs font-bold uppercase tracking-wider text-indigo-400">
+              🛡️ Pilih Mode Penyaringan Otomatis
+            </label>
+            {isFeatureDisabled('auto_moderation') && (
+              <Link href="/pricing" className="text-[10px] font-bold text-amber-500 bg-amber-500/10 px-2 py-0.5 rounded border border-amber-500/20 hover:bg-amber-500/20 transition-colors">
+                PRO / ENT 🔒 Upgrade untuk Aktifkan Otomasi →
+              </Link>
             )}
           </div>
 
-          <div className="space-y-4 pt-2 border-t" style={{ borderColor: 'var(--border-default)' }}>
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm font-medium flex items-center gap-1.5" style={{ color: 'var(--text-secondary)' }}>
-                  Penghapusan Otomatis
-                  {isFeatureDisabled('auto_moderation') && (
-                    <Link href="/pricing" className="text-[9px] font-bold text-amber-500 bg-amber-500/10 px-1.5 py-0.5 rounded border border-amber-500/20 hover:bg-amber-500/20 transition-colors cursor-pointer">PRO / ENT 🔒 Upgrade →</Link>
-                  )}
-                </p>
-                <p className="text-[11px] mt-0.5" style={{ color: 'var(--text-muted)' }}>
-                  Langsung hapus komentar dari YouTube jika AI sangat yakin komentar tersebut berisi iklan judi.
-                </p>
-              </div>
-              <Toggle checked={isFeatureDisabled('auto_moderation') ? false : autoHapus} onChange={setAutoHapus} disabled={isFeatureDisabled('auto_moderation')} />
-            </div>
-            {autoHapus && !isFeatureDisabled('auto_moderation') && (
-              <Slider label="Sensitivitas Penghapusan Otomatis (Sangat Yakin)" value={thresholdReject} onChange={setThresholdReject} min={70} max={99} disabled={isFeatureDisabled('auto_moderation')} />
-            )}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+            {[
+              {
+                id: 'santai',
+                name: '🟢 Mode Santai',
+                badge: 'Aman & Hati-hati',
+                desc: 'Hanya menghapus komentar yang sangat jelas spam. Komentar mencurigakan ditahan di folder tinjauan.',
+                hold: 80,
+                reject: 95,
+                colorBorder: 'hover:border-emerald-500/40',
+                activeBg: 'bg-emerald-500/10 border-emerald-500/50 ring-1 ring-emerald-500/30'
+              },
+              {
+                id: 'seimbang',
+                name: '🟡 Mode Seimbang',
+                badge: '⭐ Rekomendasi Best Choice',
+                desc: 'Keseimbangan terbaik untuk menjaga kolom komentar bersih tanpa risiko salah hapus komentar penonton asli.',
+                hold: 70,
+                reject: 90,
+                colorBorder: 'hover:border-amber-500/40',
+                activeBg: 'bg-indigo-500/10 border-indigo-500/50 ring-1 ring-indigo-500/30'
+              },
+              {
+                id: 'ketat',
+                name: '🔴 Mode Ketat',
+                badge: 'Proteksi Maksimal',
+                desc: 'Paling cepat & agresif membersihkan spam judol. Sangat cocok jika video Anda sedang diserang spam massal.',
+                hold: 60,
+                reject: 85,
+                colorBorder: 'hover:border-rose-500/40',
+                activeBg: 'bg-rose-500/10 border-rose-500/50 ring-1 ring-rose-500/30'
+              },
+            ].map((mode) => {
+              const isSelected = autoTahan && autoHapus && thresholdHold === mode.hold && thresholdReject === mode.reject;
+              const disabled = isFeatureDisabled('auto_moderation');
+
+              return (
+                <button
+                  key={mode.id}
+                  type="button"
+                  disabled={disabled}
+                  onClick={() => {
+                    if (disabled) return;
+                    setAutoTahan(true);
+                    setAutoHapus(true);
+                    setThresholdHold(mode.hold);
+                    setThresholdReject(mode.reject);
+                  }}
+                  className={`p-4 rounded-2xl text-left border transition-all relative flex flex-col justify-between cursor-pointer ${disabled ? 'opacity-50 cursor-not-allowed' : ''
+                    } ${isSelected
+                      ? mode.activeBg
+                      : `bg-[var(--bg-card-hover)] border-transparent ${mode.colorBorder}`
+                    }`}
+                >
+                  <div>
+                    <div className="flex items-center justify-between mb-2">
+                      <span className="text-sm font-bold text-primary">{mode.name}</span>
+                      {isSelected && (
+                        <span className="w-2.5 h-2.5 rounded-full bg-indigo-400 animate-pulse" />
+                      )}
+                    </div>
+                    <span className="text-[9px] font-semibold px-2 py-0.5 rounded bg-slate-500/15 text-secondary border border-slate-500/20 inline-block mb-2">
+                      {mode.badge}
+                    </span>
+                    <p className="text-xs text-muted leading-relaxed">{mode.desc}</p>
+                  </div>
+
+                  <div className="mt-4 pt-3 border-t border-[var(--border-default)]/60 flex items-center justify-between text-[11px] font-medium text-secondary">
+                    <span>{isSelected ? '✓ Mode Aktif Saat Ini' : 'Klik untuk Pilih'}</span>
+                  </div>
+                </button>
+              );
+            })}
           </div>
+        </div>
+
+        {/* ── ACCORDION MODE LANJUTAN (KUSTOM / UNTUK DOSEN) ────────── */}
+        <div className="pt-2 border-t" style={{ borderColor: 'var(--border-default)' }}>
+          <button
+            type="button"
+            onClick={() => setShowAdvanced(!showAdvanced)}
+            className="flex items-center justify-between w-full py-2.5 px-3 rounded-xl text-xs font-semibold text-secondary hover:text-primary hover:bg-[var(--bg-card-hover)] transition-colors border border-dashed border-[var(--border-default)] cursor-pointer"
+          >
+            <span className="flex items-center gap-2">
+              <svg className="w-4 h-4 text-indigo-400" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" d="M10.5 6h9.75M10.5 6a1.5 1.5 0 11-3 0m3 0a1.5 1.5 0 10-3 0M3.75 6H7.5m3 12h9.75m-9.75 0a1.5 1.5 0 11-3 0m3 0a1.5 1.5 0 10-3 0M3.75 18H7.5m9-6h3.75m-3.75 0a1.5 1.5 0 11-3 0m3 0a1.5 1.5 0 10-3 0M3.75 12h11.25" />
+              </svg>
+              ⚙️ Pengaturan Lanjutan (Kustom Nilai &amp; Visualisasi Threshold)
+            </span>
+            <span className="text-[11px] text-indigo-400 flex items-center gap-1 font-mono">
+              {showAdvanced ? 'Sembunyikan ▲' : 'Buka & Atur Manual ▼'}
+            </span>
+          </button>
+
+          {showAdvanced && (
+            <div className="mt-4 p-5 rounded-2xl border bg-card/60 space-y-6 animate-fade-in" style={{ borderColor: 'var(--border-default)' }}>
+              <div className="flex items-center justify-between border-b pb-3" style={{ borderColor: 'var(--border-default)' }}>
+                <div>
+                  <h3 className="text-xs font-bold text-primary uppercase tracking-wider">Kustom Ambang Batas Otomatis (Persentase AI)</h3>
+                  <p className="text-[11px] text-muted mt-0.5">Penyesuaian manual nilai ambang batas probabilitas model ML</p>
+                </div>
+              </div>
+
+              {/* Toggle Penahanan Otomatis */}
+              <div className="space-y-3">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-xs font-semibold text-secondary">Penahanan Otomatis ke Folder Tinjauan</p>
+                    <p className="text-[11px] text-muted">Amankan komentar ke folder tinjauan jika kecurigaan AI mencapai batas ini</p>
+                  </div>
+                  <Toggle checked={isFeatureDisabled('auto_moderation') ? false : autoTahan} onChange={setAutoTahan} disabled={isFeatureDisabled('auto_moderation')} />
+                </div>
+
+                {autoTahan && !isFeatureDisabled('auto_moderation') && (
+                  <div className="bg-[var(--bg-card-hover)] p-3 rounded-xl border border-[var(--border-default)]">
+                    <Slider
+                      label="Batas Minimal Tahan Komentar (Mencurigakan)"
+                      value={thresholdHold}
+                      onChange={(val) => {
+                        setThresholdHold(val);
+                        if (val >= thresholdReject) setThresholdReject(Math.min(99, val + 5));
+                      }}
+                      min={50}
+                      max={95}
+                      unit="%"
+                      disabled={isFeatureDisabled('auto_moderation')}
+                    />
+                  </div>
+                )}
+              </div>
+
+              {/* Toggle Penghapusan Otomatis */}
+              <div className="space-y-3 pt-3 border-t" style={{ borderColor: 'var(--border-default)' }}>
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-xs font-semibold text-secondary">Penghapusan Otomatis Permanen</p>
+                    <p className="text-[11px] text-muted">Langsung hapus dari YouTube jika tingkat keyakinan AI sangat tinggi</p>
+                  </div>
+                  <Toggle checked={isFeatureDisabled('auto_moderation') ? false : autoHapus} onChange={setAutoHapus} disabled={isFeatureDisabled('auto_moderation')} />
+                </div>
+
+                {autoHapus && !isFeatureDisabled('auto_moderation') && (
+                  <div className="bg-[var(--bg-card-hover)] p-3 rounded-xl border border-[var(--border-default)]">
+                    <Slider
+                      label="Batas Minimal Hapus Otomatis (Sangat Yakin)"
+                      value={thresholdReject}
+                      onChange={(val) => {
+                        setThresholdReject(val);
+                        if (val <= thresholdHold) setThresholdHold(Math.max(50, val - 5));
+                      }}
+                      min={70}
+                      max={99}
+                      unit="%"
+                      disabled={isFeatureDisabled('auto_moderation')}
+                    />
+                  </div>
+                )}
+              </div>
+
+              {/* Visual Bar Peta Zona Moderasi */}
+              {!isFeatureDisabled('auto_moderation') && (autoTahan || autoHapus) && (
+                <div className="p-3.5 rounded-xl border bg-card/80 space-y-2" style={{ borderColor: 'var(--border-default)' }}>
+                  <div className="flex items-center justify-between">
+                    <span className="text-xs font-semibold text-primary">Visualisasi Keputusan AI (0% - 100%)</span>
+                    <span className="text-[10px] text-muted font-mono">Hold: {thresholdHold}% | Reject: {thresholdReject}%</span>
+                  </div>
+
+                  <div className="relative h-6 w-full rounded-lg overflow-hidden flex border border-slate-700/50 text-[10px] font-bold select-none">
+                    <div
+                      style={{ width: `${autoTahan ? thresholdHold : autoHapus ? thresholdReject : 100}%` }}
+                      className="bg-emerald-500/20 text-emerald-400 flex items-center justify-center border-r border-emerald-500/30 transition-all duration-300"
+                    >
+                      <span className="truncate px-1">🟢 Dipublikasi (&lt;{autoTahan ? thresholdHold : thresholdReject}%)</span>
+                    </div>
+
+                    {autoTahan && (
+                      <div
+                        style={{ width: `${autoHapus ? Math.max(0, thresholdReject - thresholdHold) : (100 - thresholdHold)}%` }}
+                        className="bg-amber-500/25 text-amber-300 flex items-center justify-center border-r border-amber-500/30 transition-all duration-300"
+                      >
+                        <span className="truncate px-1">🟡 Ditahan ({thresholdHold}% - {autoHapus ? thresholdReject : 100}%)</span>
+                      </div>
+                    )}
+
+                    {autoHapus && (
+                      <div
+                        style={{ width: `${100 - thresholdReject}%` }}
+                        className="bg-rose-500/30 text-rose-300 flex items-center justify-center transition-all duration-300"
+                      >
+                        <span className="truncate px-1">🔴 Dihapus (≥{thresholdReject}%)</span>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
         </div>
       </div>
 
