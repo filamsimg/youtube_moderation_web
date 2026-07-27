@@ -55,6 +55,10 @@ export default function DashboardPage() {
   const { activeChannel: channelInfo, channels, fetchChannel, fetchVideos, videosCache } = useYouTube();
   const videos = channelInfo ? (videosCache[channelInfo.id] || []).slice(0, 10) : [];
 
+  // Simpan fetchVideos di ref agar tidak memicu re-render saat reference-nya berubah
+  const fetchVideosRef = useRef(fetchVideos);
+  useEffect(() => { fetchVideosRef.current = fetchVideos; }, [fetchVideos]);
+
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [history, setHistory] = useState([]);
@@ -64,7 +68,8 @@ export default function DashboardPage() {
     if (!channelInfo?.id) return;
     try {
       setLoading(true);
-      await fetchVideos(channelInfo.id);
+      // Gunakan ref agar tidak perlu fetchVideos sebagai dependency
+      await fetchVideosRef.current(channelInfo.id);
 
       if (session?.user?.email) {
         const dbHistory = await historyService.getHistory(session.user.email);
@@ -85,7 +90,9 @@ export default function DashboardPage() {
     } finally {
       setLoading(false);
     }
-  }, [channelInfo?.id, fetchVideos, session?.user?.email]);
+  // fetchVideosRef.current selalu up-to-date, tidak perlu masuk deps
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [channelInfo?.id, session?.user?.email]);
 
   useEffect(() => {
     if (session?.accessToken && channels.length === 0) {

@@ -20,6 +20,7 @@ export function YouTubeProvider({ children }) {
   const hasFetchedChannelRef = useRef(false);
   const fetchedVideosChannelsRef = useRef(new Set());
   const lastTokenRef = useRef(null);
+  const videosCacheRef = useRef({}); // Ref untuk cache check tanpa menjadi dependency
 
   // Watch session change (User Switch or Sign Out) to purge states and load scoped selectedChannelId
   useEffect(() => {
@@ -43,6 +44,9 @@ export function YouTubeProvider({ children }) {
       setSelectedChannelId(null);
     }
   }, [session?.user?.email, session?.accessToken]);
+
+  // Sync videosCacheRef agar selalu up-to-date tanpa perlu jadi dependency
+  useEffect(() => { videosCacheRef.current = videosCache; }, [videosCache]);
 
   const updateSelectedChannelId = (id) => {
     setSelectedChannelId(id);
@@ -76,9 +80,9 @@ export function YouTubeProvider({ children }) {
   const fetchVideos = useCallback(async (channelId, forceRefresh = false) => {
     if (!session?.accessToken || !channelId) return [];
 
-    // Return from cache if exists and not forcing refresh
-    if (!forceRefresh && videosCache[channelId]) {
-      return videosCache[channelId];
+    // Gunakan ref untuk cache check — TIDAK menjadi dependency agar tidak bikin loop
+    if (!forceRefresh && videosCacheRef.current[channelId]) {
+      return videosCacheRef.current[channelId];
     }
 
     setLoadingVideos(true);
@@ -104,7 +108,9 @@ export function YouTubeProvider({ children }) {
     } finally {
       setLoadingVideos(false);
     }
-  }, [session?.accessToken, videosCache, toast]);
+  // videosCache SENGAJA tidak ada di sini — gunakan videosCacheRef.current
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [session?.accessToken, toast]);
 
   // Auto-fetch channels when session is available, channels list is empty, and we haven't fetched yet
   useEffect(() => {
