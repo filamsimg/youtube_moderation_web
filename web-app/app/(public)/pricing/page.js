@@ -391,12 +391,36 @@ export default function PricingPage() {
                         </p>
                       )}
                     </div>
-                    <p className="text-xs text-indigo-700 dark:text-indigo-400 font-semibold mt-2.5 flex items-center gap-1">
-                      <svg className="w-3.5 h-3.5 text-indigo-700 dark:text-indigo-400" fill="currentColor" viewBox="0 0 24 24">
-                        <path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z" />
-                      </svg>
-                      Jatah: {plan.quota} unit API
-                    </p>
+                    <div className="relative group/tooltip inline-block mt-2.5">
+                      <p className="text-xs text-indigo-700 dark:text-indigo-400 font-semibold flex items-center gap-1 cursor-help">
+                        <svg className="w-3.5 h-3.5 text-indigo-700 dark:text-indigo-400" fill="currentColor" viewBox="0 0 24 24">
+                          <path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z" />
+                        </svg>
+                        <span>Jatah: {plan.quota} unit API</span>
+                        <svg className="w-3.5 h-3.5 text-indigo-500/70 hover:text-indigo-600 dark:hover:text-indigo-300 transition-colors ml-0.5" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor">
+                          <path strokeLinecap="round" strokeLinejoin="round" d="M11.25 11.25l.041-.02a.75.75 0 011.063.852l-.708 2.836a.75.75 0 001.063.853l.041-.021M21 12a9 9 0 11-18 0 9 9 0 0118 0zm-9-3.75h.008v.008H12V8.25z" />
+                        </svg>
+                      </p>
+
+                      {/* Floating Glassmorphic Tooltip Card (Opsi A: Dynamic Calculation) */}
+                      <div className="absolute bottom-full left-0 mb-2 hidden group-hover/tooltip:block z-30 w-64 p-3 rounded-2xl bg-slate-900/95 dark:bg-slate-900/95 border border-indigo-500/30 text-white text-[11px] shadow-xl backdrop-blur-xl animate-fade-in pointer-events-none">
+                        <p className="font-bold text-indigo-300 mb-1 flex items-center gap-1">
+                          ⚡ Estimasi Penggunaan Kuota:
+                        </p>
+                        {isEnterprise ? (
+                          <div className="space-y-1 text-slate-300 text-[10px] leading-relaxed">
+                            <p>• <strong>Bebas Limit Kuota Aplikasi</strong> (Menggunakan API Key Google pribadi di Preferensi).</p>
+                            <p>• <strong>Kapasitas:</strong> s.d <strong>200+ hapus komentar/hari</strong> gratis dari Google GCP Console.</p>
+                          </div>
+                        ) : (
+                          <div className="space-y-1 text-slate-300 text-[10px] leading-relaxed">
+                            <p>• <strong>Muat Komentar:</strong> s.d <strong>{plan.quotaNum?.toLocaleString('id-ID')}x</strong> fetch (setara {((plan.quotaNum || 0) * 100).toLocaleString('id-ID')} komentar).</p>
+                            <p>• <strong>Hapus/Moderasi:</strong> s.d <strong>{Math.floor((plan.quotaNum || 0) / 50).toLocaleString('id-ID')}x</strong> aksi hapus spam (50 unit/aksi YouTube API).</p>
+                          </div>
+                        )}
+                        <div className="absolute top-full left-4 -mt-1 border-4 border-transparent border-t-slate-900/95" />
+                      </div>
+                    </div>
                   </div>
 
                   {/* Features */}
