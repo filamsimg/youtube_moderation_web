@@ -17,11 +17,14 @@ const extractError = (err) => {
 };
 
 export const youtubeService = {
-  getUserChannel: async (token) => {
+  getUserChannel: async (token, customApiKey = null) => {
     try {
+      const params = { part: 'snippet,contentDetails', mine: true };
+      if (customApiKey) params.key = customApiKey;
+
       const res = await axios.get(`${YOUTUBE_API_BASE}/channels`, {
         headers: { Authorization: `Bearer ${token}` },
-        params: { part: 'snippet,contentDetails', mine: true },
+        params,
       });
       return res.data;
     } catch (error) {
@@ -31,15 +34,18 @@ export const youtubeService = {
     }
   },
 
-  getVideosByChannel: async (channelId, token) => {
+  getVideosByChannel: async (channelId, token, customApiKey = null) => {
     try {
       // Step 1: Check for cached uploads playlist ID in localStorage first
       let uploadsPlaylistId = typeof window !== 'undefined' ? localStorage.getItem(`playlist_${channelId}`) : null;
       
       if (!uploadsPlaylistId) {
+        const channelParams = { part: 'contentDetails', id: channelId };
+        if (customApiKey) channelParams.key = customApiKey;
+
         const channelRes = await axios.get(`${YOUTUBE_API_BASE}/channels`, {
           headers: { Authorization: `Bearer ${token}` },
-          params: { part: 'contentDetails', id: channelId },
+          params: channelParams,
         });
 
         uploadsPlaylistId = channelRes.data.items?.[0]?.contentDetails?.relatedPlaylists?.uploads;
@@ -54,13 +60,16 @@ export const youtubeService = {
       }
 
       // Step 2: Fetch items from the uploads playlist (Cost: 1 unit)
+      const playlistParams = {
+        part: 'snippet',
+        playlistId: uploadsPlaylistId,
+        maxResults: 50,
+      };
+      if (customApiKey) playlistParams.key = customApiKey;
+
       const res = await axios.get(`${YOUTUBE_API_BASE}/playlistItems`, {
         headers: { Authorization: `Bearer ${token}` },
-        params: {
-          part: 'snippet',
-          playlistId: uploadsPlaylistId,
-          maxResults: 50,
-        },
+        params: playlistParams,
       });
 
       return {
@@ -79,7 +88,7 @@ export const youtubeService = {
     }
   },
 
-  getComments: async (videoId, token, pageToken = null) => {
+  getComments: async (videoId, token, pageToken = null, customApiKey = null) => {
     try {
       const params = {
         part: 'snippet,replies',
@@ -90,6 +99,9 @@ export const youtubeService = {
       
       if (pageToken) {
         params.pageToken = pageToken;
+      }
+      if (customApiKey) {
+        params.key = customApiKey;
       }
 
       const res = await axios.get(`${YOUTUBE_API_BASE}/commentThreads`, {
@@ -104,14 +116,17 @@ export const youtubeService = {
     }
   },
 
-  moderateComment: async (commentId, status, token) => {
+  moderateComment: async (commentId, status, token, customApiKey = null) => {
     try {
+      const params = { id: commentId, moderationStatus: status };
+      if (customApiKey) params.key = customApiKey;
+
       const res = await axios.post(
         `${YOUTUBE_API_BASE}/comments/setModerationStatus`,
         null,
         {
           headers: { Authorization: `Bearer ${token}` },
-          params: { id: commentId, moderationStatus: status },
+          params,
         }
       );
       return res.data;
@@ -122,17 +137,20 @@ export const youtubeService = {
     }
   },
 
-  moderateCommentsBatch: async (commentIds, status, token) => {
+  moderateCommentsBatch: async (commentIds, status, token, customApiKey = null) => {
     // commentIds: array of strings
     if (!commentIds || commentIds.length === 0) return;
     try {
       const idsString = commentIds.join(',');
+      const params = { id: idsString, moderationStatus: status };
+      if (customApiKey) params.key = customApiKey;
+
       const res = await axios.post(
         `${YOUTUBE_API_BASE}/comments/setModerationStatus`,
         null,
         {
           headers: { Authorization: `Bearer ${token}` },
-          params: { id: idsString, moderationStatus: status },
+          params,
         }
       );
       return res.data;
