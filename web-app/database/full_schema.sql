@@ -74,6 +74,9 @@ CREATE TABLE IF NOT EXISTS public.user_profiles (
   -- ID paket yang sedang aktif (diperlukan oleh webhook pembayaran Midtrans)
   active_package_id  TEXT REFERENCES public.pricing_packages(id) ON DELETE SET NULL DEFAULT NULL,
 
+  -- API Key pribadi pengguna Enterprise (BYOK / Bring Your Own Key)
+  youtube_api_key    TEXT DEFAULT NULL,
+
   last_reset         TIMESTAMPTZ DEFAULT now(),
   created_at         TIMESTAMPTZ DEFAULT now(),
   updated_at         TIMESTAMPTZ DEFAULT now()
