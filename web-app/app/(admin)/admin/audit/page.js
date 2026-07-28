@@ -155,7 +155,7 @@ export default function AdminAuditPage() {
                             {/* Before State */}
                             <div className="space-y-1">
                               <p className="font-semibold text-rose-600 dark:text-rose-400">Sebelumnya (Sebelum Perubahan):</p>
-                              <pre className="p-2.5 rounded-lg bg-page font-mono text-[10px] text-muted overflow-auto max-h-[150px]">
+                              <pre className="p-2.5 rounded-lg bg-page text-[10px] text-muted overflow-auto max-h-[150px]">
                                 {log.details?.changes?.before 
                                   ? JSON.stringify(log.details.changes.before, null, 2) 
                                   : log.details?.before 
@@ -167,7 +167,7 @@ export default function AdminAuditPage() {
                             {/* After State */}
                             <div className="space-y-1">
                               <p className="font-semibold text-emerald-600 dark:text-emerald-400">Sesudahnya (Setelah Perubahan):</p>
-                              <pre className="p-2.5 rounded-lg bg-page font-mono text-[10px] text-secondary overflow-auto max-h-[150px]">
+                              <pre className="p-2.5 rounded-lg bg-page text-[10px] text-secondary overflow-auto max-h-[150px]">
                                 {log.details?.changes?.after 
                                   ? JSON.stringify(log.details.changes.after, null, 2) 
                                   : log.details?.after 

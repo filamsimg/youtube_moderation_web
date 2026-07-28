@@ -296,7 +296,7 @@ export default function AdminPlansPage() {
               <tbody className="divide-y divide-[var(--border-default)]/60">
                 {filteredPackages.map((pkg) => (
                   <tr key={pkg.id} className="hover:bg-card-hover/20 transition-colors">
-                    <td className="p-4 font-mono font-bold text-primary">{pkg.id}</td>
+                    <td className="p-4 font-semibold text-primary">{pkg.id}</td>
                     <td className="p-4 font-semibold text-primary">{pkg.name}</td>
                     <td className="p-4">
                       <span className={`px-2.5 py-0.5 rounded-full font-bold text-[9px] ${
@@ -392,7 +392,7 @@ export default function AdminPlansPage() {
             </div>
 
             <p className="text-secondary leading-relaxed">
-              Apakah Anda yakin ingin menghapus paket dengan ID <strong className="font-mono text-rose-500">{selectedId}</strong> secara permanen dari database?
+              Apakah Anda yakin ingin menghapus paket dengan ID <strong className="font-semibold text-rose-500">{selectedId}</strong> secara permanen dari database?
             </p>
 
             <div className="flex items-center justify-end gap-3">

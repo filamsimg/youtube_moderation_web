@@ -574,7 +574,7 @@ export default function ProfilePage() {
                         </td>
                         {/* Order ID */}
                         <td className="px-4 py-4">
-                          <span className="font-mono text-[11px] font-bold px-2 py-0.5 rounded bg-slate-500/10 text-slate-400 border border-slate-500/5">
+                          <span className="text-[11px] font-semibold px-2 py-0.5 rounded bg-slate-500/10 text-slate-400 border border-slate-500/5">
                             {tx.id.length > 25 ? `${tx.id.substring(0, 25)}...` : tx.id}
                           </span>
                         </td>

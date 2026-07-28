@@ -469,7 +469,7 @@ export default function PricingPage() {
                 {COST_TABLE.map((row) => (
                   <tr key={row.action} className="hover:bg-card-hover/30 transition-colors">
                     <td className="py-3 text-primary font-semibold">{row.action}</td>
-                    <td className="py-3 text-secondary font-mono text-[10px] opacity-75">{row.api}</td>
+                    <td className="py-3 text-secondary font-medium text-xs opacity-75">{row.api}</td>
                     <td className="py-3 text-right">
                       <span className={`font-bold px-2 py-0.5 rounded-md ${row.cost >= 50 ? 'bg-rose-500/10 text-rose-700 dark:text-rose-400 border border-rose-500/10' : 'bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 border border-emerald-500/10'
                         }`}>

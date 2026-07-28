@@ -293,7 +293,7 @@ export default function PlanFormModal({
                     required
                     disabled={mode === 'edit'}
                     placeholder="Contoh: PRO_3M, FREE_1M"
-                    className="input-dark font-mono disabled:opacity-60 disabled:cursor-not-allowed focus:border-rose-500"
+                    className="input-dark font-semibold disabled:opacity-60 disabled:cursor-not-allowed focus:border-rose-500"
                     value={formValues.id}
                     onChange={(e) => handleIdChange(e.target.value)}
                   />
