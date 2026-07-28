@@ -1076,12 +1076,14 @@ export default function CommentsPage() {
                               </td>
                             )}
                             <td className="px-4 py-3">
-                              <div className="flex items-center gap-1.5 flex-wrap">
-                                <Badge type={comment.aiLabel?.toLowerCase().includes('spam') || comment.aiLabel?.toLowerCase().includes('judol') ? 'spam' : 'normal'}>
+                                <span className="badge badge-rose text-[11px] font-bold px-2 py-0.5">
                                   {comment.aiLabel || 'Spam Judol'}
-                                </Badge>
-                                {comment.sentiment && <Badge type="sentiment" sentiment={comment.sentiment} score={comment.sentimentScore} />}
-                              </div>
+                                </span>
+                                {comment.sentiment && (
+                                  <span className="badge badge-indigo text-[11px] font-bold px-2 py-0.5">
+                                    {comment.sentiment}
+                                  </span>
+                                )}
                               <p className="text-[10px] mt-1" style={{ color: 'var(--text-muted)' }}>
                                 {comment.aiConfidence ? `${Math.round(comment.aiConfidence * 100)}%` : '70%+'} • Ditahan AI
                               </p>

@@ -59,7 +59,7 @@ export default function ByokGuideModal({ isOpen, onClose }) {
             <div className="space-y-1">
               <h4 className="font-semibold text-slate-100">Buat Proyek Baru</h4>
               <p className="text-xs text-slate-400">
-                Klik menu dropdown proyek di bagian atas konsol $\rightarrow$ Klik <strong className="text-slate-200">"New Project"</strong> $\rightarrow$ Beri nama proyek (contoh: <span className="text-indigo-300 font-mono text-xs">Moderasi YouTube Saya</span>) $\rightarrow$ Klik <strong className="text-slate-200">"Create"</strong>.
+                Klik menu dropdown proyek di bagian atas konsol &rarr; Klik <strong className="text-slate-200">&quot;New Project&quot;</strong> &rarr; Beri nama proyek (contoh: <span className="text-indigo-300 font-mono text-xs">Moderasi YouTube Saya</span>) &rarr; Klik <strong className="text-slate-200">&quot;Create&quot;</strong>.
               </p>
             </div>
           </div>
@@ -72,7 +72,7 @@ export default function ByokGuideModal({ isOpen, onClose }) {
             <div className="space-y-1">
               <h4 className="font-semibold text-slate-100">Aktifkan YouTube Data API v3</h4>
               <p className="text-xs text-slate-400">
-                Cari <strong className="text-slate-200">"YouTube Data API v3"</strong> pada kolom pencarian di bagian atas konsol $\rightarrow$ Klik hasilnya $\rightarrow$ Klik tombol biru <strong className="text-emerald-400">"Enable"</strong> (Aktifkan).
+                Cari <strong className="text-slate-200">&quot;YouTube Data API v3&quot;</strong> pada kolom pencarian di bagian atas konsol &rarr; Klik hasilnya &rarr; Klik tombol biru <strong className="text-emerald-400">&quot;Enable&quot;</strong> (Aktifkan).
               </p>
             </div>
           </div>
@@ -85,7 +85,7 @@ export default function ByokGuideModal({ isOpen, onClose }) {
             <div className="space-y-1">
               <h4 className="font-semibold text-slate-100">Buat Kredensial API Key</h4>
               <p className="text-xs text-slate-400">
-                Buka menu <strong className="text-slate-200">"Credentials"</strong> (Kredensial) di bilah kiri $\rightarrow$ Klik <strong className="text-slate-200">"+ Create Credentials"</strong> $\rightarrow$ Pilih <strong className="text-slate-200">"API key"</strong>.
+                Buka menu <strong className="text-slate-200">&quot;Credentials&quot;</strong> (Kredensial) di bilah kiri &rarr; Klik <strong className="text-slate-200">&quot;+ Create Credentials&quot;</strong> &rarr; Pilih <strong className="text-slate-200">&quot;API key&quot;</strong>.
               </p>
             </div>
           </div>
