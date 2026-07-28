@@ -82,11 +82,18 @@ export default function ByokGuideModal({ isOpen, onClose }) {
             <div className="flex-shrink-0 w-7 h-7 rounded-full bg-indigo-600 text-white font-bold flex items-center justify-center text-xs">
               4
             </div>
-            <div className="space-y-1">
-              <h4 className="font-semibold text-slate-100">Buat Kredensial API Key</h4>
-              <p className="text-xs text-slate-400">
-                Buka menu <strong className="text-slate-200">&quot;Credentials&quot;</strong> (Kredensial) di bilah kiri &rarr; Klik <strong className="text-slate-200">&quot;+ Create Credentials&quot;</strong> &rarr; Pilih <strong className="text-slate-200">&quot;API key&quot;</strong>.
+            <div className="space-y-1.5">
+              <h4 className="font-semibold text-slate-100">Pilih API & Simpan pada Panel Samping</h4>
+              <p className="text-xs text-slate-400 leading-relaxed">
+                Buka menu <strong className="text-slate-200">&quot;Credentials&quot;</strong> (Kredensial) &rarr; Klik <strong className="text-slate-200">&quot;+ Create Credentials&quot;</strong> &rarr; Pilih <strong className="text-slate-200">&quot;API key&quot;</strong>.
               </p>
+              <div className="p-2.5 rounded-lg bg-slate-900/80 border border-slate-700/60 text-xs text-slate-300 space-y-1">
+                <p className="text-indigo-300 font-semibold">📍 Pada Panel Samping Kanan yang Muncul:</p>
+                <ol className="list-decimal ml-4 space-y-1 text-[11px] text-slate-400">
+                  <li>Pada bagian <strong className="text-slate-200">&quot;Select API restrictions&quot;</strong>, pilih <strong className="text-emerald-400">&quot;YouTube Data API v3&quot;</strong>.</li>
+                  <li>Scroll ke paling bawah panel kanan, lalu klik tombol biru <strong className="text-indigo-400">&quot;Save&quot;</strong> (Simpan).</li>
+                </ol>
+              </div>
             </div>
           </div>
 
@@ -98,7 +105,7 @@ export default function ByokGuideModal({ isOpen, onClose }) {
             <div className="space-y-1">
               <h4 className="font-semibold text-emerald-200">Salin & Tempelkan API Key</h4>
               <p className="text-xs text-slate-300">
-                Salin kode Kunci API yang muncul (berawalan <code className="px-1.5 py-0.5 rounded bg-emerald-900/60 text-emerald-300 font-mono">AIzaSy...</code>) dan tempelkan di form aplikasi ini!
+                Salin kode Kunci API yang muncul pada daftar (berawalan <code className="px-1.5 py-0.5 rounded bg-emerald-900/60 text-emerald-300 font-mono">AIzaSy...</code>) dan tempelkan di form aplikasi ini!
               </p>
             </div>
           </div>
