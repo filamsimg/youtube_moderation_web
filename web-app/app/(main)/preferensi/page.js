@@ -190,14 +190,22 @@ export default function PreferensiPage() {
       </div>
 
       {/* ── Status Koneksi ────────────────────────────────────── */}
-      <div className="bento-card p-6 space-y-4">
-        <div className="flex items-center gap-2 mb-1">
-          <svg className="w-5 h-5" style={{ color: 'var(--color-success-text)' }} fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
-            <path strokeLinecap="round" strokeLinejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-          </svg>
-          <h2 className="text-sm font-semibold" style={{ color: 'var(--text-primary)' }}>Status Koneksi</h2>
+      <div className="bento-card p-6 space-y-3">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <svg className="w-5 h-5" style={{ color: 'var(--color-success-text)' }} fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+            <div>
+              <h2 className="text-sm font-semibold" style={{ color: 'var(--text-primary)' }}>Status Koneksi YouTube API</h2>
+              <p className="text-xs mt-0.5" style={{ color: 'var(--text-muted)' }}>Status otentikasi Google OAuth &amp; ketersediaan layanan</p>
+            </div>
+          </div>
+          <span className="px-2.5 py-1 rounded-full text-xs font-semibold bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 flex items-center gap-1.5">
+            <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
+            Terhubung
+          </span>
         </div>
-        <p className="text-xs" style={{ color: 'var(--text-muted)' }}>Kelola koneksi dengan YouTube API</p>
 
         <div
           className="rounded-xl p-4 border"
@@ -207,26 +215,12 @@ export default function PreferensiPage() {
             <svg className="w-4 h-4" style={{ color: 'var(--color-success-text)' }} fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
             </svg>
-            <span className="text-sm font-semibold" style={{ color: 'var(--color-success-text)' }}>Izin Aktif</span>
+            <span className="text-xs font-semibold" style={{ color: 'var(--color-success-text)' }}>Akses YouTube Proaktif Aktif</span>
           </div>
           <p className="text-xs mt-1" style={{ color: 'var(--color-success-text)', opacity: 0.8 }}>
-            Koneksi dengan YouTube berhasil. Semua fitur moderasi proaktif aktif.
-          </p>
-          <p className="text-[10px] mt-0.5" style={{ color: 'var(--color-success-text)', opacity: 0.6 }}>
-            Terakhir diperbarui: {new Date().toLocaleDateString('id-ID')} {new Date().toLocaleTimeString('id-ID')}
+            Sistem terhubung aman dengan akun Google OAuth Anda. Fitur pemeriksaan dan moderasi otomatis berjalan proaktif.
           </p>
         </div>
-
-        <button
-          onClick={() => setShowRenewConfirm(true)}
-          className="flex items-center justify-center gap-2 w-full py-2.5 rounded-xl text-sm border transition-all bento-card"
-          style={{ color: 'var(--text-secondary)' }}
-        >
-          <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
-            <path strokeLinecap="round" strokeLinejoin="round" d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0l3.181 3.183a8.25 8.25 0 0013.803-3.7M4.031 9.865a8.25 8.25 0 0113.803-3.7l3.181 3.182" />
-          </svg>
-          Perbarui Izin
-        </button>
       </div>
 
       {/* ── Notifikasi & Mode Penyaringan AI ───────────────────── */}
@@ -258,12 +252,12 @@ export default function PreferensiPage() {
         {/* ── MODE UTAMA (3 KARTU SEDERHANA) ───────────────────────── */}
         <div className="space-y-3">
           <div className="flex items-center justify-between">
-            <label className="text-xs font-bold uppercase tracking-wider text-indigo-400">
-              🛡️ Pilih Mode Penyaringan Otomatis
+            <label className="text-xs font-bold uppercase tracking-wider" style={{ color: 'var(--text-muted)' }}>
+              Pilih Mode Penyaringan Otomatis
             </label>
             {isFeatureDisabled('auto_moderation') && (
               <Link href="/pricing" className="text-[10px] font-bold text-amber-500 bg-amber-500/10 px-2 py-0.5 rounded border border-amber-500/20 hover:bg-amber-500/20 transition-colors">
-                PRO / ENT 🔒 Upgrade untuk Aktifkan Otomasi →
+                Upgrade untuk Aktifkan Otomasi →
               </Link>
             )}
           </div>
@@ -272,7 +266,7 @@ export default function PreferensiPage() {
             {[
               {
                 id: 'santai',
-                name: '🟢 Mode Santai',
+                name: 'Mode Santai',
                 badge: 'Aman & Hati-hati',
                 desc: 'Hanya menghapus komentar yang sangat jelas spam. Komentar mencurigakan ditahan di folder tinjauan.',
                 hold: 80,
@@ -282,17 +276,17 @@ export default function PreferensiPage() {
               },
               {
                 id: 'seimbang',
-                name: '🟡 Mode Seimbang',
-                badge: '⭐ Rekomendasi Best Choice',
+                name: 'Mode Seimbang',
+                badge: 'Rekomendasi Best Choice',
                 desc: 'Keseimbangan terbaik untuk menjaga kolom komentar bersih tanpa risiko salah hapus komentar penonton asli.',
                 hold: 70,
                 reject: 90,
                 colorBorder: 'hover:border-amber-500/40',
-                activeBg: 'bg-indigo-500/10 border-indigo-500/50 ring-1 ring-indigo-500/30'
+                activeBg: 'bg-amber-500/10 border-amber-500/50 ring-1 ring-amber-500/30'
               },
               {
                 id: 'ketat',
-                name: '🔴 Mode Ketat',
+                name: 'Mode Ketat',
                 badge: 'Proteksi Maksimal',
                 desc: 'Paling cepat & agresif membersihkan spam judol. Sangat cocok jika video Anda sedang diserang spam massal.',
                 hold: 60,
@@ -355,9 +349,9 @@ export default function PreferensiPage() {
               <svg className="w-4 h-4 text-indigo-400" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" d="M10.5 6h9.75M10.5 6a1.5 1.5 0 11-3 0m3 0a1.5 1.5 0 10-3 0M3.75 6H7.5m3 12h9.75m-9.75 0a1.5 1.5 0 11-3 0m3 0a1.5 1.5 0 10-3 0M3.75 18H7.5m9-6h3.75m-3.75 0a1.5 1.5 0 11-3 0m3 0a1.5 1.5 0 10-3 0M3.75 12h11.25" />
               </svg>
-              ⚙️ Pengaturan Lanjutan (Kustom Nilai &amp; Visualisasi Threshold)
+              Pengaturan Lanjutan (Kustom Nilai &amp; Visualisasi Threshold)
             </span>
-            <span className="text-[11px] text-indigo-400 flex items-center gap-1 font-mono">
+            <span className="text-xs text-indigo-400 flex items-center gap-1 font-medium">
               {showAdvanced ? 'Sembunyikan ▲' : 'Buka & Atur Manual ▼'}
             </span>
           </button>
@@ -432,7 +426,7 @@ export default function PreferensiPage() {
                 <div className="p-3.5 rounded-xl border bg-card/80 space-y-2" style={{ borderColor: 'var(--border-default)' }}>
                   <div className="flex items-center justify-between">
                     <span className="text-xs font-semibold text-primary">Visualisasi Keputusan AI (0% - 100%)</span>
-                    <span className="text-[10px] text-muted font-mono">Hold: {thresholdHold}% | Reject: {thresholdReject}%</span>
+                    <span className="text-xs font-semibold text-indigo-400">Hold: {thresholdHold}% | Reject: {thresholdReject}%</span>
                   </div>
 
                   <div className="relative h-6 w-full rounded-lg overflow-hidden flex border border-slate-700/50 text-[10px] font-bold select-none">
@@ -554,7 +548,7 @@ export default function PreferensiPage() {
           {
             label: 'Contoh Komentar Area Abu-abu',
             icon: <svg className="w-4 h-4" style={iconStyle} fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126zM12 15.75h.007v.008H12v-.008z" /></svg>,
-            content: <><p>Beberapa komentar menggunakan teknik kamuflase:</p><ul className="list-disc ml-4 space-y-1 mt-2 font-mono text-[10px]"><li>&quot;M.A.I.N di sini dijamin JP&quot;</li><li>&quot;Info slot gacor klik bit.ly/xxxx&quot;</li><li>&quot;Video bagus gan, izin share http://...&quot;</li></ul></>,
+            content: <><p>Beberapa komentar menggunakan teknik kamuflase:</p><ul className="list-disc ml-4 space-y-1 mt-2 text-xs"><li>&quot;M.A.I.N di sini dijamin JP&quot;</li><li>&quot;Info slot gacor klik bit.ly/xxxx&quot;</li><li>&quot;Video bagus gan, izin share http://...&quot;</li></ul></>,
           },
           {
             label: 'Tips Moderasi Efisien',
