@@ -7,6 +7,7 @@ import { useToast } from '@/contexts/ToastContext';
 import Link from 'next/link';
 import Script from 'next/script';
 import KineticGrid from '@/components/KineticGrid';
+import ByokGuideModal from '@/components/ByokGuideModal';
 
 // =========================================================================
 // DEFINISI PAKET LANGGANAN SECARA DINAMIS (Sesuai Konfigurasi Keamanan Sisi Server)
@@ -29,6 +30,12 @@ export default function PricingPage() {
 
   const [plans, setPlans] = useState([]);
   const [loadingPackages, setLoadingPackages] = useState(true);
+
+  // State Modal Aktivasi Pasca Bayar Enterprise (BYOK)
+  const [showEnterpriseModal, setShowEnterpriseModal] = useState(false);
+  const [enterpriseApiKeyInput, setEnterpriseApiKeyInput] = useState('');
+  const [savingEnterpriseKey, setSavingEnterpriseKey] = useState(false);
+  const [showByokGuide, setShowByokGuide] = useState(false);
 
   const formatIDR = (num) => {
     return new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(num);
@@ -121,7 +128,7 @@ export default function PricingPage() {
         window.snap.pay(token, {
           onSuccess: async function (result) {
             console.log('Sandbox Success:', result);
-            toast.success('Pembayaran sukses! Menambahkan kuota Anda secara instan.');
+            toast.success('Pembayaran sukses! Paket Anda telah aktif secara instan.');
 
             // Simulasikan pemicu webhook instan agar database lokal terupdate (Sandbox Demo Helper)
             await syncPaymentStatus(orderId, packageId);
@@ -129,6 +136,11 @@ export default function PricingPage() {
             setTimeout(() => {
               fetchQuota();
             }, 1000);
+
+            // Jika paket yang dibeli adalah Enterprise, munculkan Modal Aktivasi BYOK Pasca Bayar
+            if (packageId.toUpperCase().includes('ENTERPRISE')) {
+              setShowEnterpriseModal(true);
+            }
           },
           onPending: function (result) {
             toast.warning('Pembayaran ditunda. Silakan selesaikan transaksi Anda di halaman simulasi pembayaran (gratis/uji coba).');
@@ -175,6 +187,38 @@ export default function PricingPage() {
       });
     } catch (e) {
       console.warn('Gagal memicu sinkronisasi status lokal:', e);
+    }
+  };
+
+  const handleSaveEnterpriseKey = async () => {
+    if (!enterpriseApiKeyInput.trim()) {
+      toast.warning('Silakan masukkan Google YouTube API Key terlebih dahulu.');
+      return;
+    }
+
+    try {
+      setSavingEnterpriseKey(true);
+      const res = await fetch('/api/user/byok', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ apiKey: enterpriseApiKeyInput.trim() }),
+      });
+      const data = await res.json();
+
+      if (!res.ok || !data.success) {
+        toast.error(data.error || 'Gagal menyambungkan API Key.');
+        return;
+      }
+
+      toast.success('🎉 API Key berhasil diverifikasi! Kuota pembersihan tanpa batas kini telah aktif.');
+      setEnterpriseApiKeyInput('');
+      setShowEnterpriseModal(false);
+      fetchQuota();
+    } catch (err) {
+      console.error('Error saving Enterprise key:', err);
+      toast.error('Terjadi kesalahan koneksi saat memverifikasi API Key.');
+    } finally {
+      setSavingEnterpriseKey(false);
     }
   };
 
@@ -405,12 +449,12 @@ export default function PricingPage() {
                       {/* Floating Glassmorphic Tooltip Card (Opsi A: Dynamic Calculation) */}
                       <div className="absolute bottom-full left-0 mb-2 hidden group-hover/tooltip:block z-30 w-64 p-3 rounded-2xl bg-slate-900/95 dark:bg-slate-900/95 border border-indigo-500/30 text-white text-[11px] shadow-xl backdrop-blur-xl animate-fade-in pointer-events-none">
                         <p className="font-bold text-indigo-300 mb-1 flex items-center gap-1">
-                          ⚡ Estimasi Penggunaan Kuota:
+                          Estimasi Penggunaan Kuota:
                         </p>
                         {isEnterprise ? (
                           <div className="space-y-1 text-slate-300 text-[10px] leading-relaxed">
                             <p>• <strong>Bebas Limit Kuota Aplikasi</strong> (Menggunakan API Key Google pribadi di Preferensi).</p>
-                            <p>• <strong>Kapasitas:</strong> s.d <strong>200+ hapus komentar/hari</strong> gratis dari Google GCP Console.</p>
+                            <p>• <strong>Kapasitas:</strong> s.d <strong>200+ hapus komentar/hari</strong> gratis dari Google.</p>
                           </div>
                         ) : (
                           <div className="space-y-1 text-slate-300 text-[10px] leading-relaxed">
@@ -516,6 +560,72 @@ export default function PricingPage() {
           </Link>.
         </p>
       </div>
+
+      {/* ── Modal Aktivasi BYOK Enterprise Pasca Bayar ──────────── */}
+      {showEnterpriseModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/75 backdrop-blur-md p-4 animate-in fade-in duration-200">
+          <div className="relative w-full max-w-lg bg-slate-900 border border-amber-500/40 rounded-3xl shadow-2xl overflow-hidden p-6 text-slate-100 space-y-5">
+            <div className="flex items-center gap-3">
+              <div className="p-3 bg-amber-500/10 border border-amber-500/30 rounded-2xl text-amber-400">
+                <span className="text-2xl">🎉</span>
+              </div>
+              <div>
+                <h3 className="text-lg font-bold text-slate-100">Pembayaran Enterprise Sukses!</h3>
+                <p className="text-xs text-amber-400 font-medium">Paket Enterprise Anda kini telah aktif.</p>
+              </div>
+            </div>
+
+            <p className="text-xs text-slate-300 leading-relaxed">
+              Masukkan Google YouTube API Key Anda sekarang untuk langsung mengaktifkan pembersihan komentar bebas limit. Kunci Anda akan diverifikasi secara otomatis ke server Google.
+            </p>
+
+            <div className="space-y-2">
+              <label className="text-xs font-semibold text-slate-300 flex items-center justify-between">
+                <span>Google YouTube API Key</span>
+                <button
+                  type="button"
+                  onClick={() => setShowByokGuide(true)}
+                  className="text-[11px] text-indigo-400 hover:text-indigo-300 font-normal transition-colors"
+                >
+                  📖 Panduan Pembuatan Key
+                </button>
+              </label>
+              <input
+                type="password"
+                placeholder="Tempelkan kode Kunci API Anda (AIzaSyD...)"
+                value={enterpriseApiKeyInput}
+                onChange={(e) => setEnterpriseApiKeyInput(e.target.value)}
+                className="w-full px-4 py-2.5 text-xs rounded-xl border border-slate-700 bg-slate-950 text-slate-100 placeholder-slate-500 focus:outline-none focus:border-amber-500 font-mono"
+              />
+            </div>
+
+            <div className="flex flex-col sm:flex-row items-center gap-2 pt-2">
+              <button
+                onClick={handleSaveEnterpriseKey}
+                disabled={savingEnterpriseKey}
+                className="w-full sm:flex-1 py-2.5 px-4 text-xs font-bold text-white bg-gradient-to-r from-amber-500 to-indigo-600 hover:opacity-90 rounded-xl transition-all shadow-lg shadow-amber-500/20 disabled:opacity-50"
+              >
+                {savingEnterpriseKey ? 'Memverifikasi...' : 'Simpan & Aktifkan BYOK'}
+              </button>
+              <button
+                onClick={() => {
+                  setShowEnterpriseModal(false);
+                  toast.info('Anda dapat memasukkan API Key kapan saja di Halaman Preferensi.');
+                }}
+                className="w-full sm:w-auto py-2.5 px-4 text-xs font-semibold text-slate-400 hover:text-slate-200 hover:bg-slate-800 rounded-xl transition-colors"
+              >
+                Set Up Nanti
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Modal Tutorial Pembuatan YouTube API Key */}
+      <ByokGuideModal
+        isOpen={showByokGuide}
+        onClose={() => setShowByokGuide(false)}
+      />
     </div>
   );
 }

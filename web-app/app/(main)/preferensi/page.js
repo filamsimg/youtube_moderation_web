@@ -8,6 +8,7 @@ import { useSettings } from '@/contexts/SettingsContext';
 import { useToast } from '@/contexts/ToastContext';
 import { useQuota } from '@/contexts/QuotaContext';
 import ConfirmModal from '@/components/ui/ConfirmModal';
+import ByokGuideModal from '@/components/ByokGuideModal';
 import Link from 'next/link';
 
 export default function PreferensiPage() {
@@ -18,6 +19,13 @@ export default function PreferensiPage() {
   const toast = useToast();
   const [showRenewConfirm, setShowRenewConfirm] = useState(false);
 
+  // State BYOK (Bring Your Own Key)
+  const [byokStatus, setByokStatus] = useState({ isEnterprise: false, hasKey: false, maskedKey: null });
+  const [apiKeyInput, setApiKeyInput] = useState('');
+  const [byokLoading, setByokLoading] = useState(true);
+  const [byokSaving, setByokSaving] = useState(false);
+  const [showByokGuide, setShowByokGuide] = useState(false);
+
   const [notifKomentar, setNotifKomentar] = useState(true);
   const [autoTahan, setAutoTahan] = useState(true);
   const [autoHapus, setAutoHapus] = useState(false);
@@ -26,6 +34,29 @@ export default function PreferensiPage() {
   const [pollingInterval, setPollingInterval] = useState(120);
   const [batchModeration, setBatchModeration] = useState(true);
   const [showAdvanced, setShowAdvanced] = useState(false);
+
+  const fetchByokStatus = async () => {
+    try {
+      setByokLoading(true);
+      const res = await fetch('/api/user/byok');
+      const data = await res.json();
+      if (data.success) {
+        setByokStatus({
+          isEnterprise: data.isEnterprise ?? false,
+          hasKey: data.hasKey ?? false,
+          maskedKey: data.maskedKey ?? null,
+        });
+      }
+    } catch (err) {
+      console.error('Error fetching BYOK status:', err);
+    } finally {
+      setByokLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchByokStatus();
+  }, []);
 
   // Sync local state with context when settings are loaded
   useEffect(() => {
@@ -41,6 +72,56 @@ export default function PreferensiPage() {
       setBatchModeration(settings.batchModeration ?? true);
     }
   }, [loading, settings]);
+
+  const handleSaveByok = async () => {
+    if (!apiKeyInput.trim()) {
+      toast.warning('Silakan masukkan Google YouTube API Key terlebih dahulu.');
+      return;
+    }
+
+    try {
+      setByokSaving(true);
+      const res = await fetch('/api/user/byok', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ apiKey: apiKeyInput.trim() }),
+      });
+      const data = await res.json();
+
+      if (!res.ok || !data.success) {
+        toast.error(data.error || 'Gagal menyambungkan API Key.');
+        return;
+      }
+
+      toast.success(data.message || 'API Key berhasil diverifikasi dan disimpan!');
+      setApiKeyInput('');
+      fetchByokStatus();
+    } catch (err) {
+      console.error('Error saving BYOK:', err);
+      toast.error('Terjadi kesalahan koneksi saat menyimpan API Key.');
+    } finally {
+      setByokSaving(false);
+    }
+  };
+
+  const handleDeleteByok = async () => {
+    try {
+      setByokSaving(true);
+      const res = await fetch('/api/user/byok', { method: 'DELETE' });
+      const data = await res.json();
+      if (!res.ok || !data.success) {
+        toast.error(data.error || 'Gagal menghapus API Key.');
+        return;
+      }
+      toast.success(data.message || 'API Key pribadi berhasil dihapus.');
+      fetchByokStatus();
+    } catch (err) {
+      console.error('Error deleting BYOK:', err);
+      toast.error('Terjadi kesalahan koneksi saat menghapus API Key.');
+    } finally {
+      setByokSaving(false);
+    }
+  };
 
   const handleToggleNotif = async (checked) => {
     if (checked) {
@@ -529,6 +610,110 @@ export default function PreferensiPage() {
         </div>
       </div>
 
+      {/* ── Integrasi Kunci API Mandiri (BYOK - Enterprise) ────── */}
+      <div className="bento-card p-6 relative overflow-hidden">
+        <div className="flex items-center justify-between mb-1">
+          <div className="flex items-center gap-2">
+            <div className="p-1.5 rounded-lg bg-indigo-500/10 border border-indigo-500/30 text-indigo-400">
+              <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 5.25a3 3 0 013 3m3 0a6 6 0 01-7.029 5.912c-.563-.097-1.159.026-1.563.43L10.5 17.25H8.25v2.25H6v2.25H2.25v-2.818c0-.597.237-1.17.659-1.591l6.499-6.499c.404-.404.527-1 .43-1.563A6 6 0 1121 8.25z" />
+              </svg>
+            </div>
+            <div>
+              <h2 className="text-sm font-semibold flex items-center gap-2" style={{ color: 'var(--text-primary)' }}>
+                Kunci Akses Mandiri (BYOK)
+                {!byokStatus.isEnterprise && (
+                  <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-slate-800 text-slate-400 border border-slate-700">
+                    🔒 Khusus Enterprise
+                  </span>
+                )}
+              </h2>
+            </div>
+          </div>
+          <button
+            onClick={() => setShowByokGuide(true)}
+            className="text-xs text-indigo-400 hover:text-indigo-300 font-medium flex items-center gap-1 transition-colors"
+          >
+            📖 Panduan Cara Buat Key
+          </button>
+        </div>
+        <p className="text-xs mb-4" style={{ color: 'var(--text-muted)' }}>
+          Gunakan Google YouTube API Key milik Anda sendiri untuk memindahkan beban kuota harian dari server ke akun GCP Anda (Bebas Batas Kuota).
+        </p>
+
+        {byokLoading ? (
+          <div className="py-6 text-center text-xs" style={{ color: 'var(--text-muted)' }}>
+            Memuat status kunci API...
+          </div>
+        ) : !byokStatus.isEnterprise ? (
+          /* Locked State for FREE / PRO */
+          <div className="p-4 rounded-xl border border-dashed border-slate-700 bg-slate-900/40 flex flex-col sm:flex-row items-center justify-between gap-4">
+            <div className="flex items-center gap-3">
+              <span className="text-2xl">🔒</span>
+              <div>
+                <p className="text-xs font-semibold text-slate-200">Fitur Terkunci untuk Paket Enterprise</p>
+                <p className="text-[11px] text-slate-400 mt-0.5">Tingkatkan ke Paket Enterprise untuk mengaktifkan pembersihan otomatis bebas limit menggunakan API Key pribadi.</p>
+              </div>
+            </div>
+            <Link
+              href="/pricing"
+              className="px-4 py-2 text-xs font-semibold text-white bg-gradient-to-r from-amber-500 to-indigo-600 rounded-xl hover:opacity-90 transition-all flex-shrink-0 shadow-md shadow-amber-500/10"
+            >
+              Upgrade Paket Enterprise →
+            </Link>
+          </div>
+        ) : (
+          /* Enterprise Unlocked State */
+          <div className="space-y-4">
+            {byokStatus.hasKey ? (
+              <div className="p-4 rounded-xl border border-emerald-500/30 bg-emerald-950/20 flex flex-col sm:flex-row items-center justify-between gap-4">
+                <div className="flex items-center gap-3">
+                  <span className="w-3 h-3 rounded-full bg-emerald-500 animate-pulse"></span>
+                  <div>
+                    <p className="text-xs font-semibold text-emerald-300 flex items-center gap-2">
+                      API Key Pribadi Aktif
+                      <code className="px-2 py-0.5 bg-emerald-900/60 rounded text-[11px] font-mono text-emerald-200">{byokStatus.maskedKey}</code>
+                    </p>
+                    <p className="text-[11px] text-slate-400 mt-0.5">Seluruh request YouTube API akun Anda kini menggunakan kuota proyek Google Cloud Anda sendiri.</p>
+                  </div>
+                </div>
+                <button
+                  onClick={handleDeleteByok}
+                  disabled={byokSaving}
+                  className="px-3.5 py-1.5 text-xs font-medium text-rose-400 hover:text-rose-300 hover:bg-rose-500/10 border border-rose-500/30 rounded-lg transition-colors flex-shrink-0"
+                >
+                  {byokSaving ? 'Memproses...' : 'Hapus Key'}
+                </button>
+              </div>
+            ) : (
+              <div className="space-y-3">
+                <div className="p-3 rounded-lg bg-amber-500/10 border border-amber-500/30 text-amber-300 text-xs flex items-center gap-2">
+                  <span>⚠️</span>
+                  <span><strong>API Key Belum Dipasang:</strong> Akun Anda ber-tier Enterprise tetapi saat ini masih memotong jatah kuota server. Tempelkan kunci Anda di bawah ini:</span>
+                </div>
+                <div className="flex flex-col sm:flex-row items-center gap-2">
+                  <input
+                    type="password"
+                    placeholder="Tempelkan Google YouTube API Key (AIzaSyD...)"
+                    value={apiKeyInput}
+                    onChange={(e) => setApiKeyInput(e.target.value)}
+                    className="w-full px-3.5 py-2 text-xs rounded-xl border bg-slate-900/80 text-slate-100 placeholder-slate-500 focus:outline-none focus:border-indigo-500 font-mono"
+                    style={{ borderColor: 'var(--border-default)' }}
+                  />
+                  <button
+                    onClick={handleSaveByok}
+                    disabled={byokSaving}
+                    className="w-full sm:w-auto px-5 py-2 text-xs font-semibold text-white bg-indigo-600 hover:bg-indigo-500 rounded-xl transition-all flex-shrink-0 shadow-lg shadow-indigo-600/20 disabled:opacity-50"
+                  >
+                    {byokSaving ? 'Memverifikasi...' : 'Simpan & Verifikasi'}
+                  </button>
+                </div>
+              </div>
+            )}
+          </div>
+        )}
+      </div>
+
       {/* ── Pusat Bantuan ─────────────────────────────────────── */}
       <div className="bento-card p-6">
         <div className="flex items-center gap-2 mb-1">
@@ -595,6 +780,12 @@ export default function PreferensiPage() {
         description="Apakah Anda yakin ingin memperbarui izin YouTube? Anda akan dikeluarkan dari sesi saat ini dan diarahkan ke halaman login untuk memberikan otentikasi YouTube API yang baru."
         confirmText="Perbarui"
         variant="info"
+      />
+
+      {/* Modal Tutorial Pembuatan YouTube API Key */}
+      <ByokGuideModal
+        isOpen={showByokGuide}
+        onClose={() => setShowByokGuide(false)}
       />
     </div>
   );
