@@ -148,6 +148,12 @@ export default function CommentsPage() {
 
   const moderatedCommentsList = getModeratedComments();
 
+  // Komentar yang ditahan oleh AI / YouTube (heldForReview)
+  const heldCommentsList = moderatedCommentsList.filter(c => c.action === 'heldForReview' || c.status === 'heldForReview');
+
+  // Komentar riwayat yang sudah diterbitkan atau dihapus (bukan heldForReview)
+  const historyCommentsList = moderatedCommentsList.filter(c => c.action !== 'heldForReview' && c.status !== 'heldForReview');
+
   // ── Filter logic ─────────────────────────────────────────────
   const filteredComments = comments.filter(c => {
     if (filter !== 'semua') {
@@ -158,7 +164,22 @@ export default function CommentsPage() {
     return true;
   });
 
-  const filteredModeratedComments = moderatedCommentsList.filter(c => {
+  const filteredHeldComments = heldCommentsList.filter(c => {
+    if (filter !== 'semua') {
+      const label = c.aiLabel || predictions[c.id]?.label || '';
+      if (label.toLowerCase() !== filter) return false;
+    }
+    if (videoFilter !== 'all') {
+      const targetVideo = videos.find(v => v.id.videoId === videoFilter);
+      if (targetVideo) {
+        const targetTitle = targetVideo.snippet.title;
+        if (c.videoTitle !== targetTitle && c.videoId !== videoFilter) return false;
+      }
+    }
+    return true;
+  });
+
+  const filteredModeratedComments = historyCommentsList.filter(c => {
     if (filter !== 'semua') {
       const label = c.aiLabel || predictions[c.id]?.label || '';
       if (label.toLowerCase() !== filter) return false;
@@ -536,10 +557,15 @@ export default function CommentsPage() {
                   {filteredComments.length} komentar ditampilkan
                   {comments.length !== filteredComments.length && ` • ${comments.length} total`}
                 </>
+              ) : activeTab === 'ditahan' ? (
+                <>
+                  {filteredHeldComments.length} komentar ditahan untuk ditinjau
+                  {heldCommentsList.length !== filteredHeldComments.length && ` • ${heldCommentsList.length} total`}
+                </>
               ) : (
                 <>
                   {filteredModeratedComments.length} riwayat tindakan ditampilkan
-                  {moderatedCommentsList.length !== filteredModeratedComments.length && ` • ${moderatedCommentsList.length} total`}
+                  {historyCommentsList.length !== filteredModeratedComments.length && ` • ${historyCommentsList.length} total`}
                 </>
               )}
             </p>
@@ -640,16 +666,17 @@ export default function CommentsPage() {
         )}
 
         {/* Tab Switcher */}
-        <div className="px-4 border-b flex gap-4 flex-shrink-0" style={{ borderColor: 'var(--border-default)', background: 'var(--bg-card)' }}>
+        <div className="px-4 border-b flex gap-4 flex-shrink-0 overflow-x-auto" style={{ borderColor: 'var(--border-default)', background: 'var(--bg-card)' }}>
+          {/* Tab 1: Belum Diperiksa */}
           <button
             onClick={() => setActiveTab('belum')}
-            className={`py-3 text-xs font-semibold relative transition-all flex items-center gap-2 ${activeTab === 'belum' ? 'text-indigo-400 font-bold' : 'text-[var(--text-muted)] hover:text-[var(--text-secondary)]'
+            className={`py-3 text-xs font-semibold relative transition-colors flex items-center gap-2 whitespace-nowrap ${activeTab === 'belum' ? 'text-indigo-400' : 'text-[var(--text-muted)] hover:text-[var(--text-secondary)]'
               }`}
           >
-            Daftar Tunggu Moderasi
-            <span className={`text-[10px] px-1.5 py-0.5 rounded-full font-medium transition-all ${activeTab === 'belum'
-              ? 'bg-indigo-500/20 text-indigo-400'
-              : 'bg-[var(--bg-card-hover)] text-[var(--text-muted)]'
+            <span>Daftar Tunggu Moderasi</span>
+            <span className={`text-[10px] px-2 py-0.5 rounded-full font-medium border transition-colors ${activeTab === 'belum'
+              ? 'bg-indigo-500/15 text-indigo-400 border-indigo-500/30'
+              : 'bg-[var(--bg-card-hover)] text-[var(--text-muted)] border-transparent'
               }`}>
               {comments.length}
             </span>
@@ -658,17 +685,36 @@ export default function CommentsPage() {
             )}
           </button>
 
+          {/* Tab 2: Perlu Peninjauan (Ditahan) - REVISI 5 */}
           <button
-            onClick={() => setActiveTab('sudah')}
-            className={`py-3 text-xs font-semibold relative transition-all flex items-center gap-2 ${activeTab === 'sudah' ? 'text-indigo-400 font-bold' : 'text-[var(--text-muted)] hover:text-[var(--text-secondary)]'
+            onClick={() => setActiveTab('ditahan')}
+            className={`py-3 text-xs font-semibold relative transition-colors flex items-center gap-2 whitespace-nowrap ${activeTab === 'ditahan' ? 'text-amber-400' : 'text-[var(--text-muted)] hover:text-[var(--text-secondary)]'
               }`}
           >
-            Telah Diperiksa (Riwayat)
-            <span className={`text-[10px] px-1.5 py-0.5 rounded-full font-medium transition-all ${activeTab === 'sudah'
-              ? 'bg-indigo-500/20 text-indigo-400'
-              : 'bg-[var(--bg-card-hover)] text-[var(--text-muted)]'
+            <span>Perlu Peninjauan (Ditahan)</span>
+            <span className={`text-[10px] px-2 py-0.5 rounded-full font-medium border transition-colors ${activeTab === 'ditahan'
+              ? 'bg-amber-500/15 text-amber-400 border-amber-500/30'
+              : 'bg-[var(--bg-card-hover)] text-[var(--text-muted)] border-transparent'
               }`}>
-              {moderatedCommentsList.length}
+              {heldCommentsList.length}
+            </span>
+            {activeTab === 'ditahan' && (
+              <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-amber-500 rounded-full animate-fade-in" />
+            )}
+          </button>
+
+          {/* Tab 3: Telah Diperiksa (Riwayat) */}
+          <button
+            onClick={() => setActiveTab('sudah')}
+            className={`py-3 text-xs font-semibold relative transition-colors flex items-center gap-2 whitespace-nowrap ${activeTab === 'sudah' ? 'text-indigo-400' : 'text-[var(--text-muted)] hover:text-[var(--text-secondary)]'
+              }`}
+          >
+            <span>Telah Diperiksa (Riwayat)</span>
+            <span className={`text-[10px] px-2 py-0.5 rounded-full font-medium border transition-colors ${activeTab === 'sudah'
+              ? 'bg-indigo-500/15 text-indigo-400 border-indigo-500/30'
+              : 'bg-[var(--bg-card-hover)] text-[var(--text-muted)] border-transparent'
+              }`}>
+              {historyCommentsList.length}
             </span>
             {activeTab === 'sudah' && (
               <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-indigo-500 rounded-full animate-fade-in" />
@@ -717,7 +763,7 @@ export default function CommentsPage() {
         </div>
 
         {/* Comment list */}
-        <div className="flex-1 overflow-y-auto">
+        <div className="flex-1 overflow-y-auto flex flex-col">
           {activeTab === 'belum' ? (
             // ── TAB 1: BELUM DIMODERASI ──────────────────────────────
             filteredComments.length === 0 ? (
@@ -822,7 +868,7 @@ export default function CommentsPage() {
                                 {commentStatus !== 'published' && (
                                   <button disabled={isProcessing} onClick={() => handleModerate(comment.id, 'publish')} title="Terbitkan"
                                     className="p-1.5 rounded-md hover:bg-emerald-500/10 disabled:opacity-30" style={{ color: 'var(--color-success-text)' }}>
-                                    <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor">
+                                    <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor">
                                       <path strokeLinecap="round" strokeLinejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                                     </svg>
                                   </button>
@@ -830,7 +876,7 @@ export default function CommentsPage() {
                                 {commentStatus !== 'heldForReview' && (
                                   <button disabled={isProcessing} onClick={() => handleModerate(comment.id, 'hold')} title="Tahan untuk Ditinjau"
                                     className="p-1.5 rounded-md hover:bg-amber-500/10 text-amber-500 disabled:opacity-30">
-                                    <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor">
+                                    <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor">
                                       <path strokeLinecap="round" strokeLinejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 11-18 0 9 9 0 0118 0z" />
                                     </svg>
                                   </button>
@@ -838,7 +884,7 @@ export default function CommentsPage() {
                                 {commentStatus !== 'rejected' && (
                                   <button disabled={isProcessing} onClick={() => handleModerate(comment.id, 'reject')} title="Hapus"
                                     className="p-1.5 rounded-md hover:bg-rose-500/10 disabled:opacity-30" style={{ color: 'var(--color-danger-text)' }}>
-                                    <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor">
+                                    <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor">
                                       <path strokeLinecap="round" strokeLinejoin="round" d="M9.75 9.75l4.5 4.5m0-4.5l-4.5 4.5M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                                     </svg>
                                   </button>
@@ -960,8 +1006,175 @@ export default function CommentsPage() {
                 )}
               </>
             )
+          ) : activeTab === 'ditahan' ? (
+            // ── TAB 2: PERLU PENINJAUAN (DITAHAN / HELD FOR REVIEW) ─── REVISI 5
+            filteredHeldComments.length === 0 ? (
+              heldCommentsList.length === 0 ? (
+                <EmptyState
+                  icon={
+                    <svg className="w-8 h-8 text-amber-400" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v3.75m9-.75a9 9 0 11-18 0 9 9 0 0118 0zm-9 3.75h.008v.008H12v-.008z" />
+                    </svg>
+                  }
+                  title="Tidak Ada Komentar Ditahan"
+                  description="Saat ini tidak ada komentar yang ditahan oleh AI maupun YouTube dalam folder tinjauan ini."
+                />
+              ) : (
+                <EmptyState
+                  icon={
+                    <svg className="w-8 h-8 text-amber-500" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v3.75m9-.75a9 9 0 11-18 0 9 9 0 0118 0zm-9 3.75h.008v.008H12v-.008z" />
+                    </svg>
+                  }
+                  title="Tidak Ada Komentar Ditahan Sesuai Filter"
+                  description="Komentar ditahan ada, namun tidak memenuhi kriteria filter aktif Anda. Coba ubah opsi filter di atas."
+                />
+              )
+            ) : (
+              <>
+                {/* Banner Edukasi Kontekstual */}
+                <div className="mx-4 mt-3 mb-1 p-3.5 rounded-xl border border-amber-500/30 bg-amber-500/10 text-amber-300 text-xs flex items-center justify-between gap-3 animate-fade-in">
+                  <div className="flex items-center gap-2.5">
+                    <span className="text-base flex-shrink-0">💡</span>
+                    <div>
+                      <p className="font-bold">Folder Tinjauan Komentar Ditahan (heldForReview)</p>
+                      <p className="text-[11px] opacity-90 mt-0.5">Komentar di bawah disembunyikan sementara dari publik oleh AI / YouTube karena terindikasi spam. Klik tombol Setujui (Publikasikan) atau Hapus di kolom aksi.</p>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Desktop Table - Tab Ditahan */}
+                <div className="hidden md:block animate-fade-in">
+                  <table className="w-full">
+                    <thead className="sticky top-0 z-10" style={{ background: 'var(--bg-card)' }}>
+                      <tr className="border-b" style={{ borderColor: 'var(--border-default)' }}>
+                        {['Pengguna', 'Komentar', ...(loadedVideos.length > 1 ? ['Video'] : []), 'AI Analisis', 'Status', 'Aksi Peninjauan'].map(h => (
+                          <th key={h} className="px-4 py-3 text-left text-[11px] font-semibold uppercase tracking-wider" style={{ color: 'var(--text-muted)' }}>{h}</th>
+                        ))}
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-gray-50">
+                      {filteredHeldComments.map(comment => {
+                        const isProcessing = processingComment === comment.id;
+                        return (
+                          <tr key={comment.id} className="transition-colors group hover:bg-[var(--bg-card-hover)] border-b" style={{ borderColor: 'var(--border-default)' }}>
+                            <td className="px-4 py-3">
+                              <div className="flex items-center gap-2">
+                                <UserAvatar name={comment.authorDisplayName} src={comment.authorProfileImageUrl} className="w-7 h-7 animate-fade-in" />
+                                <div>
+                                  <p className="text-xs font-semibold" style={{ color: 'var(--text-primary)' }}>{comment.authorDisplayName}</p>
+                                  <p className="text-[10px]" style={{ color: 'var(--text-muted)' }}>{formatDate(comment.createdAt || comment.publishedAt)}</p>
+                                </div>
+                              </div>
+                            </td>
+                            <td className="px-4 py-3 max-w-xs">
+                              <p className="text-xs line-clamp-2" style={{ color: 'var(--text-secondary)' }}>{comment.textDisplay || comment.textOriginal}</p>
+                            </td>
+                            {loadedVideos.length > 1 && (
+                              <td className="px-4 py-3">
+                                <span className="text-[11px] font-medium" style={{ color: 'var(--text-muted)' }}>{comment.videoTitle}</span>
+                              </td>
+                            )}
+                            <td className="px-4 py-3">
+                              <div className="flex items-center gap-1.5 flex-wrap">
+                                <Badge type={comment.aiLabel?.toLowerCase().includes('spam') || comment.aiLabel?.toLowerCase().includes('judol') ? 'spam' : 'normal'}>
+                                  {comment.aiLabel || 'Spam Judol'}
+                                </Badge>
+                                {comment.sentiment && <Badge type="sentiment" sentiment={comment.sentiment} score={comment.sentimentScore} />}
+                              </div>
+                              <p className="text-[10px] mt-1" style={{ color: 'var(--text-muted)' }}>
+                                {comment.aiConfidence ? `${Math.round(comment.aiConfidence * 100)}%` : '70%+'} • Ditahan AI
+                              </p>
+                            </td>
+                            <td className="px-4 py-3">
+                              <span className="badge badge-amber text-xs font-bold px-2 py-0.5">
+                                📌 DITAHAN
+                              </span>
+                            </td>
+                            <td className="px-4 py-3">
+                              <div className="flex items-center gap-1">
+                                <button
+                                  disabled={isProcessing}
+                                  onClick={() => handleModerate(comment.id, 'approve')}
+                                  title="Terbitkan ke Publik (Setujui)"
+                                  className="p-1.5 rounded-md hover:bg-emerald-500/10 text-emerald-400 disabled:opacity-30 transition-all active:scale-95"
+                                >
+                                  <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor">
+                                    <path strokeLinecap="round" strokeLinejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                  </svg>
+                                </button>
+                                <button
+                                  disabled={isProcessing}
+                                  onClick={() => handleModerate(comment.id, 'reject')}
+                                  title="Hapus Permanen (Reject)"
+                                  className="p-1.5 rounded-md hover:bg-rose-500/10 text-rose-400 disabled:opacity-30 transition-all active:scale-95"
+                                >
+                                  <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor">
+                                    <path strokeLinecap="round" strokeLinejoin="round" d="M9.75 9.75l4.5 4.5m0-4.5l-4.5 4.5M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                  </svg>
+                                </button>
+                                <button
+                                  disabled={isProcessing}
+                                  onClick={() => handleUndo(comment.id)}
+                                  title="Batal / Batalkan"
+                                  className="p-1.5 rounded-md hover:bg-amber-500/10 text-amber-400 disabled:opacity-30 transition-all active:scale-95"
+                                >
+                                  <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor">
+                                    <path strokeLinecap="round" strokeLinejoin="round" d="M9 15L3 9m0 0l6-6M3 9h12a6 6 0 010 12h-3" />
+                                  </svg>
+                                </button>
+                              </div>
+                            </td>
+                          </tr>
+                        );
+                      })}
+                    </tbody>
+                  </table>
+                </div>
+
+                {/* Mobile View - Tab Ditahan */}
+                <div className="md:hidden divide-y divide-gray-100">
+                  {filteredHeldComments.map(comment => {
+                    const isProcessing = processingComment === comment.id;
+                    return (
+                      <div key={comment.id} className="p-4 space-y-3">
+                        <div className="flex items-center justify-between">
+                          <div className="flex items-center gap-2">
+                            <UserAvatar name={comment.authorDisplayName} src={comment.authorProfileImageUrl} className="w-7 h-7" />
+                            <div>
+                              <p className="text-xs font-semibold">{comment.authorDisplayName}</p>
+                              <p className="text-[10px] text-muted">{formatDate(comment.createdAt || comment.publishedAt)}</p>
+                            </div>
+                          </div>
+                          <span className="badge badge-amber text-[10px] font-bold px-2 py-0.5">📌 DITAHAN</span>
+                        </div>
+                        <p className="text-xs">{comment.textDisplay || comment.textOriginal}</p>
+                        <div className="flex items-center justify-between pt-2 border-t text-xs">
+                          <div className="flex items-center gap-1">
+                            <button
+                              disabled={isProcessing}
+                              onClick={() => handleModerate(comment.id, 'approve')}
+                              className="px-2.5 py-1 bg-emerald-500/10 text-emerald-400 rounded-lg font-semibold text-[11px]"
+                            >
+                              ✓ Terbitkan
+                            </button>
+                            <button
+                              disabled={isProcessing}
+                              onClick={() => handleModerate(comment.id, 'reject')}
+                              className="px-2.5 py-1 bg-rose-500/10 text-rose-400 rounded-lg font-semibold text-[11px]"
+                            >
+                              ✕ Hapus
+                            </button>
+                          </div>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              </>
+            )
           ) : (
-            // ── TAB 2: SUDAH DIMODERASI (RIWAYAT) ─────────────────────
+            // ── TAB 3: SUDAH DIMODERASI (RIWAYAT) ─────────────────────
             filteredModeratedComments.length === 0 ? (
               moderatedCommentsList.length === 0 ? (
                 <EmptyState
@@ -991,7 +1204,7 @@ export default function CommentsPage() {
                   <table className="w-full">
                     <thead className="sticky top-0 z-10" style={{ background: 'var(--bg-card)' }}>
                       <tr className="border-b" style={{ borderColor: 'var(--border-default)' }}>
-                        {['Pengguna', 'Komentar', ...(loadedVideos.length > 1 ? ['Video'] : []), 'AI Analisis', 'Tindakan', 'Aksi / Ubah'].map(h => (
+                        {['Pengguna', 'Komentar', ...(loadedVideos.length > 1 ? ['Video'] : []), 'AI Analisis', 'Tindakan', 'Aksi'].map(h => (
                           <th key={h} className="px-4 py-3 text-left text-[11px] font-semibold uppercase tracking-wider" style={{ color: 'var(--text-muted)' }}>{h}</th>
                         ))}
                       </tr>
@@ -1042,64 +1255,36 @@ export default function CommentsPage() {
                                 )}
                               </div>
                             </td>
-                            <td className="px-4 py-3 text-right">
-                              <div className="flex items-center justify-end gap-1.5">
-                                {/* Tombol Rollback / Undo */}
-                                <button
-                                  disabled={isProcessing}
-                                  onClick={() => handleUndoAction(comment.id)}
-                                  title="Batal Tindakan (Kembalikan ke antrean)"
-                                  className="p-1.5 rounded-md text-amber-500 hover:bg-amber-500/10 hover:text-amber-600 disabled:opacity-30 flex items-center justify-center transition-all mr-2 hover:scale-105 active:scale-95"
-                                >
-                                  <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor">
-                                    <path strokeLinecap="round" strokeLinejoin="round" d="M9 15L3 9m0 0l6-6M3 9h12a6 6 0 010 12h-3" />
-                                  </svg>
-                                </button>
-
+                            <td className="px-4 py-3">
+                              <div className="flex items-center justify-center">
                                 {/* Ubah Status Cepat */}
-                                <div className="flex items-center gap-1 border-l pl-2.5" style={{ borderColor: 'var(--border-default)' }}>
-                                  {/* Publish */}
-                                  {comment.status !== 'published' && (
-                                    <button
-                                      disabled={isProcessing}
-                                      onClick={() => handleChangeAction(comment.id, 'publish')}
-                                      title="Ubah ke Diterbitkan"
-                                      className="p-1.5 rounded-md hover:bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 disabled:opacity-30 transition-all active:scale-95 hover:scale-105"
-                                    >
-                                      <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" strokeWidth={2.5} stroke="currentColor">
-                                        <path strokeLinecap="round" strokeLinejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                                      </svg>
-                                    </button>
-                                  )}
+                                {/* Publish */}
+                                {comment.status !== 'published' && (
+                                  <button
+                                    disabled={isProcessing}
+                                    onClick={() => handleChangeAction(comment.id, 'publish')}
+                                    title="Ubah ke Diterbitkan"
+                                    className="p-1.5 rounded-md hover:bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 disabled:opacity-30 transition-all active:scale-95 hover:scale-105"
+                                  >
+                                    <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" strokeWidth={2.5} stroke="currentColor">
+                                      <path strokeLinecap="round" strokeLinejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                    </svg>
+                                  </button>
+                                )}
 
-                                  {/* Hold */}
-                                  {comment.status !== 'heldForReview' && (
-                                    <button
-                                      disabled={isProcessing}
-                                      onClick={() => handleChangeAction(comment.id, 'hold')}
-                                      title="Ubah ke Ditahan (Folder Tinjauan)"
-                                      className="p-1.5 rounded-md hover:bg-amber-500/10 text-amber-600 dark:text-amber-400 disabled:opacity-30 transition-all active:scale-95 hover:scale-105"
-                                    >
-                                      <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" strokeWidth={2.5} stroke="currentColor">
-                                        <path strokeLinecap="round" strokeLinejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 11-18 0 9 9 0 0118 0z" />
-                                      </svg>
-                                    </button>
-                                  )}
-
-                                  {/* Reject */}
-                                  {comment.status !== 'rejected' && (
-                                    <button
-                                      disabled={isProcessing}
-                                      onClick={() => handleChangeAction(comment.id, 'reject')}
-                                      title="Ubah ke Dihapus"
-                                      className="p-1.5 rounded-md hover:bg-rose-500/10 text-rose-600 dark:text-rose-400 disabled:opacity-30 transition-all active:scale-95 hover:scale-105"
-                                    >
-                                      <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" strokeWidth={2.5} stroke="currentColor">
-                                        <path strokeLinecap="round" strokeLinejoin="round" d="M9.75 9.75l4.5 4.5m0-4.5l-4.5 4.5M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                                      </svg>
-                                    </button>
-                                  )}
-                                </div>
+                                {/* Reject */}
+                                {comment.status !== 'rejected' && (
+                                  <button
+                                    disabled={isProcessing}
+                                    onClick={() => handleChangeAction(comment.id, 'reject')}
+                                    title="Ubah ke Dihapus"
+                                    className="p-1.5 rounded-md hover:bg-rose-500/10 text-rose-600 dark:text-rose-400 disabled:opacity-30 transition-all active:scale-95 hover:scale-105"
+                                  >
+                                    <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" strokeWidth={2.5} stroke="currentColor">
+                                      <path strokeLinecap="round" strokeLinejoin="round" d="M9.75 9.75l4.5 4.5m0-4.5l-4.5 4.5M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                    </svg>
+                                  </button>
+                                )}
                               </div>
                             </td>
                           </tr>
@@ -1162,20 +1347,8 @@ export default function CommentsPage() {
                             )}
                           </div>
                           <div className="flex items-center gap-1.5">
-                            {/* Mobile Rollback Button */}
-                            <button
-                              disabled={isProcessing}
-                              onClick={() => handleUndoAction(comment.id)}
-                              className="p-1.5 rounded-lg text-amber-500 hover:bg-amber-500/10 hover:text-amber-600 disabled:opacity-30 flex items-center justify-center transition-all mr-1 hover:scale-105 active:scale-95"
-                              title="Batal Tindakan"
-                            >
-                              <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor">
-                                <path strokeLinecap="round" strokeLinejoin="round" d="M9 15L3 9m0 0l6-6M3 9h12a6 6 0 010 12h-3" />
-                              </svg>
-                            </button>
-
                             {/* Mobile Change Action Button Row */}
-                            <div className="flex items-center gap-0.5 border-l pl-2" style={{ borderColor: 'var(--border-default)' }}>
+                            <div className="flex items-center gap-0.5" style={{ borderColor: 'var(--border-default)' }}>
                               {comment.status !== 'published' && (
                                 <button
                                   disabled={isProcessing}
@@ -1183,15 +1356,6 @@ export default function CommentsPage() {
                                   className="p-1.5 rounded-md transition-all active:scale-90 text-emerald-500 hover:bg-emerald-500/10 disabled:opacity-30"
                                 >
                                   <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" strokeWidth={2.5} stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
-                                </button>
-                              )}
-                              {comment.status !== 'heldForReview' && (
-                                <button
-                                  disabled={isProcessing}
-                                  onClick={() => handleChangeAction(comment.id, 'hold')}
-                                  className="p-1.5 rounded-md transition-all active:scale-90 text-amber-500 hover:bg-amber-500/10 disabled:opacity-30"
-                                >
-                                  <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" strokeWidth={2.5} stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
                                 </button>
                               )}
                               {comment.status !== 'rejected' && (
@@ -1349,7 +1513,7 @@ export default function CommentsPage() {
                 onClick={() => handleExecuteBatch('publish')}
                 className="flex-1 sm:flex-initial flex items-center justify-center gap-1.5 px-4 py-2 rounded-full text-xs font-bold text-white bg-emerald-600 hover:bg-emerald-500 active:scale-95 transition-all hover:-translate-y-0.5 shadow-md shadow-emerald-900/10"
               >
-                <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" strokeWidth={2.5} stroke="currentColor">
+                <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" strokeWidth={2.5} stroke="currentColor">
                   <path strokeLinecap="round" strokeLinejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                 </svg>
                 <span>Terbitkan</span>
@@ -1359,7 +1523,7 @@ export default function CommentsPage() {
                 onClick={() => handleExecuteBatch('hold')}
                 className="flex-1 sm:flex-initial flex items-center justify-center gap-1.5 px-4 py-2 rounded-full text-xs font-bold text-white bg-amber-600 hover:bg-amber-500 active:scale-95 transition-all hover:-translate-y-0.5 shadow-md shadow-amber-900/10"
               >
-                <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" strokeWidth={2.5} stroke="currentColor">
+                <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" strokeWidth={2.5} stroke="currentColor">
                   <path strokeLinecap="round" strokeLinejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 11-18 0 9 9 0 0118 0z" />
                 </svg>
                 <span>Tahan</span>
@@ -1369,7 +1533,7 @@ export default function CommentsPage() {
                 onClick={() => handleExecuteBatch('reject')}
                 className="flex-1 sm:flex-initial flex items-center justify-center gap-1.5 px-4 py-2 rounded-full text-xs font-bold text-white bg-rose-600 hover:bg-rose-500 active:scale-95 transition-all hover:-translate-y-0.5 shadow-md shadow-rose-900/10"
               >
-                <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" strokeWidth={2.5} stroke="currentColor">
+                <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" strokeWidth={2.5} stroke="currentColor">
                   <path strokeLinecap="round" strokeLinejoin="round" d="M9.75 9.75l4.5 4.5m0-4.5l-4.5 4.5M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                 </svg>
                 <span>Sembunyikan</span>

@@ -1,8 +1,8 @@
 import React from 'react';
 
-export default function EmptyState({ icon, title, description, actionButton }) {
+export default function EmptyState({ icon, title, description, actionButton, className = '' }) {
   return (
-    <div className="empty-state py-16 flex flex-col items-center justify-center text-center max-w-md mx-auto animate-fade-in">
+    <div className={`empty-state py-12 px-6 flex flex-col items-center justify-center text-center max-w-md mx-auto my-auto min-h-[360px] animate-fade-in ${className}`}>
       {icon && (
         <div className="mb-3 flex-shrink-0 text-[var(--border-hover)]" style={{ color: 'var(--border-hover)' }}>
           {icon}
