@@ -10,6 +10,7 @@ import StatusBadge from '@/components/ui/StatusBadge';
 import EmptyState from '@/components/ui/EmptyState';
 import UserAvatar from '@/components/ui/UserAvatar';
 import TrialBanner from '@/components/TrialBanner';
+import AiScannerLoader from '@/components/ui/AiScannerLoader';
 
 export default function CommentsPage() {
   const router = useRouter();
@@ -440,27 +441,9 @@ export default function CommentsPage() {
       );
     }
 
-    // 2. Loading
+    // 2. Loading (AI Scanner Animation)
     if (commentsLoading) {
-      return (
-        <div className="flex flex-col items-center justify-center h-full py-20">
-          {fetchProgress.total > 1 && (
-            <div className="mb-4 text-center">
-              <p className="text-xs font-medium mb-2" style={{ color: 'var(--text-secondary)' }}>
-                Video {fetchProgress.current} / {fetchProgress.total}
-              </p>
-              <div className="w-48 h-1.5 rounded-full overflow-hidden mx-auto" style={{ background: 'var(--border-default)' }}>
-                <div
-                  className="h-full bg-indigo-500 rounded-full transition-all duration-300"
-                  style={{ width: `${fetchProgress.total > 0 ? (fetchProgress.current / fetchProgress.total) * 100 : 0}%` }}
-                />
-              </div>
-            </div>
-          )}
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-indigo-500 mb-3" />
-          <p className="text-xs" style={{ color: 'var(--text-muted)' }}>Memuat &amp; menganalisis komentar...</p>
-        </div>
-      );
+      return <AiScannerLoader videoCount={selectedVideoIds.size} />;
     }
 
     // 3. Quota error
