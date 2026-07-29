@@ -93,7 +93,7 @@ export const youtubeService = {
       const params = {
         part: 'snippet,replies',
         videoId,
-        maxResults: 20, // Dioptimalkan menjadi 20 komentar per muat halaman untuk hemat kuota dan beban AI
+        maxResults: 100, // Batch maksimum YouTube API: 1 unit kuota per 100 komentar (efisiensi 80% vs batch 20)
         textFormat: 'html'
       };
       
