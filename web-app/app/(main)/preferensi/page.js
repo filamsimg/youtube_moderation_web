@@ -130,7 +130,7 @@ export default function PreferensiPage() {
         setNotifKomentar(false);
         return;
       }
-      
+
       if (Notification.permission === 'denied') {
         toast.warning('Izin notifikasi diblokir oleh browser. Silakan aktifkan di pengaturan browser Anda.');
         setNotifKomentar(false);
@@ -614,7 +614,7 @@ export default function PreferensiPage() {
       <div className="bento-card p-6 relative overflow-hidden">
         <div className="flex items-center justify-between mb-1">
           <div className="flex items-center gap-2">
-            <div className="p-1.5 rounded-lg bg-indigo-500/10 border border-indigo-500/30 text-indigo-400">
+            <div className="p-1.5 rounded-lg bg-indigo-500/10 border border-indigo-500/20 text-indigo-600 dark:text-indigo-400">
               <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 5.25a3 3 0 013 3m3 0a6 6 0 01-7.029 5.912c-.563-.097-1.159.026-1.563.43L10.5 17.25H8.25v2.25H6v2.25H2.25v-2.818c0-.597.237-1.17.659-1.591l6.499-6.499c.404-.404.527-1 .43-1.563A6 6 0 1121 8.25z" />
               </svg>
@@ -623,7 +623,7 @@ export default function PreferensiPage() {
               <h2 className="text-sm font-semibold flex items-center gap-2" style={{ color: 'var(--text-primary)' }}>
                 Kunci Akses Mandiri (BYOK)
                 {!byokStatus.isEnterprise && (
-                  <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-slate-800 text-slate-400 border border-slate-700">
+                  <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-slate-100 text-slate-600 border border-slate-200 dark:bg-slate-800 dark:text-slate-400 dark:border-slate-700">
                     🔒 Khusus Enterprise
                   </span>
                 )}
@@ -632,9 +632,9 @@ export default function PreferensiPage() {
           </div>
           <button
             onClick={() => setShowByokGuide(true)}
-            className="text-xs text-indigo-400 hover:text-indigo-300 font-medium flex items-center gap-1 transition-colors"
+            className="text-xs text-indigo-600 hover:text-indigo-700 dark:text-indigo-400 dark:hover:text-indigo-300 font-semibold flex items-center gap-1 transition-colors cursor-pointer"
           >
-            📖 Panduan Cara Buat Key
+            Panduan Cara Buat Key
           </button>
         </div>
         <p className="text-xs mb-4" style={{ color: 'var(--text-muted)' }}>
@@ -647,17 +647,17 @@ export default function PreferensiPage() {
           </div>
         ) : !byokStatus.isEnterprise ? (
           /* Locked State for FREE / PRO */
-          <div className="p-4 rounded-xl border border-dashed border-slate-700 bg-slate-900/40 flex flex-col sm:flex-row items-center justify-between gap-4">
+          <div className="p-4 rounded-xl border border-dashed border-slate-300 bg-slate-50 dark:border-slate-700 dark:bg-slate-900/40 flex flex-col sm:flex-row items-center justify-between gap-4">
             <div className="flex items-center gap-3">
               <span className="text-2xl">🔒</span>
               <div>
-                <p className="text-xs font-semibold text-slate-200">Fitur Terkunci untuk Paket Enterprise</p>
-                <p className="text-[11px] text-slate-400 mt-0.5">Tingkatkan ke Paket Enterprise untuk mengaktifkan pembersihan otomatis bebas limit menggunakan API Key pribadi.</p>
+                <p className="text-xs font-semibold text-slate-800 dark:text-slate-200">Fitur Terkunci untuk Paket Enterprise</p>
+                <p className="text-[11px] text-slate-600 dark:text-slate-400 mt-0.5">Tingkatkan ke Paket Enterprise untuk mengaktifkan pembersihan otomatis bebas limit menggunakan API Key pribadi.</p>
               </div>
             </div>
             <Link
               href="/pricing"
-              className="px-4 py-2 text-xs font-semibold text-white bg-gradient-to-r from-amber-500 to-indigo-600 rounded-xl hover:opacity-90 transition-all flex-shrink-0 shadow-md shadow-amber-500/10"
+              className="px-4 py-2 text-xs font-semibold text-white bg-gradient-to-r from-amber-500 to-indigo-600 rounded-xl hover:opacity-90 transition-all flex-shrink-0 shadow-md shadow-amber-500/10 cursor-pointer"
             >
               Upgrade Paket Enterprise →
             </Link>
@@ -666,29 +666,28 @@ export default function PreferensiPage() {
           /* Enterprise Unlocked State */
           <div className="space-y-4">
             {byokStatus.hasKey ? (
-              <div className="p-4 rounded-xl border border-emerald-500/30 bg-emerald-950/20 flex flex-col sm:flex-row items-center justify-between gap-4">
+              <div className="p-4 rounded-xl border border-emerald-200 bg-emerald-50/80 dark:border-emerald-500/30 dark:bg-emerald-950/20 flex flex-col sm:flex-row items-center justify-between gap-4 shadow-xs">
                 <div className="flex items-center gap-3">
-                  <span className="w-3 h-3 rounded-full bg-emerald-500 animate-pulse"></span>
+                  <span className="w-3 h-3 rounded-full bg-emerald-500 animate-pulse flex-shrink-0"></span>
                   <div>
-                    <p className="text-xs font-semibold text-emerald-300 flex items-center gap-2">
+                    <p className="text-xs font-bold text-emerald-800 dark:text-emerald-300 flex items-center gap-2">
                       API Key Pribadi Aktif
-                      <code className="px-2 py-0.5 bg-emerald-900/60 rounded text-[11px] font-mono text-emerald-200">{byokStatus.maskedKey}</code>
+                      <code className="px-2 py-0.5 bg-emerald-100 text-emerald-900 border border-emerald-300/80 dark:bg-emerald-900/60 dark:text-emerald-200 dark:border-transparent rounded text-[11px] font-semibold">{byokStatus.maskedKey}</code>
                     </p>
-                    <p className="text-[11px] text-slate-400 mt-0.5">Seluruh request YouTube API akun Anda kini menggunakan kuota proyek Google Cloud Anda sendiri.</p>
+                    <p className="text-[11px] text-slate-600 dark:text-slate-400 mt-0.5">Seluruh request YouTube API akun Anda kini menggunakan kuota proyek Google Cloud Anda sendiri.</p>
                   </div>
                 </div>
                 <button
                   onClick={handleDeleteByok}
                   disabled={byokSaving}
-                  className="px-3.5 py-1.5 text-xs font-medium text-rose-400 hover:text-rose-300 hover:bg-rose-500/10 border border-rose-500/30 rounded-lg transition-colors flex-shrink-0"
+                  className="px-3.5 py-1.5 text-xs font-semibold text-rose-700 bg-rose-50 hover:bg-rose-100 border border-rose-200 dark:bg-transparent dark:text-rose-400 dark:hover:text-rose-300 dark:hover:bg-rose-500/10 dark:border-rose-500/30 rounded-lg transition-colors flex-shrink-0 shadow-xs cursor-pointer"
                 >
                   {byokSaving ? 'Memproses...' : 'Hapus Key'}
                 </button>
               </div>
             ) : (
               <div className="space-y-3">
-                <div className="p-3 rounded-lg bg-amber-500/10 border border-amber-500/30 text-amber-300 text-xs flex items-center gap-2">
-                  <span>⚠️</span>
+                <div className="p-3 rounded-lg bg-amber-50 border border-amber-200 text-amber-900 dark:bg-amber-500/10 dark:border-amber-500/30 dark:text-amber-300 text-xs">
                   <span><strong>API Key Belum Dipasang:</strong> Akun Anda ber-tier Enterprise tetapi saat ini masih memotong jatah kuota server. Tempelkan kunci Anda di bawah ini:</span>
                 </div>
                 <div className="flex flex-col sm:flex-row items-center gap-2">
@@ -697,13 +696,13 @@ export default function PreferensiPage() {
                     placeholder="Tempelkan Google YouTube API Key (AIzaSyD...)"
                     value={apiKeyInput}
                     onChange={(e) => setApiKeyInput(e.target.value)}
-                    className="w-full px-3.5 py-2 text-xs rounded-xl border bg-slate-900/80 text-slate-100 placeholder-slate-500 focus:outline-none focus:border-indigo-500 font-mono"
+                    className="w-full px-3.5 py-2 text-xs rounded-xl border bg-white text-slate-900 placeholder-slate-400 dark:bg-slate-900/80 dark:text-slate-100 dark:placeholder-slate-500 focus:outline-none focus:border-indigo-500 font-semibold shadow-xs"
                     style={{ borderColor: 'var(--border-default)' }}
                   />
                   <button
                     onClick={handleSaveByok}
                     disabled={byokSaving}
-                    className="w-full sm:w-auto px-5 py-2 text-xs font-semibold text-white bg-indigo-600 hover:bg-indigo-500 rounded-xl transition-all flex-shrink-0 shadow-lg shadow-indigo-600/20 disabled:opacity-50"
+                    className="w-full sm:w-auto px-5 py-2 text-xs font-semibold text-white bg-indigo-600 hover:bg-indigo-500 rounded-xl transition-all flex-shrink-0 shadow-lg shadow-indigo-600/20 disabled:opacity-50 cursor-pointer"
                   >
                     {byokSaving ? 'Memverifikasi...' : 'Simpan & Verifikasi'}
                   </button>
