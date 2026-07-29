@@ -28,3 +28,12 @@ export function formatDateTime(dateString, options = {}) {
   };
   return new Date(dateString).toLocaleString('id-ID', defaultOptions);
 }
+
+// Cek apakah paket atau profil memiliki kuota unlimited / BYOK
+export function isUnlimitedQuota(target) {
+  if (!target) return false;
+  const tier = typeof target === 'string' ? target : target.tier;
+  const units = typeof target === 'object' ? Number(target.quota_units) : (typeof target === 'number' ? target : null);
+  
+  return units === -1 || (units !== null && units >= 999999) || tier === 'ENTERPRISE';
+}

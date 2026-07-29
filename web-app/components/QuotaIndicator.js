@@ -20,24 +20,31 @@ export default function QuotaIndicator({ compact = false }) {
 
   const pct = profile.percentage;
 
+  const isByokActive = profile.tier === 'ENTERPRISE' && profile.has_byok;
+
   // Warna berubah sesuai sisa kuota
   const barColor =
+    isByokActive ? 'bg-gradient-to-r from-emerald-500 to-cyan-400' :
     pct > 50 ? 'bg-emerald-500' :
     pct > 20 ? 'bg-amber-400' :
     'bg-rose-500';
 
   const barGlow =
+    isByokActive ? '0 0 10px rgba(16, 185, 129, 0.70)' :
     pct > 50 ? '0 0 8px rgba(16, 185, 129, 0.60)' :
     pct > 20 ? '0 0 8px rgba(245, 158, 11, 0.60)' :
     '0 0 8px rgba(244, 63, 94, 0.60)';
 
   const textColor =
+    isByokActive ? 'text-emerald-600 dark:text-emerald-400' :
     pct > 50 ? 'text-emerald-600 dark:text-emerald-400' :
     pct > 20 ? 'text-amber-600 dark:text-amber-400' :
     'text-rose-600 dark:text-rose-400';
 
   const tierBadgeClass =
-    profile.tier === 'PRO'
+    isByokActive
+      ? 'bg-cyan-50 border-cyan-200 text-cyan-700 dark:bg-cyan-500/10 dark:text-cyan-400 dark:border-cyan-500/20'
+      : profile.tier === 'PRO'
       ? 'bg-amber-50 border-amber-200 text-amber-700 dark:bg-amber-500/10 dark:text-amber-400 dark:border-amber-500/20'
       : profile.tier === 'ENTERPRISE'
       ? 'bg-violet-50 border-violet-200 text-violet-700 dark:bg-violet-500/10 dark:text-violet-400 dark:border-violet-500/20'
@@ -50,14 +57,14 @@ export default function QuotaIndicator({ compact = false }) {
         <div className="text-right">
           <p className="text-[10px] text-muted">Kuota</p>
           <p className={`text-xs font-semibold ${textColor}`}>
-            {profile.quota_balance.toLocaleString('id-ID')} unit
+            {isByokActive ? 'BYOK GCP' : `${profile.quota_balance.toLocaleString('id-ID')} unit`}
           </p>
         </div>
         <div className="w-14 h-1.5 rounded-full overflow-hidden" style={{ background: 'var(--border-default)' }}>
           <div
             className={`h-full rounded-full transition-all duration-500 ${barColor}`}
             style={{
-              width: `${Math.min(pct, 100)}%`,
+              width: `${isByokActive ? 100 : Math.min(pct, 100)}%`,
               boxShadow: barGlow,
             }}
           />
@@ -105,7 +112,6 @@ export default function QuotaIndicator({ compact = false }) {
     
     // PRO & ENTERPRISE selalu memiliki masa aktif definitif
     if (!profile.quota_expiry) {
-      // Fallback safety: PRO/ENT tanpa expiry seharusnya tidak terjadi
       return { text: 'Perlu Verifikasi', className: 'text-amber-400 font-medium' };
     }
 
@@ -149,7 +155,7 @@ export default function QuotaIndicator({ compact = false }) {
           <p className="text-[11px] font-semibold text-secondary">Kuota API</p>
         </div>
         <span className={`text-[10px] font-semibold px-1.5 py-0.5 rounded-full ${tierBadgeClass}`}>
-          {profile.tier}
+          {isByokActive ? 'ENTERPRISE • BYOK' : profile.tier}
         </span>
       </div>
 
@@ -158,7 +164,7 @@ export default function QuotaIndicator({ compact = false }) {
         <div
           className={`h-full rounded-full transition-all duration-700 ${barColor}`}
           style={{
-            width: `${Math.min(pct, 100)}%`,
+            width: `${isByokActive ? 100 : Math.min(pct, 100)}%`,
             boxShadow: barGlow,
           }}
         />
@@ -166,16 +172,27 @@ export default function QuotaIndicator({ compact = false }) {
 
       {/* Numbers */}
       <div className="flex items-center justify-between">
-        <p className={`text-[11px] font-semibold ${textColor}`}>
-          {profile.quota_balance.toLocaleString('id-ID')} unit
+        <p className={`text-[11px] font-bold ${textColor}`}>
+          {isByokActive ? 'Bebas Limit Server' : `${profile.quota_balance.toLocaleString('id-ID')} unit`}
         </p>
         <p className="text-[10px]" style={{ color: 'var(--text-muted)' }}>
-          / {profile.quota_limit.toLocaleString('id-ID')}
+          {isByokActive ? '/ GCP Mandiri' : `/ ${profile.quota_limit.toLocaleString('id-ID')}`}
         </p>
       </div>
 
       {/* Breakdown Kuota Terpisah */}
-      {hasBreakdown && (subQuota > 0 || trialQuota > 0) && (
+      {isByokActive ? (
+        <div className="space-y-1 pt-1.5 border-t border-[var(--border-default)]/40 text-[9px] sm:text-[10px]">
+          <div className="flex items-center justify-between">
+            <span className="text-muted">Beban Server:</span>
+            <span className="text-emerald-500 font-semibold">100% Offloaded</span>
+          </div>
+          <div className="flex items-center justify-between">
+            <span className="text-muted">Limit GCP:</span>
+            <span className="text-slate-300 font-semibold">10.000 units/hari</span>
+          </div>
+        </div>
+      ) : hasBreakdown && (subQuota > 0 || trialQuota > 0) && (
         <div className="space-y-1 pt-1.5 border-t border-[var(--border-default)]/40">
           <p className="text-[9px] text-muted uppercase tracking-wider font-semibold">Rincian</p>
           <div className="space-y-0.5">
@@ -209,15 +226,24 @@ export default function QuotaIndicator({ compact = false }) {
         </span>
       </div>
 
-      {/* Top-up Alert */}
-      {pct <= 20 && (
+      {/* Action Button */}
+      {isByokActive ? (
+        <a
+          href="https://console.cloud.google.com/apis/api/youtube.googleapis.com/quotas"
+          target="_blank"
+          rel="noopener noreferrer"
+          className="block w-full text-center py-1.5 rounded-lg bg-emerald-500/10 border border-emerald-500/20 text-[10px] font-semibold text-emerald-600 dark:text-emerald-400 hover:bg-emerald-500/20 transition-colors"
+        >
+          Cek Pemakaian Real-Time GCP ↗
+        </a>
+      ) : pct <= 20 ? (
         <Link
           href="/pricing"
           className="block w-full text-center py-1.5 rounded-lg bg-rose-50 border border-rose-200 text-[11px] font-medium text-rose-700 hover:bg-rose-100/50 dark:bg-rose-500/10 dark:border-rose-500/20 dark:text-rose-400 dark:hover:bg-rose-500/15 transition-colors"
         >
-          ⚡ Upgrade Langganan
+          Upgrade Langganan
         </Link>
-      )}
+      ) : null}
     </div>
   );
 }
