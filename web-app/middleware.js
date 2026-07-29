@@ -24,6 +24,19 @@ const ADMIN_PREFIXES = ['/admin'];
 export async function middleware(request) {
   const { pathname } = request.nextUrl;
 
+  // 1. Auto-redirect untuk pengguna yang SUDAH LOGIN di route beranda (/) atau login (/login)
+  if (pathname === '/' || pathname === '/login') {
+    const token = await getToken({
+      req: request,
+      secret: process.env.NEXTAUTH_SECRET,
+    });
+
+    if (token && token.isActive !== false) {
+      return NextResponse.redirect(new URL('/dashboard', request.url));
+    }
+    return NextResponse.next();
+  }
+
   // Cek apakah path adalah private
   const isPrivate = PRIVATE_PREFIXES.some((prefix) =>
     pathname === prefix || pathname.startsWith(`${prefix}/`)
