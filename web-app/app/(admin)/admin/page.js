@@ -108,17 +108,18 @@ export default function AdminOverviewPage() {
 
         {/* Global Quota Consumed */}
         <StatCard
-          label="Kuota Google API Hari Ini"
+          label="Kuota Server Hari Ini"
           value={
             <>
-              {stats.todayQuotaUsed.toLocaleString()}{' '}
+              {(stats.todayQuotaUsed || 0).toLocaleString('id-ID')}{' '}
               <span className="text-[10px] text-muted font-normal">/ 10.000 unit</span>
             </>
           }
           color="amber"
           icon={<Database className="w-5 h-5" />}
           sub={(() => {
-            const percentage = Math.min(Math.round((stats.todayQuotaUsed / 10000) * 100), 100);
+            const rawQuota = Math.max(0, stats.todayQuotaUsed || 0);
+            const percentage = Math.max(0, Math.min(Math.round((rawQuota / 10000) * 100), 100));
             const barColor = percentage > 90 ? 'bg-rose-500' : percentage > 70 ? 'bg-amber-500' : 'bg-emerald-500';
             const textColor = percentage > 90 ? 'text-rose-500' : percentage > 70 ? 'text-amber-500' : 'text-emerald-500';
             return (
@@ -128,7 +129,7 @@ export default function AdminOverviewPage() {
                 </div>
                 <div className="flex justify-between text-[9px] font-medium">
                   <span className={textColor}>{percentage}% Terpakai</span>
-                  <span className="text-muted">Total: {stats.totalQuotaUsed.toLocaleString()} u</span>
+                  <span className="text-muted">Total: {(stats.totalQuotaUsed || 0).toLocaleString('id-ID')} u</span>
                 </div>
               </div>
             );
