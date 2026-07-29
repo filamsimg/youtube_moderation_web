@@ -273,7 +273,13 @@ export default function AdminUsersPage() {
                     <StatusBadge type="tier" value={user.tier} />
                   </td>
                   <td className="p-4 text-secondary font-medium">
-                    {user.subscription_quota.toLocaleString()} / {user.trial_quota.toLocaleString()} u
+                    {user.has_byok ? (
+                      <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-lg bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 font-semibold border border-emerald-500/20 text-[10px]">
+                        BYOK Mandiri (GCP)
+                      </span>
+                    ) : (
+                      `${user.subscription_quota.toLocaleString()} / ${user.trial_quota.toLocaleString()} u`
+                    )}
                   </td>
                   <td className="p-4 text-muted">
                     {user.quota_expiry ? new Date(user.quota_expiry).toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' }) : 'Tidak Ada'}
@@ -354,6 +360,17 @@ export default function AdminUsersPage() {
               Kelola Profil & Kuota
             </h3>
             <p className="text-[10px] text-muted mt-0.5 truncate">{editingUser.email}</p>
+
+            {editingUser.has_byok && (
+              <div className="mt-3 p-3 rounded-xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-600 dark:text-emerald-400 text-xs space-y-0.5">
+                <p className="font-semibold flex items-center gap-1.5">
+                  Fitur BYOK (API Key Pribadi) Aktif
+                </p>
+                <p className="text-[11px] opacity-80 leading-relaxed">
+                  Pengguna ini mengaktifkan API Key GCP milik sendiri. Pemotongan kuota server di-bypass secara otomatis.
+                </p>
+              </div>
+            )}
 
             <form onSubmit={handleEditSubmit} className="space-y-4 mt-4 text-xs">
               {/* Tier Selection */}

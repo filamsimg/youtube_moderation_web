@@ -47,11 +47,15 @@ export async function GET(request) {
       .order('created_at', { ascending: false })
       .range(from, to);
 
-    if (error) throw error;
+    const formattedUsers = (users || []).map(u => ({
+      ...u,
+      has_byok: Boolean(u.youtube_api_key),
+      youtube_api_key: undefined,
+    }));
 
     return NextResponse.json({
       success: true,
-      users,
+      users: formattedUsers,
       pagination: {
         page,
         limit,
