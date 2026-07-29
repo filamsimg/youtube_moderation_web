@@ -28,7 +28,7 @@ export default function AboutPage() {
         {/* ── Page Header ── */}
         <div className="text-center space-y-3">
           <div className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-indigo-500/10 border border-indigo-500/30 text-indigo-600 dark:text-indigo-400 text-xs font-semibold mb-2 shadow-sm">
-            🛡️ Tentang Aplikasi
+            Tentang Aplikasi
           </div>
           <h1 className="text-3xl sm:text-4xl font-extrabold text-primary tracking-tight">
             Tentang Athena Shield

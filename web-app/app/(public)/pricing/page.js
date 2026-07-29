@@ -210,7 +210,7 @@ export default function PricingPage() {
         return;
       }
 
-      toast.success('🎉 API Key berhasil diverifikasi! Kuota pembersihan tanpa batas kini telah aktif.');
+      toast.success('API Key berhasil diverifikasi! Kuota pembersihan tanpa batas kini telah aktif.');
       setEnterpriseApiKeyInput('');
       setShowEnterpriseModal(false);
       fetchQuota();
@@ -243,7 +243,7 @@ export default function PricingPage() {
         {/* ── Page Header ──────────────────────────────────────── */}
         <div className="text-center space-y-3 pt-2">
           <div className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-indigo-500/10 border border-indigo-500/30 text-indigo-600 dark:text-indigo-400 text-xs font-semibold mb-2 shadow-sm">
-            ⚡ Kelola Kuota API
+            Kelola Kuota API
           </div>
           <h1 className="text-3xl sm:text-4xl font-extrabold text-primary tracking-tight">
             Pilih Paket Terbaik untuk Menjaga Kanal Anda
@@ -306,13 +306,13 @@ export default function PricingPage() {
             {/* Google One style hemat notice */}
             <p className="text-xs font-semibold text-emerald-600 dark:text-emerald-400 min-h-[18px] animate-fade-in text-center">
               {billingCycle === '1M' ? (
-                '💡 Pilih paket jangka panjang untuk hemat hingga 20%!'
+                'Pilih paket jangka panjang untuk hemat hingga 20%!'
               ) : billingCycle === '3M' ? (
-                '🎉 Hemat 5% jika Anda memilih paket 3 Bulan'
+                'Hemat 5% jika Anda memilih paket 3 Bulan'
               ) : billingCycle === '6M' ? (
-                '💎 Hemat 10% jika Anda memilih paket 6 Bulan'
+                'Hemat 10% jika Anda memilih paket 6 Bulan'
               ) : (
-                '🚀 Hemat 20% jika Anda memilih paket 1 Tahun (Diskon Terbesar)'
+                'Hemat 20% jika Anda memilih paket 1 Tahun (Diskon Terbesar)'
               )}
             </p>
           </div>
@@ -362,14 +362,14 @@ export default function PricingPage() {
 
               if (isFree) {
                 if (userTier === 'FREE') {
-                  ctaLabel = '✓ Paket Saat Ini';
+                  ctaLabel = 'Paket Saat Ini';
                   isBtnDisabled = true;
                 } else {
                   ctaLabel = 'Kembali ke Free (Saat Expired)';
                   isBtnDisabled = true;
                 }
               } else if (isCurrentPackage) {
-                ctaLabel = '✓ Paket Aktif Anda';
+                ctaLabel = 'Paket Aktif Anda';
                 isBtnDisabled = true;
               } else if (isCurrentTier && !isCurrentPackage) {
                 ctaLabel = 'Perpanjang / Ubah Siklus';
@@ -566,9 +566,6 @@ export default function PricingPage() {
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/75 backdrop-blur-md p-4 animate-in fade-in duration-200">
           <div className="relative w-full max-w-lg bg-slate-900 border border-amber-500/40 rounded-3xl shadow-2xl overflow-hidden p-6 text-slate-100 space-y-5">
             <div className="flex items-center gap-3">
-              <div className="p-3 bg-amber-500/10 border border-amber-500/30 rounded-2xl text-amber-400">
-                <span className="text-2xl">🎉</span>
-              </div>
               <div>
                 <h3 className="text-lg font-bold text-slate-100">Pembayaran Enterprise Sukses!</h3>
                 <p className="text-xs text-amber-400 font-medium">Paket Enterprise Anda kini telah aktif.</p>
@@ -587,7 +584,7 @@ export default function PricingPage() {
                   onClick={() => setShowByokGuide(true)}
                   className="text-[11px] text-indigo-400 hover:text-indigo-300 font-normal transition-colors"
                 >
-                  📖 Panduan Pembuatan Key
+                  Panduan Pembuatan Key
                 </button>
               </label>
               <input

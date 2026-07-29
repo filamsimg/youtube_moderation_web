@@ -51,10 +51,10 @@ export default function StatusBadge({ type, value, label, className = '' }) {
     const valLower = String(value).toLowerCase();
     if (valLower === 'spam') {
       badgeClass = 'badge badge-danger';
-      displayLabel = label || '🚨 Spam Judol';
+      displayLabel = label || 'Spam Judol';
     } else if (valLower === 'normal') {
       badgeClass = 'badge badge-success';
-      displayLabel = label || '✅ Normal';
+      displayLabel = label || 'Normal';
     } else {
       badgeClass = 'badge badge-muted';
     }
@@ -62,13 +62,13 @@ export default function StatusBadge({ type, value, label, className = '' }) {
     const valLower = String(value).toLowerCase();
     if (valLower === 'positive') {
       badgeClass = 'badge badge-success';
-      displayLabel = label || '😊 Positif';
+      displayLabel = label || 'Positif';
     } else if (valLower === 'negative') {
       badgeClass = 'badge badge-danger';
-      displayLabel = label || '😠 Negatif';
+      displayLabel = label || 'Negatif';
     } else if (valLower === 'neutral') {
       badgeClass = 'badge badge-muted';
-      displayLabel = label || '😐 Netral';
+      displayLabel = label || 'Netral';
     } else {
       badgeClass = 'badge badge-muted';
     }

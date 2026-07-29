@@ -82,12 +82,11 @@ export default function LoginPage() {
           {/* ── Feature Mini-Cards ── */}
           <div className="grid grid-cols-2 gap-3 mb-8">
             {[
-              { icon: '🔒', label: 'OAuth 2.0', desc: 'Login Aman' },
-              { icon: '⚡', label: 'YouTube API', desc: 'Akses Resmi' },
+              { label: 'OAuth 2.0', desc: 'Login Aman' },
+              { label: 'YouTube API', desc: 'Akses Resmi' },
             ].map(item => (
               <div key={item.label} className="p-3 rounded-xl bg-card-hover border border-border-default flex flex-col items-center justify-center text-center">
-                <span className="text-xl mb-1">{item.icon}</span>
-                <p className="text-[11px] font-semibold text-primary mt-1.5">{item.label}</p>
+                <p className="text-[11px] font-semibold text-primary mt-0.5">{item.label}</p>
                 <p className="text-[10px] text-muted mt-0.5">{item.desc}</p>
               </div>
             ))}

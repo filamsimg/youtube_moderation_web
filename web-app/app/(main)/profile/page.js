@@ -208,21 +208,21 @@ export default function ProfilePage() {
   // ── Helper: Status badge visual ──
   const getStatusBadge = (status) => {
     const config = {
-      settlement: { cls: 'badge badge-success', icon: '✅', label: 'Pembayaran Sukses' },
-      pending: { cls: 'badge badge-warning', icon: '⏳', label: 'Menunggu Pembayaran' },
-      expired: { cls: 'badge badge-danger', icon: '⏰', label: 'Kedaluwarsa' },
-      cancelled: { cls: 'badge badge-muted', icon: '🗑️', label: 'Dibatalkan' },
-      failed: { cls: 'badge badge-danger', icon: '❌', label: 'Gagal' },
+      settlement: { cls: 'badge badge-success', label: 'Pembayaran Sukses' },
+      pending: { cls: 'badge badge-warning', label: 'Menunggu Pembayaran' },
+      expired: { cls: 'badge badge-danger', label: 'Kedaluwarsa' },
+      cancelled: { cls: 'badge badge-muted', label: 'Dibatalkan' },
+      failed: { cls: 'badge badge-danger', label: 'Gagal' },
       // Legacy support
-      expire: { cls: 'badge badge-danger', icon: '⏰', label: 'Kedaluwarsa' },
-      cancel: { cls: 'badge badge-muted', icon: '🗑️', label: 'Dibatalkan' },
+      expire: { cls: 'badge badge-danger', label: 'Kedaluwarsa' },
+      cancel: { cls: 'badge badge-muted', label: 'Dibatalkan' },
     };
 
-    const c = config[status] || { cls: 'badge badge-muted', icon: '❓', label: status };
+    const c = config[status] || { cls: 'badge badge-muted', label: status };
 
     return (
       <span className={`${c.cls} px-2.5 py-1 text-xs font-semibold rounded-lg`}>
-        {c.icon} {c.label}
+        {c.label}
       </span>
     );
   };
@@ -469,7 +469,7 @@ export default function ProfilePage() {
                       {/* Warning Banner jika akan kedaluwarsa */}
                       {expiryDetails.isWarning && (
                         <div className="p-2 rounded-lg bg-rose-500/10 border border-rose-500/20 text-[9px] text-rose-400 font-medium">
-                          ⚠️ {expiryDetails.message}
+                          {expiryDetails.message}
                         </div>
                       )}
                     </div>
@@ -596,12 +596,11 @@ export default function ProfilePage() {
                               tx.target_tier === 'PRO' ? 'Pro Upgrade' :
                               tx.target_tier === 'ENTERPRISE' ? 'Enterprise Upgrade' : 'Langganan'
                             );
-                            const icon = tx.target_tier === 'PRO' ? '💎' : tx.target_tier === 'ENTERPRISE' ? '👑' : '📦';
                             const colorClass = tx.target_tier === 'PRO' ? 'text-amber-500' : tx.target_tier === 'ENTERPRISE' ? 'text-violet-500' : 'text-emerald-500';
                             
                             return (
-                              <span className={`flex items-center gap-1.5 ${colorClass}`}>
-                                <span>{icon}</span> {pkgName}
+                              <span className={`font-semibold ${colorClass}`}>
+                                {pkgName}
                               </span>
                             );
                           })()}

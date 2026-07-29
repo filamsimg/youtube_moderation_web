@@ -70,7 +70,7 @@ const STEPS = [
   },
   {
     id: 'complete',
-    title: 'Siap Melindungi Kanal Anda! 🎉',
+    title: 'Siap Melindungi Kanal Anda!',
     description: 'Panduan selesai! Athena Shield siap menjaga kebersihan kolom komentar YouTube Anda dari serbuan iklan judi online. Mulai dengan memilih video dan menjalankan pemindaian pertama Anda.',
     targetId: null, // Overlay tengah layar
     icon: (

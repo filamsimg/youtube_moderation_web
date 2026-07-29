@@ -411,7 +411,7 @@ export default function PreferensiPage() {
                   </div>
 
                   <div className="mt-4 pt-3 border-t border-[var(--border-default)]/60 flex items-center justify-between text-[11px] font-medium text-secondary">
-                    <span>{isSelected ? '✓ Mode Aktif Saat Ini' : 'Klik untuk Pilih'}</span>
+                    <span>{isSelected ? 'Mode Aktif Saat Ini' : 'Klik untuk Pilih'}</span>
                   </div>
                 </button>
               );
@@ -515,7 +515,7 @@ export default function PreferensiPage() {
                       style={{ width: `${autoTahan ? thresholdHold : autoHapus ? thresholdReject : 100}%` }}
                       className="bg-emerald-500/20 text-emerald-400 flex items-center justify-center border-r border-emerald-500/30 transition-all duration-300"
                     >
-                      <span className="truncate px-1">🟢 Dipublikasi (&lt;{autoTahan ? thresholdHold : thresholdReject}%)</span>
+                      <span className="truncate px-1">Dipublikasi (&lt;{autoTahan ? thresholdHold : thresholdReject}%)</span>
                     </div>
 
                     {autoTahan && (
@@ -523,7 +523,7 @@ export default function PreferensiPage() {
                         style={{ width: `${autoHapus ? Math.max(0, thresholdReject - thresholdHold) : (100 - thresholdHold)}%` }}
                         className="bg-amber-500/25 text-amber-300 flex items-center justify-center border-r border-amber-500/30 transition-all duration-300"
                       >
-                        <span className="truncate px-1">🟡 Ditahan ({thresholdHold}% - {autoHapus ? thresholdReject : 100}%)</span>
+                        <span className="truncate px-1">Ditahan ({thresholdHold}% - {autoHapus ? thresholdReject : 100}%)</span>
                       </div>
                     )}
 
@@ -532,7 +532,7 @@ export default function PreferensiPage() {
                         style={{ width: `${100 - thresholdReject}%` }}
                         className="bg-rose-500/30 text-rose-300 flex items-center justify-center transition-all duration-300"
                       >
-                        <span className="truncate px-1">🔴 Dihapus (≥{thresholdReject}%)</span>
+                        <span className="truncate px-1">Dihapus (≥{thresholdReject}%)</span>
                       </div>
                     )}
                   </div>
@@ -575,7 +575,7 @@ export default function PreferensiPage() {
               <p className="text-sm font-medium flex items-center gap-1.5" style={{ color: 'var(--text-secondary)' }}>
                 Pembersihan Massal Sekaligus
                 {isFeatureDisabled('bulk_moderation') && (
-                  <Link href="/pricing" className="text-[9px] font-bold text-amber-500 bg-amber-500/10 px-1.5 py-0.5 rounded border border-amber-500/20 hover:bg-amber-500/20 transition-colors cursor-pointer">PRO / ENT 🔒 Upgrade →</Link>
+                  <Link href="/pricing" className="text-[9px] font-bold text-amber-500 bg-amber-500/10 px-1.5 py-0.5 rounded border border-amber-500/20 hover:bg-amber-500/20 transition-colors cursor-pointer">PRO / ENT Upgrade →</Link>
                 )}
               </p>
               <p className="text-[11px] mt-0.5" style={{ color: 'var(--text-muted)' }}>
@@ -624,7 +624,7 @@ export default function PreferensiPage() {
                 Kunci Akses Mandiri (BYOK)
                 {!byokStatus.isEnterprise && (
                   <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-slate-100 text-slate-600 border border-slate-200 dark:bg-slate-800 dark:text-slate-400 dark:border-slate-700">
-                    🔒 Khusus Enterprise
+                    Khusus Enterprise
                   </span>
                 )}
               </h2>
@@ -649,7 +649,6 @@ export default function PreferensiPage() {
           /* Locked State for FREE / PRO */
           <div className="p-4 rounded-xl border border-dashed border-slate-300 bg-slate-50 dark:border-slate-700 dark:bg-slate-900/40 flex flex-col sm:flex-row items-center justify-between gap-4">
             <div className="flex items-center gap-3">
-              <span className="text-2xl">🔒</span>
               <div>
                 <p className="text-xs font-semibold text-slate-800 dark:text-slate-200">Fitur Terkunci untuk Paket Enterprise</p>
                 <p className="text-[11px] text-slate-600 dark:text-slate-400 mt-0.5">Tingkatkan ke Paket Enterprise untuk mengaktifkan pembersihan otomatis bebas limit menggunakan API Key pribadi.</p>
