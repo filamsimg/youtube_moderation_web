@@ -145,7 +145,7 @@ export default function RiwayatPage() {
             <svg className="w-4 h-4 text-amber-500" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" d="M16.5 10.5V6.75a4.5 4.5 0 10-9 0v3.75m-.75 11.25h10.5a2.25 2.25 0 002.25-2.25v-6.75a2.25 2.25 0 00-2.25-2.25H6.75a2.25 2.25 0 00-2.25 2.25v6.75a2.25 2.25 0 002.25 2.25z" />
             </svg>
-            <span className="text-amber-500 font-semibold">Ekspor 🔒 Upgrade →</span>
+            <span className="text-amber-500 font-semibold">Ekspor Upgrade →</span>
           </Link>
         ) : (
           <button
@@ -258,7 +258,7 @@ export default function RiwayatPage() {
                 <thead>
                   <tr className="border-b" style={{ borderColor: 'var(--border-default)' }}>
                     {['Waktu', 'Tindakan', 'Komentar', 'Hasil AI', 'Pengguna', 'Video'].map(h => (
-                      <th key={h} className="px-5 py-3 text-left text-[11px] font-semibold uppercase tracking-wider" style={{ color: 'var(--text-muted)' }}>
+                      <th key={h} className="px-5 py-3 text-center text-[11px] font-semibold uppercase tracking-wider" style={{ color: 'var(--text-muted)' }}>
                         {h}
                       </th>
                     ))}
@@ -287,7 +287,7 @@ export default function RiwayatPage() {
                       </td>
                       {/* Hasil AI */}
                       <td className="px-5 py-3">
-                        <div className="flex flex-col gap-1">
+                        <div className="flex flex-col gap-1 justify-center items-center">
                           <StatusBadge type="ai_label" value={item.aiLabel || 'normal'} />
                           {item.aiLabel !== 'Spam' && item.sentiment && (
                             <StatusBadge type="sentiment" value={item.sentiment} />

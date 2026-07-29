@@ -458,7 +458,7 @@ export default function CommentsPage() {
               <h3 className="text-sm font-semibold" style={{ color: 'var(--color-warning-text)' }}>Kuota API Tidak Cukup</h3>
               <p className="text-xs mt-0.5" style={{ color: 'var(--color-warning-text)', opacity: 0.85 }}>{quotaError}</p>
               <a href="/pricing" className="inline-block mt-2 text-xs font-medium underline" style={{ color: 'var(--color-warning-text)' }}>
-                ⚡ Top-up Kuota Sekarang →
+                Top-up Kuota Sekarang →
               </a>
             </div>
           </div>
@@ -786,8 +786,8 @@ export default function CommentsPage() {
                             className="w-3.5 h-3.5 rounded accent-indigo-500 cursor-pointer flex-shrink-0"
                           />
                         </th>
-                        {['Pengguna', 'Komentar', ...(loadedVideos.length > 1 ? ['Video'] : []), 'AI Analisis', 'Status', 'Aksi'].map(h => (
-                          <th key={h} className="px-4 py-3 text-left text-[11px] font-semibold uppercase tracking-wider" style={{ color: 'var(--text-muted)' }}>{h}</th>
+                        {['Pengguna', 'Komentar', ...(loadedVideos.length > 1 ? ['Video'] : []), 'Analisis AI', 'Status', 'Aksi'].map(h => (
+                          <th key={h} className="px-4 py-3 text-center text-[11px] font-semibold uppercase tracking-wider" style={{ color: 'var(--text-muted)' }}>{h}</th>
                         ))}
                       </tr>
                     </thead>
@@ -1018,7 +1018,6 @@ export default function CommentsPage() {
                 {/* Banner Edukasi Kontekstual */}
                 <div className="mx-4 mt-3 mb-1 p-3.5 rounded-xl border border-amber-500/30 bg-amber-500/10 text-amber-300 text-xs flex items-center justify-between gap-3 animate-fade-in">
                   <div className="flex items-center gap-2.5">
-                    <span className="text-base flex-shrink-0">💡</span>
                     <div>
                       <p className="font-bold">Folder Tinjauan Komentar Ditahan (heldForReview)</p>
                       <p className="text-[11px] opacity-90 mt-0.5">Komentar di bawah disembunyikan sementara dari publik oleh AI / YouTube karena terindikasi spam. Klik tombol Setujui (Publikasikan) atau Hapus di kolom aksi.</p>
@@ -1031,14 +1030,15 @@ export default function CommentsPage() {
                   <table className="w-full">
                     <thead className="sticky top-0 z-10" style={{ background: 'var(--bg-card)' }}>
                       <tr className="border-b" style={{ borderColor: 'var(--border-default)' }}>
-                        {['Pengguna', 'Komentar', ...(loadedVideos.length > 1 ? ['Video'] : []), 'AI Analisis', 'Status', 'Aksi Peninjauan'].map(h => (
-                          <th key={h} className="px-4 py-3 text-left text-[11px] font-semibold uppercase tracking-wider" style={{ color: 'var(--text-muted)' }}>{h}</th>
+                        {['Pengguna', 'Komentar', ...(loadedVideos.length > 1 ? ['Video'] : []), 'Analisis AI', 'Status', 'Aksi Peninjauan'].map(h => (
+                          <th key={h} className="px-4 py-3 text-center text-[11px] font-semibold uppercase tracking-wider" style={{ color: 'var(--text-muted)' }}>{h}</th>
                         ))}
                       </tr>
                     </thead>
                     <tbody className="divide-y divide-gray-50">
                       {filteredHeldComments.map(comment => {
                         const isProcessing = processingComment === comment.id;
+                        const isSpam = comment.aiLabel?.toLowerCase() === 'spam';
                         return (
                           <tr key={comment.id} className="transition-colors group hover:bg-[var(--bg-card-hover)] border-b" style={{ borderColor: 'var(--border-default)' }}>
                             <td className="px-4 py-3">
@@ -1059,21 +1059,21 @@ export default function CommentsPage() {
                               </td>
                             )}
                             <td className="px-4 py-3">
-                                <span className="badge badge-rose text-[11px] font-bold px-2 py-0.5">
-                                  {comment.aiLabel || 'Spam Judol'}
+                              <span className="badge badge-rose text-[11px] font-bold px-2 py-0.5">
+                                {comment.aiLabel || 'Spam Judol'}
+                              </span>
+                              {!isSpam && comment.sentiment && (
+                                <span className="badge badge-indigo text-[11px] font-bold px-2 py-0.5">
+                                  {comment.sentiment}
                                 </span>
-                                {comment.sentiment && (
-                                  <span className="badge badge-indigo text-[11px] font-bold px-2 py-0.5">
-                                    {comment.sentiment}
-                                  </span>
-                                )}
+                              )}
                               <p className="text-[10px] mt-1" style={{ color: 'var(--text-muted)' }}>
                                 {comment.aiConfidence ? `${Math.round(comment.aiConfidence * 100)}%` : '70%+'} • Ditahan AI
                               </p>
                             </td>
                             <td className="px-4 py-3">
                               <span className="badge badge-amber text-xs font-bold px-2 py-0.5">
-                                📌 DITAHAN
+                                DITAHAN
                               </span>
                             </td>
                             <td className="px-4 py-3">
@@ -1131,7 +1131,7 @@ export default function CommentsPage() {
                               <p className="text-[10px] text-muted">{formatDate(comment.createdAt || comment.publishedAt)}</p>
                             </div>
                           </div>
-                          <span className="badge badge-amber text-[10px] font-bold px-2 py-0.5">📌 DITAHAN</span>
+                          <span className="badge badge-amber text-[10px] font-bold px-2 py-0.5">DITAHAN</span>
                         </div>
                         <p className="text-xs">{comment.textDisplay || comment.textOriginal}</p>
                         <div className="flex items-center justify-between pt-2 border-t text-xs">
@@ -1141,14 +1141,14 @@ export default function CommentsPage() {
                               onClick={() => handleModerate(comment.id, 'approve')}
                               className="px-2.5 py-1 bg-emerald-500/10 text-emerald-400 rounded-lg font-semibold text-[11px]"
                             >
-                              ✓ Terbitkan
+                              Terbitkan
                             </button>
                             <button
                               disabled={isProcessing}
                               onClick={() => handleModerate(comment.id, 'reject')}
                               className="px-2.5 py-1 bg-rose-500/10 text-rose-400 rounded-lg font-semibold text-[11px]"
                             >
-                              ✕ Hapus
+                              Hapus
                             </button>
                           </div>
                         </div>
@@ -1189,14 +1189,15 @@ export default function CommentsPage() {
                   <table className="w-full">
                     <thead className="sticky top-0 z-10" style={{ background: 'var(--bg-card)' }}>
                       <tr className="border-b" style={{ borderColor: 'var(--border-default)' }}>
-                        {['Pengguna', 'Komentar', ...(loadedVideos.length > 1 ? ['Video'] : []), 'AI Analisis', 'Tindakan', 'Aksi'].map(h => (
-                          <th key={h} className="px-4 py-3 text-left text-[11px] font-semibold uppercase tracking-wider" style={{ color: 'var(--text-muted)' }}>{h}</th>
+                        {['Pengguna', 'Komentar', ...(loadedVideos.length > 1 ? ['Video'] : []), 'Analisis AI', 'Tindakan', 'Aksi'].map(h => (
+                          <th key={h} className="px-4 py-3 text-center text-[11px] font-semibold uppercase tracking-wider" style={{ color: 'var(--text-muted)' }}>{h}</th>
                         ))}
                       </tr>
                     </thead>
                     <tbody className="divide-y divide-gray-50">
                       {filteredModeratedComments.map(comment => {
                         const isProcessing = processingComment === comment.id;
+                        const isSpam = comment.aiLabel?.toLowerCase() === 'spam';
                         return (
                           <tr key={comment.id} className="transition-colors group hover:bg-[var(--bg-card-hover)] border-b" style={{ borderColor: 'var(--border-default)' }}>
                             <td className="px-4 py-3">
@@ -1220,12 +1221,12 @@ export default function CommentsPage() {
                               {comment.aiLabel ? (
                                 <div>
                                   <StatusBadge type="ai_label" value={comment.aiLabel} />
-                                  {comment.sentiment && (
+                                  {!isSpam && comment.sentiment && (
                                     <StatusBadge type="sentiment" value={comment.sentiment} className="ml-1" />
                                   )}
                                   <p className="text-[10px] mt-1" style={{ color: 'var(--text-muted)' }}>
                                     {Math.round(comment.aiConfidence * 100)}%
-                                    {comment.sentimentScore ? ` • Sentimen: ${Math.round(comment.sentimentScore * 100)}%` : ''}
+                                    {!isSpam && comment.sentimentScore ? ` • Sentimen: ${Math.round(comment.sentimentScore * 100)}%` : ''}
                                   </p>
                                 </div>
                               ) : (
@@ -1283,6 +1284,7 @@ export default function CommentsPage() {
                 <div className="md:hidden p-3 space-y-3 animate-fade-in">
                   {filteredModeratedComments.map(comment => {
                     const isProcessing = processingComment === comment.id;
+                    const isSpam = comment.aiLabel?.toLowerCase() === 'spam';
                     return (
                       <div key={comment.id} className="rounded-xl border p-3.5 space-y-2.5" style={{ background: 'var(--bg-card-hover)', borderColor: 'var(--border-default)' }}>
                         <div className="flex items-center justify-between">
@@ -1320,7 +1322,7 @@ export default function CommentsPage() {
                                   <StatusBadge type="ai_label" value={comment.aiLabel} />
                                   <span className="text-[10px] text-muted">{Math.round(comment.aiConfidence * 100)}%</span>
                                 </div>
-                                {comment.sentiment && (
+                                {!isSpam && comment.sentiment && (
                                   <div className="flex items-center gap-1.5 mt-0.5">
                                     <StatusBadge type="sentiment" value={comment.sentiment} />
                                     <span className="text-[10px]" style={{ color: 'var(--text-muted)' }}>{Math.round(comment.sentimentScore * 100)}%</span>
