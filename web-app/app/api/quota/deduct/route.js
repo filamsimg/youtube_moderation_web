@@ -26,6 +26,21 @@ export async function POST(req) {
     const email = session.user.email;
     const cost = QUOTA_COSTS[action];
 
+    // Cek apakah user memiliki API Key pribadi (BYOK Aktif)
+    const { data: userProf } = await supabaseAdmin
+      .from('user_profiles')
+      .select('youtube_api_key')
+      .eq('email', email)
+      .maybeSingle();
+
+    if (userProf?.youtube_api_key) {
+      return NextResponse.json({
+        success: true,
+        is_byok: true,
+        message: 'Pemotongan kuota server di-bypass karena BYOK aktif.'
+      });
+    }
+
     // Panggil fungsi SQL atomic deduct_quota via supabaseAdmin
     const { data, error } = await supabaseAdmin.rpc('deduct_quota', {
       p_email: email,

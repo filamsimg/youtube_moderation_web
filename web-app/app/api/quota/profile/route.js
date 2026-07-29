@@ -97,6 +97,9 @@ export async function GET() {
       is_trial_active: isTrialActive,
       is_trial_expired: isTrialExpired,
 
+      // Status BYOK (Bring Your Own Key) untuk Enterprise
+      has_byok: Boolean(profile.youtube_api_key),
+
       // Fitur pemasaran yang dinonaktifkan untuk tier ini (Estetika UI)
       disabled_features: disabledFeatures,
 
