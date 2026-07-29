@@ -90,8 +90,8 @@ export default function DashboardPage() {
     } finally {
       setLoading(false);
     }
-  // fetchVideosRef.current selalu up-to-date, tidak perlu masuk deps
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    // fetchVideosRef.current selalu up-to-date, tidak perlu masuk deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [channelInfo?.id, session?.user?.email]);
 
   useEffect(() => {
@@ -357,7 +357,6 @@ export default function DashboardPage() {
               </ResponsiveContainer>
             ) : (
               <div className="empty-state h-full">
-                <span className="text-3xl mb-2">📊</span>
                 <p className="text-xs text-muted">Belum ada data untuk video ini</p>
               </div>
             )}
@@ -404,7 +403,6 @@ export default function DashboardPage() {
               </ResponsiveContainer>
             ) : (
               <div className="empty-state h-full">
-                <span className="text-3xl mb-2">📊</span>
                 <p className="text-xs text-muted">Belum ada data aktivitas</p>
               </div>
             )}
@@ -469,13 +467,12 @@ export default function DashboardPage() {
 
             <div className="grid grid-cols-1 gap-2.5">
               {[
-                { emoji: '😊', label: 'Positif', count: positiveCount, total: positiveCount + negativeCount + neutralCount, colorClass: 'bg-emerald-50 border-emerald-200 dark:bg-emerald-500/10 dark:border-emerald-500/20', textColor: 'text-emerald-600 dark:text-emerald-400' },
-                { emoji: '😠', label: 'Negatif', count: negativeCount, total: positiveCount + negativeCount + neutralCount, colorClass: 'bg-rose-50 border-rose-200 dark:bg-rose-500/10 dark:border-rose-500/20', textColor: 'text-rose-600 dark:text-rose-400' },
-                { emoji: '😐', label: 'Netral', count: neutralCount, total: positiveCount + negativeCount + neutralCount, colorClass: 'bg-card-hover border-[var(--border-default)]', textColor: 'text-secondary' },
+                { label: 'Positif', count: positiveCount, total: positiveCount + negativeCount + neutralCount, colorClass: 'bg-emerald-50 border-emerald-200 dark:bg-emerald-500/10 dark:border-emerald-500/20', textColor: 'text-emerald-600 dark:text-emerald-400' },
+                { label: 'Negatif', count: negativeCount, total: positiveCount + negativeCount + neutralCount, colorClass: 'bg-rose-50 border-rose-200 dark:bg-rose-500/10 dark:border-rose-500/20', textColor: 'text-rose-600 dark:text-rose-400' },
+                { label: 'Netral', count: neutralCount, total: positiveCount + negativeCount + neutralCount, colorClass: 'bg-card-hover border-[var(--border-default)]', textColor: 'text-secondary' },
               ].map(item => (
                 <div key={item.label} className={`flex items-center justify-between p-3 rounded-xl border ${item.colorClass}`}>
                   <div className="flex items-center gap-2">
-                    <span className="text-lg">{item.emoji}</span>
                     <span className={`text-xs font-medium ${item.textColor}`}>{item.label}</span>
                   </div>
                   <div className="text-right">
@@ -520,7 +517,6 @@ export default function DashboardPage() {
               </ResponsiveContainer>
             ) : (
               <div className="empty-state h-full">
-                <span className="text-3xl mb-2">📊</span>
                 <p className="text-xs text-muted">Belum ada data sentimen</p>
                 <p className="text-[10px] text-secondary mt-1">Moderasi komentar normal untuk melihat hasil</p>
               </div>
