@@ -174,8 +174,10 @@ export default function PlanFormModal({
     const cleanFeatures = formValues.features.filter(f => f.trim() !== '');
     const cleanDisabled = formValues.disabled_features.filter(f => f.trim() !== '');
 
+    const { color, ...restFormValues } = formValues;
+
     const payload = {
-      ...formValues,
+      ...restFormValues,
       price: Number(formValues.price),
       original_price: formValues.original_price !== '' ? Number(formValues.original_price) : null,
       quota_units: Number(formValues.quota_units),

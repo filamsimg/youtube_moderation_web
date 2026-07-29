@@ -31,7 +31,6 @@ export async function PATCH(request, { params }) {
       features,
       disabled_features,
       badge,
-      color,
       is_active,
       allow_bulk_moderation,
       allow_export_csv,
@@ -55,7 +54,7 @@ export async function PATCH(request, { params }) {
 
     const allowedKeys = [
       'name', 'price', 'original_price', 'quota_units', 'duration_days',
-      'description', 'features', 'disabled_features', 'badge', 'color', 'is_active',
+      'description', 'features', 'disabled_features', 'badge', 'is_active',
       'allow_bulk_moderation', 'allow_export_csv', 'allow_auto_moderation', 'billing_cycle'
     ];
 

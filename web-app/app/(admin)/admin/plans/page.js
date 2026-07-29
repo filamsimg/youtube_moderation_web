@@ -11,6 +11,7 @@ import {
   AlertCircle 
 } from 'lucide-react';
 import PlanFormModal from './PlanFormModal';
+import { formatIDR, isUnlimitedQuota } from '@/lib/utils';
 
 export default function AdminPlansPage() {
   const { data: session } = useSession();
@@ -316,7 +317,13 @@ export default function AdminPlansPage() {
                       )}
                     </td>
                     <td className="p-4 text-secondary font-medium">
-                      {pkg.quota_units.toLocaleString('id-ID')} unit
+                      {isUnlimitedQuota(pkg) ? (
+                        <span className="text-emerald-600 dark:text-emerald-400 font-bold">
+                          Bebas Batas (BYOK)
+                        </span>
+                      ) : (
+                        `${pkg.quota_units.toLocaleString('id-ID')} unit`
+                      )}
                     </td>
                     <td className="p-4 text-secondary font-medium">
                       {pkg.duration_days} Hari
