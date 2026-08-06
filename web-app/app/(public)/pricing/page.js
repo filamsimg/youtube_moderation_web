@@ -563,28 +563,36 @@ export default function PricingPage() {
 
       {/* ── Modal Aktivasi BYOK Enterprise Pasca Bayar ──────────── */}
       {showEnterpriseModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/75 backdrop-blur-md p-4 animate-in fade-in duration-200">
-          <div className="relative w-full max-w-lg bg-slate-900 border border-amber-500/40 rounded-3xl shadow-2xl overflow-hidden p-6 text-slate-100 space-y-5">
-            <div className="flex items-center gap-3">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 dark:bg-black/80 backdrop-blur-md p-4 animate-in fade-in duration-200">
+          <div className="relative w-full max-w-lg bg-white border border-amber-300 text-slate-900 dark:bg-slate-900 dark:border-amber-500/40 dark:text-slate-100 rounded-3xl shadow-2xl overflow-hidden p-6 sm:p-7 space-y-5">
+            {/* Modal Header */}
+            <div className="flex items-center gap-3.5">
+              <div className="p-3 bg-amber-500/10 border border-amber-500/30 text-amber-600 dark:text-amber-400 rounded-2xl flex-shrink-0">
+                <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 5.25a3 3 0 013 3m3 0a6 6 0 01-7.029 5.912c-.563-.097-1.159.026-1.563.43L10.5 17.25H8.25v2.25H6v2.25H2.25v-2.818c0-.597.237-1.17.659-1.591l6.499-6.499c.404-.404.527-1 .43-1.563A6 6 0 1121 8.25z" />
+                </svg>
+              </div>
               <div>
-                <h3 className="text-lg font-bold text-slate-100">Pembayaran Enterprise Sukses!</h3>
-                <p className="text-xs text-amber-400 font-medium">Paket Enterprise Anda kini telah aktif.</p>
+                <h3 className="text-lg sm:text-xl font-extrabold text-slate-900 dark:text-slate-100">Pembayaran Enterprise Sukses!</h3>
+                <p className="text-xs text-amber-700 dark:text-amber-400 font-semibold mt-0.5">Paket Enterprise Anda kini telah aktif.</p>
               </div>
             </div>
 
-            <p className="text-xs text-slate-300 leading-relaxed">
+            {/* Information Notice */}
+            <div className="p-3.5 rounded-2xl bg-amber-50 border border-amber-200/80 text-amber-950 dark:bg-amber-950/30 dark:border-amber-500/30 dark:text-amber-200 text-xs font-medium leading-relaxed">
               Masukkan Google YouTube API Key Anda sekarang untuk langsung mengaktifkan pembersihan komentar bebas limit. Kunci Anda akan diverifikasi secara otomatis ke server Google.
-            </p>
+            </div>
 
+            {/* Input Form */}
             <div className="space-y-2">
-              <label className="text-xs font-semibold text-slate-300 flex items-center justify-between">
+              <label className="text-xs font-bold text-slate-900 dark:text-slate-200 flex items-center justify-between">
                 <span>Google YouTube API Key</span>
                 <button
                   type="button"
                   onClick={() => setShowByokGuide(true)}
-                  className="text-[11px] text-indigo-400 hover:text-indigo-300 font-normal transition-colors"
+                  className="text-xs text-indigo-600 hover:text-indigo-700 dark:text-indigo-400 dark:hover:text-indigo-300 font-semibold transition-colors flex items-center gap-1 cursor-pointer"
                 >
-                  Panduan Pembuatan Key
+                  Panduan Pembuatan Key →
                 </button>
               </label>
               <input
@@ -592,15 +600,16 @@ export default function PricingPage() {
                 placeholder="Tempelkan kode Kunci API Anda (AIzaSyD...)"
                 value={enterpriseApiKeyInput}
                 onChange={(e) => setEnterpriseApiKeyInput(e.target.value)}
-                className="w-full px-4 py-2.5 text-xs rounded-xl border border-slate-700 bg-slate-950 text-slate-100 placeholder-slate-500 focus:outline-none focus:border-amber-500 font-mono"
+                className="w-full px-4 py-3 text-xs rounded-xl border border-slate-300 bg-slate-50 text-slate-900 placeholder-slate-400 focus:outline-none focus:border-amber-500 focus:ring-2 focus:ring-amber-500/20 dark:border-slate-700 dark:bg-slate-950 dark:text-slate-100 dark:placeholder-slate-500 font-mono font-medium shadow-xs transition-all"
               />
             </div>
 
-            <div className="flex flex-col sm:flex-row items-center gap-2 pt-2">
+            {/* Actions */}
+            <div className="flex flex-col sm:flex-row items-center gap-2.5 pt-2">
               <button
                 onClick={handleSaveEnterpriseKey}
                 disabled={savingEnterpriseKey}
-                className="w-full sm:flex-1 py-2.5 px-4 text-xs font-bold text-white bg-gradient-to-r from-amber-500 to-indigo-600 hover:opacity-90 rounded-xl transition-all shadow-lg shadow-amber-500/20 disabled:opacity-50"
+                className="w-full sm:flex-1 py-3 px-5 text-xs font-bold text-white bg-gradient-to-r from-amber-500 to-indigo-600 hover:from-amber-600 hover:to-indigo-700 rounded-xl transition-all shadow-lg shadow-amber-500/20 active:scale-95 disabled:opacity-50 cursor-pointer"
               >
                 {savingEnterpriseKey ? 'Memverifikasi...' : 'Simpan & Aktifkan BYOK'}
               </button>
@@ -609,7 +618,7 @@ export default function PricingPage() {
                   setShowEnterpriseModal(false);
                   toast.info('Anda dapat memasukkan API Key kapan saja di Halaman Preferensi.');
                 }}
-                className="w-full sm:w-auto py-2.5 px-4 text-xs font-semibold text-slate-400 hover:text-slate-200 hover:bg-slate-800 rounded-xl transition-colors"
+                className="w-full sm:w-auto py-3 px-4 text-xs font-semibold text-slate-600 hover:text-slate-900 hover:bg-slate-100 dark:text-slate-400 dark:hover:text-slate-200 dark:hover:bg-slate-800 rounded-xl transition-colors cursor-pointer"
               >
                 Set Up Nanti
               </button>

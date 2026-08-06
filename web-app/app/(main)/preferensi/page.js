@@ -177,8 +177,8 @@ export default function PreferensiPage() {
   const Slider = ({ label, value, onChange, min = 50, max = 100, unit = '%', disabled }) => (
     <div className={`py-3 ${disabled ? 'opacity-50' : ''}`}>
       <div className="flex justify-between items-center mb-2">
-        <p className="text-sm font-medium" style={{ color: 'var(--text-secondary)' }}>{label}</p>
-        <span className="badge badge-amber text-xs font-bold px-2 py-0.5">{value}{unit}</span>
+        <p className="text-sm font-semibold text-slate-900 dark:text-slate-100">{label}</p>
+        <span className="badge badge-amber text-xs font-bold px-2 py-0.5 shadow-xs">{value}{unit}</span>
       </div>
       <input
         type="range"
@@ -187,39 +187,38 @@ export default function PreferensiPage() {
         value={value}
         disabled={disabled}
         onChange={(e) => !disabled && onChange(parseInt(e.target.value))}
-        className="w-full h-1.5 rounded-lg appearance-none cursor-pointer accent-indigo-500 disabled:cursor-not-allowed"
+        className="w-full h-1.5 rounded-lg appearance-none cursor-pointer accent-indigo-600 dark:accent-indigo-500 disabled:cursor-not-allowed"
         style={{ background: 'var(--border-default)' }}
       />
       <div className="flex justify-between mt-1">
-        <span className="text-[10px]" style={{ color: 'var(--text-muted)' }}>Sensitif (Rendah)</span>
-        <span className="text-[10px]" style={{ color: 'var(--text-muted)' }}>Selektif (Tinggi)</span>
+        <span className="text-[11px] font-medium text-slate-600 dark:text-slate-400">Sensitif (Rendah)</span>
+        <span className="text-[11px] font-medium text-slate-600 dark:text-slate-400">Selektif (Tinggi)</span>
       </div>
     </div>
   );
 
   const SelectField = ({ label, desc, value, onChange, options, disabled }) => (
     <div className={`py-4 ${disabled ? 'opacity-50' : ''}`}>
-      <p className="text-sm font-medium mb-2" style={{ color: 'var(--text-secondary)' }}>{label}</p>
+      <p className="text-sm font-semibold text-slate-900 dark:text-slate-100 mb-2">{label}</p>
       <div className="relative">
         <select
           value={value}
           disabled={disabled}
           onChange={(e) => !disabled && onChange(e.target.value)}
-          className="input-dark w-full appearance-none pr-8 disabled:cursor-not-allowed"
+          className="input-dark w-full appearance-none pr-8 font-semibold text-slate-900 dark:text-slate-100 disabled:cursor-not-allowed"
         >
           {options.map((opt) => (
             <option key={opt.value} value={opt.value}>{opt.label}</option>
           ))}
         </select>
         <svg
-          className="w-4 h-4 absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none"
-          style={{ color: 'var(--text-muted)' }}
+          className="w-4 h-4 absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none text-slate-700 dark:text-slate-300"
           fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor"
         >
           <path strokeLinecap="round" strokeLinejoin="round" d="M19.5 8.25l-7.5 7.5-7.5-7.5" />
         </svg>
       </div>
-      {desc && <p className="text-[11px] mt-1" style={{ color: 'var(--text-muted)' }}>{desc}</p>}
+      {desc && <p className="text-[11px] font-medium text-slate-600 dark:text-slate-400 mt-1">{desc}</p>}
     </div>
   );
 
@@ -233,11 +232,10 @@ export default function PreferensiPage() {
         >
           <div className="flex items-center gap-2">
             {icon}
-            <span className="text-sm" style={{ color: 'var(--text-secondary)' }}>{label}</span>
+            <span className="text-sm font-semibold text-slate-900 dark:text-slate-100">{label}</span>
           </div>
           <svg
-            className={`w-4 h-4 transition-transform ${isOpen ? 'rotate-180' : ''}`}
-            style={{ color: 'var(--text-muted)' }}
+            className={`w-4 h-4 transition-transform text-slate-700 dark:text-slate-300 ${isOpen ? 'rotate-180' : ''}`}
             fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor"
           >
             <path strokeLinecap="round" strokeLinejoin="round" d="M19.5 8.25l-7.5 7.5-7.5-7.5" />
@@ -245,7 +243,7 @@ export default function PreferensiPage() {
         </div>
         {isOpen && (
           <div className="pb-4 px-7 animate-fade-in">
-            <div className="text-xs leading-relaxed space-y-2" style={{ color: 'var(--text-muted)' }}>
+            <div className="text-xs leading-relaxed space-y-2 text-slate-800 dark:text-slate-200">
               {children}
             </div>
           </div>
@@ -282,8 +280,8 @@ export default function PreferensiPage() {
               <p className="text-xs mt-0.5" style={{ color: 'var(--text-muted)' }}>Status otentikasi Google OAuth &amp; ketersediaan layanan</p>
             </div>
           </div>
-          <span className="px-2.5 py-1 rounded-full text-xs font-semibold bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 flex items-center gap-1.5">
-            <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
+          <span className="px-2.5 py-1 rounded-full text-xs font-bold bg-emerald-500/15 text-emerald-800 dark:text-emerald-400 border border-emerald-500/30 flex items-center gap-1.5 shadow-xs">
+            <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
             Terhubung
           </span>
         </div>
@@ -399,18 +397,18 @@ export default function PreferensiPage() {
                 >
                   <div>
                     <div className="flex items-center justify-between mb-2">
-                      <span className="text-sm font-bold text-primary">{mode.name}</span>
+                      <span className="text-sm font-bold text-slate-900 dark:text-slate-100">{mode.name}</span>
                       {isSelected && (
-                        <span className="w-2.5 h-2.5 rounded-full bg-indigo-400 animate-pulse" />
+                        <span className="w-2.5 h-2.5 rounded-full bg-indigo-600 dark:bg-indigo-400 animate-pulse" />
                       )}
                     </div>
-                    <span className="text-[9px] font-semibold px-2 py-0.5 rounded bg-slate-500/15 text-secondary border border-slate-500/20 inline-block mb-2">
+                    <span className="text-[10px] font-bold px-2 py-0.5 rounded bg-slate-200 text-slate-800 border border-slate-300 dark:bg-slate-800 dark:text-slate-200 dark:border-slate-700 inline-block mb-2">
                       {mode.badge}
                     </span>
-                    <p className="text-xs text-muted leading-relaxed">{mode.desc}</p>
+                    <p className="text-xs font-medium text-slate-700 dark:text-slate-300 leading-relaxed">{mode.desc}</p>
                   </div>
 
-                  <div className="mt-4 pt-3 border-t border-[var(--border-default)]/60 flex items-center justify-between text-[11px] font-medium text-secondary">
+                  <div className="mt-4 pt-3 border-t border-[var(--border-default)]/60 flex items-center justify-between text-[11px] font-bold text-slate-800 dark:text-slate-200">
                     <span>{isSelected ? 'Mode Aktif Saat Ini' : 'Klik untuk Pilih'}</span>
                   </div>
                 </button>
@@ -427,12 +425,12 @@ export default function PreferensiPage() {
             className="flex items-center justify-between w-full py-2.5 px-3 rounded-xl text-xs font-semibold text-secondary hover:text-primary hover:bg-[var(--bg-card-hover)] transition-colors border border-dashed border-[var(--border-default)] cursor-pointer"
           >
             <span className="flex items-center gap-2">
-              <svg className="w-4 h-4 text-indigo-400" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
+              <svg className="w-4 h-4 text-indigo-600 dark:text-indigo-400" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" d="M10.5 6h9.75M10.5 6a1.5 1.5 0 11-3 0m3 0a1.5 1.5 0 10-3 0M3.75 6H7.5m3 12h9.75m-9.75 0a1.5 1.5 0 11-3 0m3 0a1.5 1.5 0 10-3 0M3.75 18H7.5m9-6h3.75m-3.75 0a1.5 1.5 0 11-3 0m3 0a1.5 1.5 0 10-3 0M3.75 12h11.25" />
               </svg>
               Pengaturan Lanjutan (Kustom Nilai &amp; Visualisasi Threshold)
             </span>
-            <span className="text-xs text-indigo-400 flex items-center gap-1 font-medium">
+            <span className="text-xs text-indigo-600 dark:text-indigo-400 flex items-center gap-1 font-semibold">
               {showAdvanced ? 'Sembunyikan ▲' : 'Buka & Atur Manual ▼'}
             </span>
           </button>
@@ -507,13 +505,13 @@ export default function PreferensiPage() {
                 <div className="p-3.5 rounded-xl border bg-card/80 space-y-2" style={{ borderColor: 'var(--border-default)' }}>
                   <div className="flex items-center justify-between">
                     <span className="text-xs font-semibold text-primary">Visualisasi Keputusan AI (0% - 100%)</span>
-                    <span className="text-xs font-semibold text-indigo-400">Hold: {thresholdHold}% | Reject: {thresholdReject}%</span>
+                    <span className="text-xs font-semibold text-indigo-600 dark:text-indigo-400">Hold: {thresholdHold}% | Reject: {thresholdReject}%</span>
                   </div>
 
-                  <div className="relative h-6 w-full rounded-lg overflow-hidden flex border border-slate-700/50 text-[10px] font-bold select-none">
+                  <div className="relative h-6 w-full rounded-lg overflow-hidden flex border border-slate-300 dark:border-slate-700/50 text-[10px] font-bold select-none">
                     <div
                       style={{ width: `${autoTahan ? thresholdHold : autoHapus ? thresholdReject : 100}%` }}
-                      className="bg-emerald-500/20 text-emerald-400 flex items-center justify-center border-r border-emerald-500/30 transition-all duration-300"
+                      className="bg-emerald-500/20 text-emerald-800 dark:text-emerald-300 flex items-center justify-center border-r border-emerald-500/30 transition-all duration-300"
                     >
                       <span className="truncate px-1">Dipublikasi (&lt;{autoTahan ? thresholdHold : thresholdReject}%)</span>
                     </div>
@@ -521,7 +519,7 @@ export default function PreferensiPage() {
                     {autoTahan && (
                       <div
                         style={{ width: `${autoHapus ? Math.max(0, thresholdReject - thresholdHold) : (100 - thresholdHold)}%` }}
-                        className="bg-amber-500/25 text-amber-300 flex items-center justify-center border-r border-amber-500/30 transition-all duration-300"
+                        className="bg-amber-500/25 text-amber-900 dark:text-amber-300 flex items-center justify-center border-r border-amber-500/30 transition-all duration-300"
                       >
                         <span className="truncate px-1">Ditahan ({thresholdHold}% - {autoHapus ? thresholdReject : 100}%)</span>
                       </div>
@@ -530,7 +528,7 @@ export default function PreferensiPage() {
                     {autoHapus && (
                       <div
                         style={{ width: `${100 - thresholdReject}%` }}
-                        className="bg-rose-500/30 text-rose-300 flex items-center justify-center transition-all duration-300"
+                        className="bg-rose-500/30 text-rose-900 dark:text-rose-300 flex items-center justify-center transition-all duration-300"
                       >
                         <span className="truncate px-1">Dihapus (≥{thresholdReject}%)</span>
                       </div>
@@ -623,7 +621,7 @@ export default function PreferensiPage() {
               <h2 className="text-sm font-semibold flex items-center gap-2" style={{ color: 'var(--text-primary)' }}>
                 Kunci Akses Mandiri (BYOK)
                 {!byokStatus.isEnterprise && (
-                  <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-slate-100 text-slate-600 border border-slate-200 dark:bg-slate-800 dark:text-slate-400 dark:border-slate-700">
+                  <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-amber-100 text-amber-800 border border-amber-300 dark:bg-amber-950/60 dark:text-amber-300 dark:border-amber-700">
                     Khusus Enterprise
                   </span>
                 )}
@@ -685,23 +683,22 @@ export default function PreferensiPage() {
                 </button>
               </div>
             ) : (
-              <div className="space-y-3">
-                <div className="p-3 rounded-lg bg-amber-50 border border-amber-200 text-amber-900 dark:bg-amber-500/10 dark:border-amber-500/30 dark:text-amber-300 text-xs">
+              <div className="space-y-3.5">
+                <div className="p-3.5 rounded-xl bg-amber-50 border border-amber-200 text-amber-950 dark:bg-amber-950/30 dark:border-amber-500/30 dark:text-amber-200 text-xs font-medium leading-relaxed">
                   <span><strong>API Key Belum Dipasang:</strong> Akun Anda ber-tier Enterprise tetapi saat ini masih memotong jatah kuota server. Tempelkan kunci Anda di bawah ini:</span>
                 </div>
-                <div className="flex flex-col sm:flex-row items-center gap-2">
+                <div className="flex flex-col sm:flex-row items-center gap-2.5">
                   <input
                     type="password"
                     placeholder="Tempelkan Google YouTube API Key (AIzaSyD...)"
                     value={apiKeyInput}
                     onChange={(e) => setApiKeyInput(e.target.value)}
-                    className="w-full px-3.5 py-2 text-xs rounded-xl border bg-white text-slate-900 placeholder-slate-400 dark:bg-slate-900/80 dark:text-slate-100 dark:placeholder-slate-500 focus:outline-none focus:border-indigo-500 font-semibold shadow-xs"
-                    style={{ borderColor: 'var(--border-default)' }}
+                    className="w-full px-4 py-2.5 text-xs rounded-xl border border-slate-300 bg-slate-50 text-slate-900 placeholder-slate-400 focus:outline-none focus:border-indigo-600 focus:ring-2 focus:ring-indigo-500/20 dark:border-slate-700 dark:bg-slate-900/90 dark:text-slate-100 dark:placeholder-slate-500 dark:focus:border-indigo-400 font-mono font-medium shadow-xs transition-all"
                   />
                   <button
                     onClick={handleSaveByok}
                     disabled={byokSaving}
-                    className="w-full sm:w-auto px-5 py-2 text-xs font-semibold text-white bg-indigo-600 hover:bg-indigo-500 rounded-xl transition-all flex-shrink-0 shadow-lg shadow-indigo-600/20 disabled:opacity-50 cursor-pointer"
+                    className="w-full sm:w-auto px-5 py-2.5 text-xs font-bold text-white bg-indigo-600 hover:bg-indigo-500 rounded-xl transition-all flex-shrink-0 shadow-lg shadow-indigo-600/20 active:scale-95 disabled:opacity-50 cursor-pointer"
                   >
                     {byokSaving ? 'Memverifikasi...' : 'Simpan & Verifikasi'}
                   </button>

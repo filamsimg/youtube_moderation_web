@@ -37,29 +37,29 @@
   /* Status Colors — tetap konsisten di kedua mode */
   --color-danger:        #f43f5e;
   --color-danger-bg:     rgba(244, 63, 94, 0.08);
-  --color-danger-border: rgba(244, 63, 94, 0.18);
-  --color-danger-text:   #e11d48;
+  --color-danger-border: rgba(244, 63, 94, 0.22);
+  --color-danger-text:   #9f1239; /* rose-800 — was e11d48, higher contrast */
 
   --color-success:        #10b981;
   --color-success-bg:     rgba(16, 185, 129, 0.08);
-  --color-success-border: rgba(16, 185, 129, 0.18);
-  --color-success-text:   #059669;
+  --color-success-border: rgba(16, 185, 129, 0.22);
+  --color-success-text:   #065f46; /* emerald-900 — was 059669, higher contrast */
 
   --color-warning:        #f59e0b;
   --color-warning-bg:     rgba(245, 158, 11, 0.08);
-  --color-warning-border: rgba(245, 158, 11, 0.18);
-  --color-warning-text:   #d97706;
+  --color-warning-border: rgba(245, 158, 11, 0.22);
+  --color-warning-text:   #92400e; /* amber-800 — was d97706, higher contrast */
 
   --color-info:           #3b82f6;
   --color-info-bg:        rgba(59, 130, 246, 0.08);
-  --color-info-border:    rgba(59, 130, 246, 0.18);
-  --color-info-text:      #2563eb;
+  --color-info-border:    rgba(59, 130, 246, 0.22);
+  --color-info-text:      #1e3a8a; /* blue-900 — was 2563eb, higher contrast */
 
-  /* Typography */
-  --text-primary:       #0f172a;
-  --text-secondary:     #334155;
-  --text-muted:         #475569;
-  --text-dimmed:        #64748b;
+  /* Typography — contrast improved for Light Mode readability */
+  --text-primary:       #0f172a;  /* slate-900 — rich black */
+  --text-secondary:     #1e293b;  /* slate-800 — clear dark */
+  --text-muted:         #475569;  /* slate-600 — legible grey */
+  --text-dimmed:        #64748b;  /* slate-500 */
 
   /* Scrollbar */
   --scrollbar-thumb:    #cbd5e1;
@@ -110,11 +110,11 @@
   --color-info-border:    rgba(59, 130, 246, 0.22);
   --color-info-text:      #60a5fa;
 
-  /* Typography */
-  --text-primary:       #f1f5f9;
-  --text-secondary:     #cbd5e1; /* slate-200 */
-  --text-muted:         #94a3b8; /* slate-400 */
-  --text-dimmed:        #64748b; /* slate-500 */
+  /* Typography — dark mode stays legible */
+  --text-primary:       #f1f5f9;  /* slate-100 */
+  --text-secondary:     #e2e8f0;  /* slate-200 — brighter than before */
+  --text-muted:         #94a3b8;  /* slate-400 */
+  --text-dimmed:        #64748b;  /* slate-500 */
 
   /* Scrollbar */
   --scrollbar-thumb:    #1e293b;
@@ -278,21 +278,28 @@ body {
   font-weight: 500;
   border: 1px solid transparent;
   transition: background 0.15s ease, border-color 0.15s ease, color 0.15s ease;
-  color: var(--text-muted);
+  color: #475569; /* slate-600 — more legible in light mode */
 }
 
 .nav-item:hover {
   background: var(--bg-card-hover);
-  color: var(--text-secondary);
+  color: #1e293b; /* slate-800 */
 }
 
 .nav-item-active {
   background: var(--accent-ai-soft);
   border-color: var(--border-accent);
-  color: #4f46e5; /* indigo-600 for light mode */
+  color: #4338ca; /* indigo-700 — stronger than indigo-600 in light */
+  font-weight: 600;
+}
+.dark .nav-item {
+  color: #94a3b8; /* slate-400 */
+}
+.dark .nav-item:hover {
+  color: #e2e8f0; /* slate-200 */
 }
 .dark .nav-item-active {
-  color: #a5b4fc; /* indigo-300 for dark mode */
+  color: #a5b4fc; /* indigo-300 */
 }
 
 /* ═══════════════════════════════════════════════════════════
@@ -333,7 +340,7 @@ body {
 }
 .badge-ai {
   background: var(--accent-ai-soft);
-  color: #4f46e5; /* indigo-600 */
+  color: #4338ca; /* indigo-700 — high contrast in light mode */
   border-color: var(--border-accent);
 }
 .dark .badge-ai {
@@ -341,16 +348,35 @@ body {
 }
 .badge-muted {
   background: var(--bg-card-hover);
-  color: var(--text-muted);
+  color: #475569; /* slate-600 — was text-muted, now explicit */
   border-color: var(--border-default);
 }
+.dark .badge-muted {
+  color: #94a3b8; /* slate-400 */
+}
 .badge-amber {
-  background: var(--accent-action-soft);
-  color: #b45309; /* amber-700 */
-  border-color: var(--accent-action-glow);
+  background: rgba(245, 158, 11, 0.10);
+  color: #92400e; /* amber-800 — much higher contrast in light mode */
+  border-color: rgba(245, 158, 11, 0.25);
 }
 .dark .badge-amber {
   color: #fbbf24; /* amber-400 */
+}
+.badge-rose {
+  background: rgba(244, 63, 94, 0.08);
+  color: #9f1239; /* rose-800 — high contrast in light mode */
+  border-color: rgba(244, 63, 94, 0.20);
+}
+.dark .badge-rose {
+  color: #fb7185; /* rose-400 */
+}
+.badge-indigo {
+  background: rgba(99, 102, 241, 0.08);
+  color: #3730a3; /* indigo-800 — high contrast in light mode */
+  border-color: rgba(99, 102, 241, 0.20);
+}
+.dark .badge-indigo {
+  color: #a5b4fc; /* indigo-300 */
 }
 
 /* ═══════════════════════════════════════════════════════════
