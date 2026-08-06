@@ -49,7 +49,7 @@ export const authOptions = {
           access_type: 'offline',
           response_type: 'code',
           // Scopes required for YouTube Data API comments moderation
-          scope: 'openid email profile https://www.googleapis.com/auth/youtube.readonly https://www.googleapis.com/auth/youtube.force-ssl',
+          scope: 'openid email profile https://www.googleapis.com/auth/youtube.force-ssl',
         },
       },
     }),
