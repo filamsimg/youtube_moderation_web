@@ -735,6 +735,11 @@ export default function PreferensiPage() {
             icon: <svg className="w-4 h-4" style={iconStyle} fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" d="M8.625 12a.375.375 0 11-.75 0 .375.375 0 01.75 0zm0 0H8.25m4.125 0a.375.375 0 11-.75 0 .375.375 0 01.75 0zm0 0H12m4.125 0a.375.375 0 11-.75 0 .375.375 0 01.75 0zm0 0h-.375M21 12c0 4.556-4.03 8.25-9 8.25a9.764 9.764 0 01-2.555-.337A5.972 5.972 0 015.41 20.97a5.969 5.969 0 01-.474-.065 4.48 4.48 0 00.978-2.025c.09-.457-.133-.901-.467-1.226C3.93 16.178 3 14.189 3 12c0-4.556 4.03-8.25 9-8.25s9 3.694 9 8.25z" /></svg>,
             content: <ul className="list-decimal ml-4 space-y-1"><li><strong>Optimasi Kuota:</strong> Gunakan jeda pemeriksaan otomatis 2-5 menit.</li><li><strong>Batching:</strong> Aktifkan &quot;Moderasi Massal&quot; untuk hemat kuota.</li><li><strong>Auto-Moderasi:</strong> Mulai dengan Ambang Batas tinggi (90%+) untuk Hapus Otomatis.</li></ul>,
           },
+          {
+            label: 'Panduan BYOK (Kunci API Google Mandiri)',
+            icon: <svg className="w-4 h-4 text-emerald-500" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" d="M15.75 5.25a3 3 0 013 3m3 0a6 6 0 01-7.029 5.912c-.563-.097-1.159.026-1.563.43L10.5 17.25H8.25v2.25H6v2.25H2.25v-2.818c0-.597.237-1.17.659-1.591l6.499-6.499c.404-.404.527-1 .43-1.563A6 6 0 1121.75 8.25z" /></svg>,
+            content: <><p>Fitur Opsional untuk pengguna paket Enterprise untuk mem-bypass kuota server:</p><ul className="list-decimal ml-4 space-y-1 mt-2 text-xs"><li><strong>Bebas Limit Server:</strong> Panggilan YouTube API langsung menggunakan jatah Google Cloud pribadi Anda (10.000 unit/hari gratis).</li><li><strong>Dukungan BYOK:</strong> Dapatkan API Key di Google Cloud Console ➔ Aktifkan YouTube Data API v3 ➔ Tempelkan di kolom Kunci API di atas.</li></ul></>,
+          },
         ].map(item => (
           <AccordionItem key={item.label} icon={item.icon} label={item.label}>
             {item.content}
