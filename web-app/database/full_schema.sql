@@ -522,43 +522,43 @@ INSERT INTO public.pricing_packages (
    ],
    ARRAY[]::TEXT[], '🔥 Paling Populer', true, true, true, true),
 
-  -- ENTERPRISE BULANAN
-  ('ENTERPRISE_1M', 'Enterprise', 'subscription', 'ENTERPRISE', 149000, NULL, 999999, 30, '1M',
+  -- ENTERPRISE BULANAN (200k + BYOK Opsional)
+  ('ENTERPRISE_1M', 'Enterprise', 'subscription', 'ENTERPRISE', 149000, NULL, 200000, 30, '1M',
    'Untuk agency atau channel dengan volume komentar sangat tinggi.',
    ARRAY[
-     'Bebas dari batasan kuota YouTube*',
-     'Semua fitur Pro',
-     'Gunakan Kunci Akses YouTube Sendiri (Gratis)'
+     'Jatah 200.000 poin kuota server per bulan',
+     'Fitur BYOK Opsional (Kunci API GCP Mandiri untuk Bebas Limit Server)',
+     'Semua fitur Pro'
    ],
    ARRAY[]::TEXT[], '⭐ Terlengkap', true, true, true, true),
 
-  -- ENTERPRISE 3 BULAN
-  ('ENTERPRISE_3M', 'Enterprise', 'subscription', 'ENTERPRISE', 424000, 447000, 999999, 90, '3M',
+  -- ENTERPRISE 3 BULAN (600k + BYOK Opsional)
+  ('ENTERPRISE_3M', 'Enterprise', 'subscription', 'ENTERPRISE', 424000, 447000, 600000, 90, '3M',
    'Untuk agency atau channel dengan volume komentar sangat tinggi.',
    ARRAY[
-     'Bebas dari batasan kuota YouTube*',
-     'Semua fitur Pro',
-     'Gunakan Kunci Akses YouTube Sendiri (Gratis)'
+     'Jatah 600.000 poin kuota server per 3 bulan',
+     'Fitur BYOK Opsional (Kunci API GCP Mandiri untuk Bebas Limit Server)',
+     'Semua fitur Pro'
    ],
    ARRAY[]::TEXT[], '⭐ Terlengkap', true, true, true, true),
 
-  -- ENTERPRISE 6 BULAN
-  ('ENTERPRISE_6M', 'Enterprise', 'subscription', 'ENTERPRISE', 804000, 894000, 999999, 180, '6M',
+  -- ENTERPRISE 6 BULAN (1.2M + BYOK Opsional)
+  ('ENTERPRISE_6M', 'Enterprise', 'subscription', 'ENTERPRISE', 804000, 894000, 1200000, 180, '6M',
    'Untuk agency atau channel dengan volume komentar sangat tinggi.',
    ARRAY[
-     'Bebas dari batasan kuota YouTube*',
-     'Semua fitur Pro',
-     'Gunakan Kunci Akses YouTube Sendiri (Gratis)'
+     'Jatah 1.200.000 poin kuota server per 6 bulan',
+     'Fitur BYOK Opsional (Kunci API GCP Mandiri untuk Bebas Limit Server)',
+     'Semua fitur Pro'
    ],
    ARRAY[]::TEXT[], '⭐ Terlengkap', true, true, true, true),
 
-  -- ENTERPRISE 1 TAHUN
-  ('ENTERPRISE_12M', 'Enterprise', 'subscription', 'ENTERPRISE', 1430000, 1788000, 999999, 360, '12M',
+  -- ENTERPRISE 1 TAHUN (2.4M + BYOK Opsional)
+  ('ENTERPRISE_12M', 'Enterprise', 'subscription', 'ENTERPRISE', 1430000, 1788000, 2400000, 360, '12M',
    'Untuk agency atau channel dengan volume komentar sangat tinggi.',
    ARRAY[
-     'Bebas dari batasan kuota YouTube*',
-     'Semua fitur Pro',
-     'Gunakan Kunci Akses YouTube Sendiri (Gratis)'
+     'Jatah 2.400.000 poin kuota server per tahun',
+     'Fitur BYOK Opsional (Kunci API GCP Mandiri untuk Bebas Limit Server)',
+     'Semua fitur Pro'
    ],
    ARRAY[]::TEXT[], '⭐ Terlengkap', true, true, true, true)
 
