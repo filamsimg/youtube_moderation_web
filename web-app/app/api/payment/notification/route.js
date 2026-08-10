@@ -170,7 +170,8 @@ export async function POST(req) {
       const baseDate = (currentExpiry && currentExpiry > new Date()) ? currentExpiry : new Date();
       const newExpiry = new Date(baseDate.getTime() + durationDays * 24 * 60 * 60 * 1000);
 
-      const newLimit = targetTier === 'ENTERPRISE' ? 999999 : 50000;
+      // 100% Dinamis membaca dari tabel pricing_packages Supabase
+      const newLimit = pkg.quota_units || 50000;
 
       const { error: updateProfileError } = await supabaseAdmin
         .from('user_profiles')
