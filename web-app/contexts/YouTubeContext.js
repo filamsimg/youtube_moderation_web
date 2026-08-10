@@ -100,7 +100,7 @@ export function YouTubeProvider({ children }) {
       if (err.isExpired || err.status === 401) {
         toast.error('Sesi akses YouTube berakhir. Silakan masuk kembali (Re-login).');
       } else if (err.reason === 'quotaExceeded' || err.status === 403) {
-        toast.error('Kuota harian YouTube API Anda telah habis.');
+        toast.error('Kuota harian Google API Key pribadi Anda telah habis (Quota Exceeded). Hapus API Key di Halaman Preferensi jika Anda ingin kembali menggunakan sisa Kuota Server bawaan Enterprise.');
       } else {
         toast.error(`Gagal mengambil daftar video: ${err.message || 'Error tidak diketahui'}`);
       }
