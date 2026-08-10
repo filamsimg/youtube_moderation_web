@@ -33,7 +33,5 @@ export function formatDateTime(dateString, options = {}) {
 export function isUnlimitedQuota(target) {
   if (!target) return false;
   const tier = typeof target === 'string' ? target : target.tier;
-  const units = typeof target === 'object' ? Number(target.quota_units) : (typeof target === 'number' ? target : null);
-  
-  return units === -1 || (units !== null && units >= 999999) || tier === 'ENTERPRISE';
+  return tier === 'ENTERPRISE';
 }

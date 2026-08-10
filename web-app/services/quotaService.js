@@ -13,7 +13,7 @@ export const QUOTA_COSTS = {
 export const TIER_LIMITS = {
   FREE:       { limit: 1000,   label: 'Free',       color: 'gray' },
   PRO:        { limit: 50000,  label: 'Pro',         color: 'indigo' },
-  ENTERPRISE: { limit: 999999, label: 'Enterprise',  color: 'amber' },
+  ENTERPRISE: { limit: 200000, label: 'Enterprise',  color: 'amber' },
 };
 
 export const quotaService = {
