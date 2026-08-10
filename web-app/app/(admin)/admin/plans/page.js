@@ -317,10 +317,15 @@ export default function AdminPlansPage() {
                       )}
                     </td>
                     <td className="p-4 text-secondary font-medium">
-                      {isUnlimitedQuota(pkg) ? (
-                        <span className="text-emerald-600 dark:text-emerald-400 font-bold">
-                          Bebas Batas (BYOK)
-                        </span>
+                      {pkg.tier === 'ENTERPRISE' ? (
+                        <div className="flex flex-col">
+                          <span className="text-primary font-bold">
+                            {pkg.quota_units.toLocaleString('id-ID')} unit
+                          </span>
+                          <span className="text-[10px] text-emerald-600 dark:text-emerald-400 font-semibold">
+                            + BYOK Opsional
+                          </span>
+                        </div>
                       ) : (
                         `${pkg.quota_units.toLocaleString('id-ID')} unit`
                       )}
