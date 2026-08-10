@@ -654,7 +654,7 @@ export default function PreferensiPage() {
             </div>
             <Link
               href="/pricing"
-              className="px-4 py-2 text-xs font-semibold text-white bg-gradient-to-r from-amber-500 to-indigo-600 rounded-xl hover:opacity-90 transition-all flex-shrink-0 shadow-md shadow-amber-500/10 cursor-pointer"
+              className="px-4 py-2 text-xs font-semibold text-white bg-purple-600 hover:bg-purple-700 dark:bg-purple-600 dark:hover:bg-purple-500 rounded-xl transition-all flex-shrink-0 shadow-xs cursor-pointer"
             >
               Upgrade Paket Enterprise →
             </Link>
@@ -671,7 +671,7 @@ export default function PreferensiPage() {
                       API Key Pribadi Aktif
                       <code className="px-2 py-0.5 bg-emerald-100 text-emerald-900 border border-emerald-300/80 dark:bg-emerald-900/60 dark:text-emerald-200 dark:border-transparent rounded text-[11px] font-semibold">{byokStatus.maskedKey}</code>
                     </p>
-                    <p className="text-[11px] text-slate-600 dark:text-slate-400 mt-0.5">Seluruh request YouTube API akun Anda kini menggunakan kuota proyek Google Cloud Anda sendiri.</p>
+                    <p className="text-[11px] text-slate-600 dark:text-slate-400 mt-0.5">Pemotongan kuota server di-bypass. Seluruh request YouTube API akun Anda kini menggunakan kuota proyek GCP pribadi Anda (Bebas Limit Server).</p>
                   </div>
                 </div>
                 <button
@@ -685,7 +685,7 @@ export default function PreferensiPage() {
             ) : (
               <div className="space-y-3.5">
                 <div className="p-3.5 rounded-xl bg-amber-50 border border-amber-200 text-amber-950 dark:bg-amber-950/30 dark:border-amber-500/30 dark:text-amber-200 text-xs font-medium leading-relaxed">
-                  <span><strong>API Key Belum Dipasang:</strong> Akun Anda ber-tier Enterprise tetapi saat ini masih memotong jatah kuota server. Tempelkan kunci Anda di bawah ini:</span>
+                  <span><strong>Opsional - Bebas Limit Server:</strong> Akun Enterprise Anda saat ini menggunakan jatah kuota server. Tempelkan Google API Key pribadi Anda di bawah ini jika ingin mem-bypass pemotongan kuota server (GCP Mandiri):</span>
                 </div>
                 <div className="flex flex-col sm:flex-row items-center gap-2.5">
                   <input
@@ -698,7 +698,7 @@ export default function PreferensiPage() {
                   <button
                     onClick={handleSaveByok}
                     disabled={byokSaving}
-                    className="w-full sm:w-auto px-5 py-2.5 text-xs font-bold text-white bg-indigo-600 hover:bg-indigo-500 rounded-xl transition-all flex-shrink-0 shadow-lg shadow-indigo-600/20 active:scale-95 disabled:opacity-50 cursor-pointer"
+                    className="w-full sm:w-auto px-5 py-2.5 text-xs font-bold text-white bg-indigo-600 hover:bg-indigo-700 dark:bg-indigo-600 dark:hover:bg-indigo-500 rounded-xl transition-all flex-shrink-0 shadow-xs active:scale-95 disabled:opacity-50 cursor-pointer"
                   >
                     {byokSaving ? 'Memverifikasi...' : 'Simpan & Verifikasi'}
                   </button>
