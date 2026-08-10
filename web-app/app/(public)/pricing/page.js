@@ -44,7 +44,7 @@ export default function PricingPage() {
   useEffect(() => {
     async function loadPackages() {
       try {
-        const response = await fetch('/api/plans');
+        const response = await fetch('/api/plans', { cache: 'no-store' });
         const json = await response.json();
         if (json.success) {
           setPlans(json.plans);
@@ -79,7 +79,7 @@ export default function PricingPage() {
         name: plan.name,
         price: plan.price === 0 ? 'Rp 0' : formatIDR(plan.price),
         period: isFree ? 'Sekali Pakai' : cycleInfo.textSuffix,
-        quota: plan.tier === 'ENTERPRISE' ? 'Bebas Kuota YouTube*' : plan.quota_units.toLocaleString('id-ID'),
+        quota: plan.tier === 'ENTERPRISE' ? `${plan.quota_units.toLocaleString('id-ID')} + BYOK` : plan.quota_units.toLocaleString('id-ID'),
         quotaNum: plan.quota_units,
         description: plan.description,
         features: plan.features || [],
@@ -451,17 +451,13 @@ export default function PricingPage() {
                         <p className="font-bold text-indigo-300 mb-1 flex items-center gap-1">
                           Estimasi Penggunaan Kuota:
                         </p>
-                        {isEnterprise ? (
-                          <div className="space-y-1 text-slate-300 text-[10px] leading-relaxed">
-                            <p>• <strong>Bebas Limit Kuota Aplikasi</strong> (Menggunakan API Key Google pribadi di Preferensi).</p>
-                            <p>• <strong>Kapasitas:</strong> s.d <strong>200+ hapus komentar/hari</strong> gratis dari Google.</p>
-                          </div>
-                        ) : (
-                          <div className="space-y-1 text-slate-300 text-[10px] leading-relaxed">
-                            <p>• <strong>Muat Komentar:</strong> s.d <strong>{plan.quotaNum?.toLocaleString('id-ID')}x</strong> fetch (setara {((plan.quotaNum || 0) * 100).toLocaleString('id-ID')} komentar).</p>
-                            <p>• <strong>Hapus/Moderasi:</strong> s.d <strong>{Math.floor((plan.quotaNum || 0) / 50).toLocaleString('id-ID')}x</strong> aksi hapus spam (50 unit/aksi YouTube API).</p>
-                          </div>
-                        )}
+                        <div className="space-y-1 text-slate-300 text-[10px] leading-relaxed">
+                          <p>• <strong>Muat Komentar:</strong> s.d <strong>{plan.quotaNum?.toLocaleString('id-ID')}x</strong> fetch (setara {((plan.quotaNum || 0) * 100).toLocaleString('id-ID')} komentar).</p>
+                          <p>• <strong>Hapus/Moderasi:</strong> s.d <strong>{Math.floor((plan.quotaNum || 0) / 50).toLocaleString('id-ID')}x</strong> aksi hapus spam.</p>
+                          {isEnterprise && (
+                            <p className="text-emerald-400 font-semibold mt-1">• <strong>BYOK Opsional:</strong> Pasang API Key GCP di Preferensi untuk Bebas Limit Server.</p>
+                          )}
+                        </div>
                         <div className="absolute top-full left-4 -mt-1 border-4 border-transparent border-t-slate-900/95" />
                       </div>
                     </div>
@@ -494,8 +490,8 @@ export default function PricingPage() {
                     className={`relative overflow-hidden w-full py-3 rounded-2xl text-xs font-bold transition-all duration-300 cursor-pointer select-none ${isBtnDisabled
                         ? 'bg-card-hover text-muted cursor-default border border-[var(--border-default)]'
                         : isPro
-                          ? 'bg-gradient-to-r from-indigo-600 to-violet-600 text-white hover:shadow-[0_0_24px_rgba(99,102,241,0.45)] hover:-translate-y-0.5 active:scale-98'
-                          : 'bg-gradient-to-r from-purple-600 to-indigo-600 text-white hover:shadow-[0_0_24px_rgba(168,85,247,0.4)] hover:-translate-y-0.5 active:scale-98'
+                          ? 'bg-indigo-600 hover:bg-indigo-700 dark:bg-indigo-600 dark:hover:bg-indigo-500 text-white shadow-xs hover:-translate-y-0.5 active:scale-98'
+                          : 'bg-purple-600 hover:bg-purple-700 dark:bg-purple-600 dark:hover:bg-purple-500 text-white shadow-xs hover:-translate-y-0.5 active:scale-98'
                       } disabled:opacity-50 disabled:cursor-not-allowed`}
                   >
                     {!isBtnDisabled && (
@@ -609,7 +605,7 @@ export default function PricingPage() {
               <button
                 onClick={handleSaveEnterpriseKey}
                 disabled={savingEnterpriseKey}
-                className="w-full sm:flex-1 py-3 px-5 text-xs font-bold text-white bg-gradient-to-r from-amber-500 to-indigo-600 hover:from-amber-600 hover:to-indigo-700 rounded-xl transition-all shadow-lg shadow-amber-500/20 active:scale-95 disabled:opacity-50 cursor-pointer"
+                className="w-full sm:flex-1 py-3 px-5 text-xs font-bold text-white bg-amber-600 hover:bg-amber-700 dark:bg-amber-600 dark:hover:bg-amber-500 rounded-xl transition-all shadow-xs active:scale-95 disabled:opacity-50 cursor-pointer"
               >
                 {savingEnterpriseKey ? 'Memverifikasi...' : 'Simpan & Aktifkan BYOK'}
               </button>
