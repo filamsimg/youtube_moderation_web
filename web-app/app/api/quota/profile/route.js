@@ -32,6 +32,24 @@ export async function GET() {
       return NextResponse.json({ error: 'Database error' }, { status: 500 });
     }
 
+    // Auto-normalize profil Enterprise legacy (migrasi dari 999999 ke 200000)
+    if (profile.tier === 'ENTERPRISE' && (profile.quota_limit > 200000 || profile.subscription_quota > 200000)) {
+      const normalizedSubQuota = Math.min(profile.subscription_quota, 200000);
+      const normalizedLimit = 200000;
+
+      await supabaseAdmin
+        .from('user_profiles')
+        .update({
+          subscription_quota: normalizedSubQuota,
+          quota_limit: normalizedLimit,
+          updated_at: new Date().toISOString()
+        })
+        .eq('email', email);
+
+      profile.subscription_quota = normalizedSubQuota;
+      profile.quota_limit = normalizedLimit;
+    }
+
     // Ambil detail konfigurasi fitur dinamis untuk tier pengguna ini dari pricing_packages
     const { data: pkg } = await supabaseAdmin
       .from('pricing_packages')
