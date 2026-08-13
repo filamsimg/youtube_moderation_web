@@ -69,7 +69,7 @@ export default function AdminSidebar() {
       icon: <History className="w-5 h-5 flex-shrink-0" />,
     },
     {
-      name: 'Pricing & Paket',
+      name: 'Paket dan Harga',
       href: '/admin/plans',
       icon: <CreditCard className="w-5 h-5 flex-shrink-0" />,
     },

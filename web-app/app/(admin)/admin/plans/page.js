@@ -242,7 +242,7 @@ export default function AdminPlansPage() {
         <div>
           <h1 className="text-xl font-bold tracking-tight text-primary flex items-center gap-2">
             <CreditCard className="w-6 h-6 text-rose-500" />
-            Manajemen Pricing & Paket
+            Manajemen Paket dan Harga
           </h1>
           <p className="text-xs text-muted mt-1">
             Konfigurasi tier akun, harga berlangganan, paket top-up, jatah kuota unit API, dan fitur ter-unlock.

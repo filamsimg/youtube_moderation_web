@@ -1,15 +1,16 @@
 -- ============================================================
--- SKEMA DATABASE LENGKAP (FULL SCHEMA) - Athena Shield (V3 - Final)
--- Versi ini sudah diselaraskan penuh dengan kode aplikasi Next.js.
+-- SKEMA DATABASE LENGKAP (FULL SCHEMA) - Athena Shield (V4 - Final 8 Tables)
+-- Versi ini sudah diselaraskan penuh dengan kode aplikasi Next.js & Supabase.
 --
--- Perubahan dari V2:
--- [x] pricing_packages dibuat LEBIH AWAL (user_profiles merujuk ke sana via FK)
--- [x] Kolom `theme` dihapus dari user_settings (tema kini mengikuti OS secara otomatis)
--- [x] Kolom `active_package_id` ditambahkan di user_profiles (diperlukan webhook Midtrans)
--- [x] Kolom `color` dihapus dari pricing_packages (tidak digunakan oleh kode aplikasi)
--- [x] Kolom `quota_balance` TIDAK ada (dihitung dinamis di JS: subscription + trial)
--- [x] user_settings menggunakan user_email sebagai PK (konsisten dengan DB asli)
--- [x] Urutan CREATE TABLE diperbaiki agar FK references tidak menyebabkan error
+-- Daftar 8 Tabel Utama:
+-- 1. pricing_packages   (Katalog Paket Langganan & Pricing)
+-- 2. user_profiles      (Profil Pengguna, Tier, Role, BYOK Key)
+-- 3. quota_usage_logs   (Catatan Pemotongan/Penambahan Kuota)
+-- 4. user_settings      (Pengaturan Preferensi Threshold & Auto-Mod)
+-- 5. moderation_history (Log Riwayat Moderasi & Prediksi AI)
+-- 6. transactions       (Transaksi Pembayaran Midtrans)
+-- 7. admin_audit_logs   (Log Audit Pengawasan Administrator)
+-- 8. comment_predictions (Cache Prediksi AI per Komentar YouTube)
 --
 -- CARA PAKAI:
 -- 1. Buka Supabase Dashboard > SQL Editor > New Query
@@ -18,13 +19,12 @@
 -- ============================================================
 
 -- ══════════════════════════════════════════════════════════════
--- BAGIAN 1: PEMBUATAN TABEL
+-- BAGIAN 1: PEMBUATAN TABEL (8 TABEL)
 -- Urutan penting: pricing_packages harus dibuat duluan karena
 -- user_profiles.active_package_id menggunakan FK ke pricing_packages.
 -- ══════════════════════════════════════════════════════════════
 
 -- ── A. Tabel Paket Langganan (Pricing Packages) ──────────────
--- Dibuat paling awal karena dirujuk oleh user_profiles
 CREATE TABLE IF NOT EXISTS public.pricing_packages (
   id                     TEXT PRIMARY KEY,                  -- e.g. 'FREE', 'PRO_1M', 'ENTERPRISE_12M'
   name                   TEXT NOT NULL,
@@ -65,7 +65,7 @@ CREATE TABLE IF NOT EXISTS public.user_profiles (
   -- Kuota trial gratis awal (diberikan 1x saat registrasi, tidak hangus)
   trial_quota        INTEGER NOT NULL DEFAULT 1000,
 
-  -- Batas kapasitas kuota berdasarkan tier (FREE=1000, PRO=50000, ENT=999999)
+  -- Batas kapasitas kuota berdasarkan tier (FREE=1000, PRO=50000, ENT=200000)
   quota_limit        INTEGER NOT NULL DEFAULT 1000,
 
   -- Tanggal kedaluwarsa subscription PRO/ENTERPRISE (NULL = tidak ada langganan aktif)
@@ -93,9 +93,6 @@ CREATE TABLE IF NOT EXISTS public.quota_usage_logs (
 );
 
 -- ── D. Tabel Pengaturan Preferensi User (User Settings) ──────
--- CATATAN: Tidak ada kolom `theme`. Tema aplikasi mengikuti preferensi
--- sistem operasi (OS) pengguna secara otomatis via ThemeProvider.js.
--- user_email adalah Primary Key (konsisten dengan DB asli Supabase)
 CREATE TABLE IF NOT EXISTS public.user_settings (
   user_email       TEXT PRIMARY KEY REFERENCES public.user_profiles(email) ON DELETE CASCADE,
   auto_hapus       BOOLEAN NOT NULL DEFAULT false,
@@ -131,14 +128,14 @@ CREATE TABLE IF NOT EXISTS public.transactions (
   user_email            TEXT NOT NULL REFERENCES public.user_profiles(email) ON DELETE CASCADE,
   package_id            TEXT NOT NULL REFERENCES public.pricing_packages(id) ON DELETE RESTRICT,
   transaction_type      TEXT NOT NULL DEFAULT 'subscription'
-                          CHECK (transaction_type IN ('subscription', 'topup')),
+                           CHECK (transaction_type IN ('subscription', 'topup')),
   amount                INTEGER NOT NULL,   -- Nominal pembayaran (Rupiah)
   quota_units           INTEGER NOT NULL,   -- Jumlah kuota yang didapat
   target_tier           TEXT NOT NULL DEFAULT 'FREE'
-                          CHECK (target_tier IN ('FREE', 'PRO', 'ENTERPRISE')),
+                           CHECK (target_tier IN ('FREE', 'PRO', 'ENTERPRISE')),
   duration_days         INTEGER NOT NULL DEFAULT 30,
   status                TEXT NOT NULL DEFAULT 'pending'
-                          CHECK (status IN ('pending', 'settlement', 'cancelled', 'expired', 'failed')),
+                           CHECK (status IN ('pending', 'settlement', 'cancelled', 'expired', 'failed')),
 
   -- Midtrans metadata
   snap_token            TEXT,
@@ -165,73 +162,68 @@ CREATE TABLE IF NOT EXISTS public.admin_audit_logs (
   created_at   TIMESTAMPTZ DEFAULT now()
 );
 
+-- ── H. Tabel Cache Prediksi AI (Comment Predictions) ──────────
+-- Tabel ke-8: Cache hasil prediksi AI per komentar untuk mencegah re-analisis berulang
+CREATE TABLE IF NOT EXISTS public.comment_predictions (
+  comment_id      TEXT PRIMARY KEY,          -- ID unik komentar YouTube
+  label           TEXT NOT NULL,             -- 'Spam' | 'Normal'
+  confidence      DOUBLE PRECISION NOT NULL, -- Skor keyakinan model (0.0 - 1.0)
+  sentiment       TEXT,                      -- 'Positif' | 'Negatif' | 'Netral'
+  sentiment_score DOUBLE PRECISION,          -- Skor sentimen (0.0 - 1.0)
+  created_at      TIMESTAMPTZ DEFAULT now()
+);
+
 
 -- ══════════════════════════════════════════════════════════════
 -- BAGIAN 2: INDEKS DATABASE (Optimasi Kecepatan Query)
 -- ══════════════════════════════════════════════════════════════
-CREATE INDEX IF NOT EXISTS idx_user_profiles_role     ON public.user_profiles(role);
-CREATE INDEX IF NOT EXISTS idx_user_profiles_active   ON public.user_profiles(is_active);
-CREATE INDEX IF NOT EXISTS idx_user_profiles_tier     ON public.user_profiles(tier);
-CREATE INDEX IF NOT EXISTS idx_quota_logs_email       ON public.quota_usage_logs(user_email);
-CREATE INDEX IF NOT EXISTS idx_quota_logs_created     ON public.quota_usage_logs(created_at DESC);
-CREATE INDEX IF NOT EXISTS idx_mod_history_email      ON public.moderation_history(user_email);
-CREATE INDEX IF NOT EXISTS idx_mod_history_created    ON public.moderation_history(created_at DESC);
-CREATE INDEX IF NOT EXISTS idx_pricing_active         ON public.pricing_packages(is_active);
-CREATE INDEX IF NOT EXISTS idx_transactions_email     ON public.transactions(user_email);
-CREATE INDEX IF NOT EXISTS idx_transactions_status    ON public.transactions(status);
-CREATE INDEX IF NOT EXISTS idx_audit_logs_admin       ON public.admin_audit_logs(admin_email);
-CREATE INDEX IF NOT EXISTS idx_audit_logs_target      ON public.admin_audit_logs(target_email);
-CREATE INDEX IF NOT EXISTS idx_audit_logs_created     ON public.admin_audit_logs(created_at DESC);
+CREATE INDEX IF NOT EXISTS idx_user_profiles_role        ON public.user_profiles(role);
+CREATE INDEX IF NOT EXISTS idx_user_profiles_active      ON public.user_profiles(is_active);
+CREATE INDEX IF NOT EXISTS idx_user_profiles_tier        ON public.user_profiles(tier);
+CREATE INDEX IF NOT EXISTS idx_quota_logs_email          ON public.quota_usage_logs(user_email);
+CREATE INDEX IF NOT EXISTS idx_quota_logs_created        ON public.quota_usage_logs(created_at DESC);
+CREATE INDEX IF NOT EXISTS idx_mod_history_email         ON public.moderation_history(user_email);
+CREATE INDEX IF NOT EXISTS idx_mod_history_created       ON public.moderation_history(created_at DESC);
+CREATE INDEX IF NOT EXISTS idx_pricing_active            ON public.pricing_packages(is_active);
+CREATE INDEX IF NOT EXISTS idx_transactions_email        ON public.transactions(user_email);
+CREATE INDEX IF NOT EXISTS idx_transactions_status       ON public.transactions(status);
+CREATE INDEX IF NOT EXISTS idx_audit_logs_admin          ON public.admin_audit_logs(admin_email);
+CREATE INDEX IF NOT EXISTS idx_audit_logs_target         ON public.admin_audit_logs(target_email);
+CREATE INDEX IF NOT EXISTS idx_audit_logs_created        ON public.admin_audit_logs(created_at DESC);
+CREATE INDEX IF NOT EXISTS idx_comment_predictions_id   ON public.comment_predictions(comment_id);
 
 
 -- ══════════════════════════════════════════════════════════════
 -- BAGIAN 3: ROW LEVEL SECURITY (RLS)
--- DROP terlebih dahulu agar skrip bisa dijalankan ulang (idempotent)
 -- ══════════════════════════════════════════════════════════════
-ALTER TABLE public.user_profiles      ENABLE ROW LEVEL SECURITY;
-ALTER TABLE public.quota_usage_logs   ENABLE ROW LEVEL SECURITY;
-ALTER TABLE public.user_settings      ENABLE ROW LEVEL SECURITY;
-ALTER TABLE public.moderation_history ENABLE ROW LEVEL SECURITY;
-ALTER TABLE public.pricing_packages   ENABLE ROW LEVEL SECURITY;
-ALTER TABLE public.transactions       ENABLE ROW LEVEL SECURITY;
-ALTER TABLE public.admin_audit_logs   ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.user_profiles       ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.quota_usage_logs    ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.user_settings       ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.moderation_history  ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.pricing_packages    ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.transactions        ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.admin_audit_logs    ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.comment_predictions ENABLE ROW LEVEL SECURITY;
 
 -- Hapus policies lama agar tidak error jika sudah pernah dibuat sebelumnya
-DROP POLICY IF EXISTS "Users can read own profile"           ON public.user_profiles;
-DROP POLICY IF EXISTS "Users can read own quota logs"        ON public.quota_usage_logs;
-DROP POLICY IF EXISTS "Users can read own settings"          ON public.user_settings;
-DROP POLICY IF EXISTS "Users can read own history"           ON public.moderation_history;
-DROP POLICY IF EXISTS "Users can read own transactions"      ON public.transactions;
-DROP POLICY IF EXISTS "Public can read active packages"      ON public.pricing_packages;
-DROP POLICY IF EXISTS "Admins can read all profiles"         ON public.user_profiles;
-DROP POLICY IF EXISTS "Admins can read all histories"        ON public.moderation_history;
-DROP POLICY IF EXISTS "Admins can read all transactions"     ON public.transactions;
-DROP POLICY IF EXISTS "Admins can read all packages"         ON public.pricing_packages;
-DROP POLICY IF EXISTS "Service role full access profiles"    ON public.user_profiles;
-DROP POLICY IF EXISTS "Service role full access quota_logs"  ON public.quota_usage_logs;
-DROP POLICY IF EXISTS "Service role full access settings"    ON public.user_settings;
-DROP POLICY IF EXISTS "Service role full access history"     ON public.moderation_history;
-DROP POLICY IF EXISTS "Service role full access packages"    ON public.pricing_packages;
+DROP POLICY IF EXISTS "Users can read own profile"            ON public.user_profiles;
+DROP POLICY IF EXISTS "Users can read own quota logs"         ON public.quota_usage_logs;
+DROP POLICY IF EXISTS "Users can read own settings"           ON public.user_settings;
+DROP POLICY IF EXISTS "Users can read own history"            ON public.moderation_history;
+DROP POLICY IF EXISTS "Users can read own transactions"       ON public.transactions;
+DROP POLICY IF EXISTS "Public can read active packages"       ON public.pricing_packages;
+DROP POLICY IF EXISTS "Admins can read all profiles"          ON public.user_profiles;
+DROP POLICY IF EXISTS "Admins can read all histories"         ON public.moderation_history;
+DROP POLICY IF EXISTS "Admins can read all transactions"      ON public.transactions;
+DROP POLICY IF EXISTS "Admins can read all packages"          ON public.pricing_packages;
+DROP POLICY IF EXISTS "Service role full access profiles"     ON public.user_profiles;
+DROP POLICY IF EXISTS "Service role full access quota_logs"   ON public.quota_usage_logs;
+DROP POLICY IF EXISTS "Service role full access settings"     ON public.user_settings;
+DROP POLICY IF EXISTS "Service role full access history"      ON public.moderation_history;
+DROP POLICY IF EXISTS "Service role full access packages"     ON public.pricing_packages;
 DROP POLICY IF EXISTS "Service role full access transactions" ON public.transactions;
-DROP POLICY IF EXISTS "Service role full access audit_logs"  ON public.admin_audit_logs;
--- Hapus juga nama-nama lama dari full_schema V2 (jika pernah dijalankan)
-DROP POLICY IF EXISTS "Users can read own profile"                     ON public.user_profiles;
-DROP POLICY IF EXISTS "Users can read own logs"                        ON public.quota_usage_logs;
-DROP POLICY IF EXISTS "Users can read own settings"                    ON public.user_settings;
-DROP POLICY IF EXISTS "Users can read own history"                     ON public.moderation_history;
-DROP POLICY IF EXISTS "Users can read own transactions"                ON public.transactions;
-DROP POLICY IF EXISTS "Allow public read active packages"              ON public.pricing_packages;
-DROP POLICY IF EXISTS "Admins can read all user profiles"              ON public.user_profiles;
-DROP POLICY IF EXISTS "Admins can read all moderation histories"       ON public.moderation_history;
-DROP POLICY IF EXISTS "Admins can read all transactions"               ON public.transactions;
-DROP POLICY IF EXISTS "Admins can read all packages"                   ON public.pricing_packages;
-DROP POLICY IF EXISTS "Service role can manage profiles"               ON public.user_profiles;
-DROP POLICY IF EXISTS "Service role can manage logs"                   ON public.quota_usage_logs;
-DROP POLICY IF EXISTS "Service role can manage settings"               ON public.user_settings;
-DROP POLICY IF EXISTS "Service role can manage history"                ON public.moderation_history;
-DROP POLICY IF EXISTS "Service role can manage pricing_packages"       ON public.pricing_packages;
-DROP POLICY IF EXISTS "Service role can manage transactions"           ON public.transactions;
-DROP POLICY IF EXISTS "Service role can manage audit logs"             ON public.admin_audit_logs;
+DROP POLICY IF EXISTS "Service role full access audit_logs"   ON public.admin_audit_logs;
+DROP POLICY IF EXISTS "Service role full access predictions"  ON public.comment_predictions;
 
 -- A. User hanya bisa membaca data miliknya sendiri (isolasi antar akun)
 CREATE POLICY "Users can read own profile"
@@ -302,19 +294,21 @@ CREATE POLICY "Admins can read all packages"
 
 -- D. Service Role (API Route Next.js dengan Supabase Service Key) punya akses penuh
 CREATE POLICY "Service role full access profiles"
-  ON public.user_profiles      FOR ALL USING (current_setting('role') = 'service_role');
+  ON public.user_profiles       FOR ALL USING (current_setting('role') = 'service_role');
 CREATE POLICY "Service role full access quota_logs"
-  ON public.quota_usage_logs   FOR ALL USING (current_setting('role') = 'service_role');
+  ON public.quota_usage_logs    FOR ALL USING (current_setting('role') = 'service_role');
 CREATE POLICY "Service role full access settings"
-  ON public.user_settings      FOR ALL USING (current_setting('role') = 'service_role');
+  ON public.user_settings       FOR ALL USING (current_setting('role') = 'service_role');
 CREATE POLICY "Service role full access history"
-  ON public.moderation_history FOR ALL USING (current_setting('role') = 'service_role');
+  ON public.moderation_history  FOR ALL USING (current_setting('role') = 'service_role');
 CREATE POLICY "Service role full access packages"
-  ON public.pricing_packages   FOR ALL USING (current_setting('role') = 'service_role');
+  ON public.pricing_packages    FOR ALL USING (current_setting('role') = 'service_role');
 CREATE POLICY "Service role full access transactions"
-  ON public.transactions       FOR ALL USING (current_setting('role') = 'service_role');
+  ON public.transactions        FOR ALL USING (current_setting('role') = 'service_role');
 CREATE POLICY "Service role full access audit_logs"
-  ON public.admin_audit_logs   FOR ALL USING (current_setting('role') = 'service_role');
+  ON public.admin_audit_logs    FOR ALL USING (current_setting('role') = 'service_role');
+CREATE POLICY "Service role full access predictions"
+  ON public.comment_predictions FOR ALL USING (current_setting('role') = 'service_role');
 
 
 -- ══════════════════════════════════════════════════════════════
@@ -322,10 +316,6 @@ CREATE POLICY "Service role full access audit_logs"
 -- ══════════════════════════════════════════════════════════════
 
 -- ── A. Fungsi deduct_quota ────────────────────────────────────
--- Memotong kuota pengguna secara thread-safe dengan urutan:
--- 1. Potong subscription_quota dulu (rentan hangus saat expired)
--- 2. Jika tidak cukup, lanjut potong trial_quota
--- Dipanggil dari: quotaService.deduct() → supabase.rpc('deduct_quota', ...)
 CREATE OR REPLACE FUNCTION public.deduct_quota(
   p_email       TEXT,
   p_units       INTEGER,
@@ -415,9 +405,6 @@ $$ LANGUAGE plpgsql SECURITY DEFINER;
 
 
 -- ── B. Fungsi ensure_user_profile ────────────────────────────
--- Auto-create profil baru jika user pertama kali login.
--- Auto-downgrade ke FREE jika langganan sudah kedaluwarsa.
--- Dipanggil dari: quotaService.getProfile() → supabase.rpc('ensure_user_profile', ...)
 CREATE OR REPLACE FUNCTION public.ensure_user_profile(p_email TEXT)
 RETURNS public.user_profiles AS $$
 DECLARE
@@ -449,8 +436,6 @@ $$ LANGUAGE plpgsql SECURITY DEFINER;
 
 -- ══════════════════════════════════════════════════════════════
 -- BAGIAN 5: SEED DATA (Data Paket Langganan Default)
--- ON CONFLICT DO UPDATE memastikan data selalu terupdate
--- meskipun skrip dijalankan ulang.
 -- ══════════════════════════════════════════════════════════════
 INSERT INTO public.pricing_packages (
   id, name, type, tier, price, original_price, quota_units, duration_days,
@@ -522,7 +507,7 @@ INSERT INTO public.pricing_packages (
    ],
    ARRAY[]::TEXT[], '🔥 Paling Populer', true, true, true, true),
 
-  -- ENTERPRISE BULANAN (200k + BYOK Opsional)
+  -- ENTERPRISE BULANAN
   ('ENTERPRISE_1M', 'Enterprise', 'subscription', 'ENTERPRISE', 149000, NULL, 200000, 30, '1M',
    'Untuk agency atau channel dengan volume komentar sangat tinggi.',
    ARRAY[
@@ -532,7 +517,7 @@ INSERT INTO public.pricing_packages (
    ],
    ARRAY[]::TEXT[], '⭐ Terlengkap', true, true, true, true),
 
-  -- ENTERPRISE 3 BULAN (600k + BYOK Opsional)
+  -- ENTERPRISE 3 BULAN
   ('ENTERPRISE_3M', 'Enterprise', 'subscription', 'ENTERPRISE', 424000, 447000, 600000, 90, '3M',
    'Untuk agency atau channel dengan volume komentar sangat tinggi.',
    ARRAY[
@@ -542,7 +527,7 @@ INSERT INTO public.pricing_packages (
    ],
    ARRAY[]::TEXT[], '⭐ Terlengkap', true, true, true, true),
 
-  -- ENTERPRISE 6 BULAN (1.2M + BYOK Opsional)
+  -- ENTERPRISE 6 BULAN
   ('ENTERPRISE_6M', 'Enterprise', 'subscription', 'ENTERPRISE', 804000, 894000, 1200000, 180, '6M',
    'Untuk agency atau channel dengan volume komentar sangat tinggi.',
    ARRAY[
@@ -552,7 +537,7 @@ INSERT INTO public.pricing_packages (
    ],
    ARRAY[]::TEXT[], '⭐ Terlengkap', true, true, true, true),
 
-  -- ENTERPRISE 1 TAHUN (2.4M + BYOK Opsional)
+  -- ENTERPRISE 1 TAHUN
   ('ENTERPRISE_12M', 'Enterprise', 'subscription', 'ENTERPRISE', 1430000, 1788000, 2400000, 360, '12M',
    'Untuk agency atau channel dengan volume komentar sangat tinggi.',
    ARRAY[
