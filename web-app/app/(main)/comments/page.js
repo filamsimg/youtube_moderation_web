@@ -57,6 +57,15 @@ export default function CommentsPage() {
 
   const [selectedComments, setSelectedComments] = useState(new Set());
 
+  const formatDate = (dateStr) => {
+    if (!dateStr) return '-';
+    try {
+      return new Date(dateStr).toLocaleDateString('id-ID');
+    } catch (e) {
+      return '-';
+    }
+  };
+
   const toggleSelectComment = (commentId) => {
     setSelectedComments(prev => {
       const next = new Set(prev);
@@ -1100,7 +1109,7 @@ export default function CommentsPage() {
                                 </button>
                                 <button
                                   disabled={isProcessing}
-                                  onClick={() => handleUndo(comment.id)}
+                                  onClick={() => handleUndoAction(comment.id)}
                                   title="Batal / Batalkan"
                                   className="p-1.5 rounded-md hover:bg-amber-500/10 text-amber-400 disabled:opacity-30 transition-all active:scale-95"
                                 >
