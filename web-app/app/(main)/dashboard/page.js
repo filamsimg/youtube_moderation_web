@@ -603,7 +603,7 @@ export default function DashboardPage() {
                     <div className="w-10 h-10 bg-card rounded-lg overflow-hidden flex-shrink-0 border border-[var(--border-default)]">
                       {/* eslint-disable-next-line @next/next/no-img-element */}
                       <img
-                        src={video.snippet.thumbnails.default.url}
+                        src={video?.snippet?.thumbnails?.default?.url || ''}
                         alt=""
                         className="w-full h-full object-cover"
                         loading="lazy"

@@ -59,8 +59,8 @@ export default function ChannelPage() {
             <div className="flex items-center gap-3 mb-3">
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img
-                src={channel.snippet.thumbnails.default.url}
-                alt={channel.snippet.title}
+                src={channel?.snippet?.thumbnails?.default?.url || ''}
+                alt={channel?.snippet?.title || ''}
                 className="w-12 h-12 rounded-full border-2 border-amber-50 flex-shrink-0"
                 loading="lazy"
               />
