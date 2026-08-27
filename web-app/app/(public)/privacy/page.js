@@ -445,7 +445,7 @@ export default function PrivacyPolicy() {
           </p>
         </div>
 
-        {/* Kotak Kepatuhan Google API */}
+        {/* Kotak Kepatuhan Google API & YouTube API Services */}
         <div className="mb-10 bg-card rounded-2xl border p-6" style={{ borderColor: 'var(--border-default)' }}>
           <div className="flex items-start gap-4">
             <div className="w-9 h-9 rounded-xl bg-indigo-50 dark:bg-indigo-500/10 flex items-center justify-center shrink-0">
@@ -453,29 +453,43 @@ export default function PrivacyPolicy() {
                 <path strokeLinecap="round" strokeLinejoin="round" d="M9 12.75L11.25 15 15 9.75m-3-7.036A11.959 11.959 0 013.598 6 11.99 11.99 0 003 9.749c0 5.592 3.824 10.29 9 11.623 5.176-1.332 9-6.03 9-11.622 0-1.31-.21-2.571-.598-3.751h-.152c-3.196 0-6.1-1.248-8.25-3.285z" />
               </svg>
             </div>
-            <div className="space-y-2 flex-1">
+            <div className="space-y-3 flex-1">
               <div className="flex items-center gap-2">
-                <span className="text-xs font-bold text-primary uppercase tracking-wide">Kepatuhan Google API</span>
-                <span className="px-2 py-0.5 bg-indigo-50 dark:bg-indigo-500/10 text-indigo-700 dark:text-indigo-400 rounded-full text-[10px] font-semibold">Wajib</span>
+                <span className="text-xs font-bold text-primary uppercase tracking-wide">Pemberitahuan Kepatuhan YouTube API Services</span>
+                <span className="px-2 py-0.5 bg-indigo-50 dark:bg-indigo-500/10 text-indigo-700 dark:text-indigo-400 rounded-full text-[10px] font-semibold">Resmi</span>
               </div>
-              <p className="text-xs text-muted leading-relaxed italic border-l-2 border-indigo-200 dark:border-indigo-500/30 pl-3">
-                Athena Shield&apos;s use and transfer to any other app of information received from Google APIs
-                will adhere to the{' '}
-                <a
-                  href="https://developers.google.com/terms/api-services-user-data-policy"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="font-semibold text-indigo-600 dark:text-indigo-400 hover:underline not-italic"
-                >
-                  Google API Services User Data Policy
-                </a>
-                , including the Limited Use requirements.
-              </p>
-              <p className="text-xs text-muted leading-relaxed">
-                Penggunaan dan transfer informasi yang diterima dari Google API oleh Athena Shield ke aplikasi lain
-                akan sepenuhnya mematuhi Kebijakan Data Pengguna Layanan API Google, termasuk persyaratan
-                Penggunaan Terbatas (Limited Use).
-              </p>
+              <div className="space-y-2 text-xs text-muted leading-relaxed">
+                <p>
+                  <strong>1. Penggunaan Layanan API YouTube:</strong> Athena Shield menggunakan Layanan API YouTube (YouTube API Services) untuk memuat data komentar dan mengoperasikan fitur moderasi otomatis.
+                </p>
+                <p>
+                  <strong>2. Kebijakan Privasi Google:</strong> Dengan menggunakan aplikasi ini, Anda juga secara langsung tunduk dan menyetujui Kebijakan Privasi Google (Google Privacy Policy) yang dapat diakses di{' '}
+                  <a
+                    href="http://www.google.com/policies/privacy"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="font-bold text-indigo-600 dark:text-indigo-400 underline hover:text-indigo-500"
+                  >
+                    http://www.google.com/policies/privacy
+                  </a>.
+                </p>
+                <p>
+                  <strong>3. Pengumpulan Data Perangkat & Cookie:</strong> Athena Shield mengumpulkan, menyimpan, dan mengakses informasi secara langsung atau tidak langsung pada perangkat Anda, termasuk dengan menempatkan dan mengelola local storage, session storage, dan cookie pada peramban (browser) Anda untuk memelihara sesi autentikasi dan preferensi moderasi.
+                </p>
+                <p className="italic border-l-2 border-indigo-200 dark:border-indigo-500/30 pl-3 pt-1">
+                  Athena Shield&apos;s use and transfer to any other app of information received from Google APIs
+                  will adhere to the{' '}
+                  <a
+                    href="https://developers.google.com/terms/api-services-user-data-policy"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="font-semibold text-indigo-600 dark:text-indigo-400 hover:underline not-italic"
+                  >
+                    Google API Services User Data Policy
+                  </a>
+                  , including the Limited Use requirements.
+                </p>
+              </div>
             </div>
           </div>
         </div>

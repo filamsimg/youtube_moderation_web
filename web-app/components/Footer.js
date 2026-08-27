@@ -114,6 +114,9 @@ export default function Footer({ variant = 'public' }) {
             <Link href="/privacy" className="hover:text-[var(--text-primary)] transition-colors">
               Kebijakan Privasi
             </Link>
+            <Link href="/terms" className="hover:text-[var(--text-primary)] transition-colors">
+              Syarat & Ketentuan
+            </Link>
             <Link href="/login" className="hover:text-[var(--text-primary)] transition-colors">
               Akses Panel
             </Link>
