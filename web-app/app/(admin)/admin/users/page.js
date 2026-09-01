@@ -8,24 +8,24 @@ import ConfirmModal from '@/components/ui/ConfirmModal';
 import StatusBadge from '@/components/ui/StatusBadge';
 import PaginationControls from '@/components/PaginationControls';
 
+// Client-side In-Memory Cache for Users
+let cachedUsersState = null;
+
 export default function AdminUsersPage() {
   const { data: session } = useSession();
-  // PENTING: Ambil role dari database langsung, bukan dari JWT session.
-  // JWT session bisa sudah kedaluwarsa jika role baru saja diubah di database.
   const [currentAdminRole, setCurrentAdminRole] = useState('user');
 
   useEffect(() => {
     if (!session?.user?.email) return;
-    // Fetch profil admin aktual dari DB (bukan dari JWT token yang mungkin sudah usang)
     fetch('/api/quota/profile')
       .then(r => r.ok ? r.json() : null)
       .then(data => { if (data?.role) setCurrentAdminRole(data.role); })
       .catch(() => {});
   }, [session?.user?.email]);
 
-  const [users, setUsers] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [pagination, setPagination] = useState({ page: 1, totalPages: 1, limit: 10 });
+  const [users, setUsers] = useState(cachedUsersState?.users || []);
+  const [loading, setLoading] = useState(!cachedUsersState);
+  const [pagination, setPagination] = useState(cachedUsersState?.pagination || { page: 1, totalPages: 1, limit: 10 });
   const [searchVal, setSearchVal] = useState('');
   const [searchQuery, setSearchQuery] = useState('');
   const [filters, setFilters] = useState({ tier: '', role: '', status: '' });
@@ -49,8 +49,11 @@ export default function AdminUsersPage() {
   const [suspendingUser, setSuspendingUser] = useState(null);
 
   // Fetch users data
-  const fetchUsers = useCallback(async () => {
-    setLoading(true);
+  const fetchUsers = useCallback(async (isSilent = false) => {
+    const isDefaultQuery = page === 1 && !searchQuery && !filters.tier && !filters.role && !filters.status;
+    if (!isSilent && !(isDefaultQuery && cachedUsersState)) {
+      setLoading(true);
+    }
     try {
       const params = new URLSearchParams({
         page: page.toString(),
@@ -67,20 +70,26 @@ export default function AdminUsersPage() {
       if (json.success) {
         setUsers(json.users);
         setPagination(json.pagination);
-      } else {
+        if (isDefaultQuery) {
+          cachedUsersState = { users: json.users, pagination: json.pagination };
+        }
+      } else if (!cachedUsersState) {
         toast.error(json.error || 'Gagal memuat pengguna');
       }
     } catch (e) {
       console.error('Fetch users error:', e);
-      toast.error('Gagal menghubungi API server');
+      if (!cachedUsersState) {
+        toast.error('Gagal menghubungi API server');
+      }
     } finally {
       setLoading(false);
     }
   }, [page, pagination.limit, searchQuery, filters.tier, filters.role, filters.status, toast]);
 
   useEffect(() => {
-    fetchUsers();
-  }, [fetchUsers]);
+    const isDefaultQuery = page === 1 && !searchQuery && !filters.tier && !filters.role && !filters.status;
+    fetchUsers(isDefaultQuery && !!cachedUsersState);
+  }, [fetchUsers, page, searchQuery, filters.tier, filters.role, filters.status]);
 
   // Handle Search Trigger on Enter or click
   const handleSearchSubmit = (e) => {
@@ -188,7 +197,7 @@ export default function AdminUsersPage() {
   };
 
   return (
-    <div className="space-y-6 animate-fade-in">
+    <div className="space-y-6 pb-8">
       {/* Title */}
       <div>
         <h1 className="text-xl font-bold tracking-tight text-primary">Manajemen Pengguna</h1>

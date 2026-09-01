@@ -5,18 +5,24 @@ import { useToast } from '@/contexts/ToastContext';
 import { Search, Filter, ShieldAlert, CheckCircle, Clock } from 'lucide-react';
 import PaginationControls from '@/components/PaginationControls';
 
+// Client-side In-Memory Cache for Moderation Logs
+let cachedModerationState = null;
+
 export default function AdminModerationPage() {
-  const [history, setHistory] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [pagination, setPagination] = useState({ page: 1, totalPages: 1, limit: 10 });
+  const [history, setHistory] = useState(cachedModerationState?.history || []);
+  const [loading, setLoading] = useState(!cachedModerationState);
+  const [pagination, setPagination] = useState(cachedModerationState?.pagination || { page: 1, totalPages: 1, limit: 10 });
   const [searchVal, setSearchVal] = useState('');
   const [searchQuery, setSearchQuery] = useState('');
   const [filters, setFilters] = useState({ label: '', action: '' });
   const [page, setPage] = useState(1);
   const toast = useToast();
 
-  const fetchHistory = useCallback(async () => {
-    setLoading(true);
+  const fetchHistory = useCallback(async (isSilent = false) => {
+    const isDefaultQuery = page === 1 && !searchQuery && !filters.label && !filters.action;
+    if (!isSilent && !(isDefaultQuery && cachedModerationState)) {
+      setLoading(true);
+    }
     try {
       const params = new URLSearchParams({
         page: page.toString(),
@@ -32,20 +38,26 @@ export default function AdminModerationPage() {
       if (json.success) {
         setHistory(json.history);
         setPagination(json.pagination);
-      } else {
+        if (isDefaultQuery) {
+          cachedModerationState = { history: json.history, pagination: json.pagination };
+        }
+      } else if (!cachedModerationState) {
         toast.error(json.error || 'Gagal memuat log moderasi global');
       }
     } catch (e) {
       console.error(e);
-      toast.error('Kesalahan koneksi API');
+      if (!cachedModerationState) {
+        toast.error('Kesalahan koneksi API');
+      }
     } finally {
       setLoading(false);
     }
   }, [page, pagination.limit, searchQuery, filters.label, filters.action, toast]);
 
   useEffect(() => {
-    fetchHistory();
-  }, [fetchHistory]);
+    const isDefaultQuery = page === 1 && !searchQuery && !filters.label && !filters.action;
+    fetchHistory(isDefaultQuery && !!cachedModerationState);
+  }, [fetchHistory, page, searchQuery, filters.label, filters.action]);
 
   const handleSearchSubmit = (e) => {
     e.preventDefault();
@@ -54,7 +66,7 @@ export default function AdminModerationPage() {
   };
 
   return (
-    <div className="space-y-6 animate-fade-in">
+    <div className="space-y-6 pb-8">
       {/* Title */}
       <div>
         <h1 className="text-xl font-bold tracking-tight text-primary">Log Moderasi Global</h1>

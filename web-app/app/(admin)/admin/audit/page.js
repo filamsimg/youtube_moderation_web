@@ -8,18 +8,24 @@ import EmptyState from '@/components/ui/EmptyState';
 import PaginationControls from '@/components/PaginationControls';
 import { formatDateTime } from '@/lib/utils';
 
+// Client-side In-Memory Cache for Audit Logs
+let cachedAuditState = null;
+
 export default function AdminAuditPage() {
-  const [logs, setLogs] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [pagination, setPagination] = useState({ page: 1, totalPages: 1, limit: 10 });
+  const [logs, setLogs] = useState(cachedAuditState?.logs || []);
+  const [loading, setLoading] = useState(!cachedAuditState);
+  const [pagination, setPagination] = useState(cachedAuditState?.pagination || { page: 1, totalPages: 1, limit: 10 });
   const [searchVal, setSearchVal] = useState('');
   const [searchQuery, setSearchQuery] = useState('');
   const [page, setPage] = useState(1);
   const [expandedLogId, setExpandedLogId] = useState(null);
   const toast = useToast();
 
-  const fetchAuditLogs = useCallback(async () => {
-    setLoading(true);
+  const fetchAuditLogs = useCallback(async (isSilent = false) => {
+    const isDefaultQuery = page === 1 && !searchQuery;
+    if (!isSilent && !(isDefaultQuery && cachedAuditState)) {
+      setLoading(true);
+    }
     try {
       const params = new URLSearchParams({
         page: page.toString(),
@@ -33,20 +39,26 @@ export default function AdminAuditPage() {
       if (json.success) {
         setLogs(json.logs);
         setPagination(json.pagination);
-      } else {
+        if (isDefaultQuery) {
+          cachedAuditState = { logs: json.logs, pagination: json.pagination };
+        }
+      } else if (!cachedAuditState) {
         toast.error(json.error || 'Gagal memuat log audit admin');
       }
     } catch (e) {
       console.error(e);
-      toast.error('Kesalahan koneksi API');
+      if (!cachedAuditState) {
+        toast.error('Kesalahan koneksi API');
+      }
     } finally {
       setLoading(false);
     }
   }, [page, pagination.limit, searchQuery, toast]);
 
   useEffect(() => {
-    fetchAuditLogs();
-  }, [fetchAuditLogs]);
+    const isDefaultQuery = page === 1 && !searchQuery;
+    fetchAuditLogs(isDefaultQuery && !!cachedAuditState);
+  }, [fetchAuditLogs, page, searchQuery]);
 
   const handleSearchSubmit = (e) => {
     e.preventDefault();
@@ -72,7 +84,7 @@ export default function AdminAuditPage() {
   };
 
   return (
-    <div className="space-y-6 animate-fade-in">
+    <div className="space-y-6 pb-8">
       {/* Title */}
       <div>
         <h1 className="text-xl font-bold tracking-tight text-primary flex items-center gap-2">
