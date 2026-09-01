@@ -12,84 +12,144 @@ export async function GET(request) {
   }
 
   try {
-    // 1. Total User & Tier Distribution
-    const { data: users, error: usersError } = await supabaseAdmin
-      .from('user_profiles')
-      .select('tier, created_at');
+    const now = new Date();
+    const todayStart = new Date();
+    todayStart.setHours(0, 0, 0, 0);
+
+    // ══════════════════════════════════════════════════════════════════
+    // PARALLEL QUERY EXECUTION (PROMISE.ALL)
+    // Mengeksekusi seluruh 4 query Supabase secara simultan (pangkas waktu 4x)
+    // ══════════════════════════════════════════════════════════════════
+    const [
+      { data: users, error: usersError },
+      { data: transactions, error: trxError },
+      { count: totalComments, error: commentsError },
+      { data: quotaLogs, error: quotaError }
+    ] = await Promise.all([
+      // 1. Data User Profiles
+      supabaseAdmin
+        .from('user_profiles')
+        .select('email, tier, role, is_active, quota_expiry, subscription_quota, trial_quota, created_at'),
+
+      // 2. Data Riwayat Transaksi Midtrans
+      supabaseAdmin
+        .from('transactions')
+        .select('id, user_email, package_id, target_tier, amount, status, created_at, paid_at')
+        .order('created_at', { ascending: false }),
+
+      // 3. Total Komentar Dimoderasi (Exact Count)
+      supabaseAdmin
+        .from('moderation_history')
+        .select('*', { count: 'exact', head: true }),
+
+      // 4. Log Kuota Server
+      supabaseAdmin
+        .from('quota_usage_logs')
+        .select('units_spent, created_at')
+    ]);
 
     if (usersError) throw usersError;
+    if (trxError) throw trxError;
+    if (commentsError) throw commentsError;
+    if (quotaError) throw quotaError;
 
-    const totalUsers = users.length;
+    // ── 1. Proses Data Pengguna ──
+    const userList = users || [];
+    const totalUsers = userList.length;
+    let activeUsers = 0;
+    let suspendedUsers = 0;
     const tierCounts = { FREE: 0, PRO: 0, ENTERPRISE: 0 };
-    users.forEach((u) => {
-      const t = u.tier?.toUpperCase();
+    let activePaidSubscribers = 0;
+    let expiredPaidSubscribers = 0;
+
+    userList.forEach((u) => {
+      if (u.is_active === false) {
+        suspendedUsers++;
+      } else {
+        activeUsers++;
+      }
+
+      const t = (u.tier || 'FREE').toUpperCase();
       if (tierCounts[t] !== undefined) {
         tierCounts[t]++;
       } else {
         tierCounts['FREE']++;
       }
+
+      const expiry = u.quota_expiry ? new Date(u.quota_expiry) : null;
+      const isSubActive = expiry && expiry > now;
+
+      if (t === 'PRO' || t === 'ENTERPRISE') {
+        if (isSubActive) {
+          activePaidSubscribers++;
+        } else {
+          expiredPaidSubscribers++;
+        }
+      }
     });
 
-    // 2. Total Moderated Comments
-    const { count: totalComments, error: commentsError } = await supabaseAdmin
-      .from('moderation_history')
-      .select('*', { count: 'exact', head: true });
+    // ── 2. Proses Data Transaksi Finansial ──
+    const trxList = transactions || [];
+    let totalSettledRevenue = 0;
+    let activeRevenue = 0;
+    const revenueByTier = { PRO: 0, ENTERPRISE: 0 };
+    const trxStatusCounts = { settlement: 0, pending: 0, expired: 0, cancelled: 0, failed: 0 };
 
-    if (commentsError) throw commentsError;
+    const activeEmailsSet = new Set(
+      userList
+        .filter((u) => u.quota_expiry && new Date(u.quota_expiry) > now && (u.tier === 'PRO' || u.tier === 'ENTERPRISE'))
+        .map((u) => u.email)
+    );
 
-    // 3. Total Quota Units Consumed
-    const { data: quotaLogs, error: quotaError } = await supabaseAdmin
-      .from('quota_usage_logs')
-      .select('units_spent');
+    trxList.forEach((trx) => {
+      const st = trx.status || 'pending';
+      if (trxStatusCounts[st] !== undefined) {
+        trxStatusCounts[st]++;
+      } else if (st === 'cancel') {
+        trxStatusCounts.cancelled++;
+      }
 
-    if (quotaError) throw quotaError;
-    const totalQuotaUsed = (quotaLogs || [])
-      .filter((log) => (log.units_spent || 0) > 0)
-      .reduce((acc, log) => acc + log.units_spent, 0);
+      if (st === 'settlement') {
+        const amt = trx.amount || 0;
+        totalSettledRevenue += amt;
 
-    // 3.1. Google API Quota Consumed Today (sejak jam 00:00 hari ini)
-    const todayStart = new Date();
-    todayStart.setHours(0, 0, 0, 0);
-    const { data: todayQuotaLogs, error: todayQuotaErr } = await supabaseAdmin
-      .from('quota_usage_logs')
-      .select('units_spent')
-      .gte('created_at', todayStart.toISOString());
+        const tier = (trx.target_tier || 'PRO').toUpperCase();
+        if (revenueByTier[tier] !== undefined) {
+          revenueByTier[tier] += amt;
+        }
 
-    if (todayQuotaErr) throw todayQuotaErr;
-    const todayQuotaUsed = (todayQuotaLogs || [])
-      .filter((log) => (log.units_spent || 0) > 0)
-      .reduce((acc, log) => acc + log.units_spent, 0);
+        if (activeEmailsSet.has(trx.user_email)) {
+          activeRevenue += amt;
+        }
+      }
+    });
 
-    // 4. Total Income (settlement transactions)
-    const { data: transactions, error: trxError } = await supabaseAdmin
-      .from('transactions')
-      .select('amount')
-      .eq('status', 'settlement');
+    // ── 3. Proses Log Kuota Server ──
+    let totalQuotaUsed = 0;
+    let todayQuotaUsed = 0;
 
-    if (trxError) throw trxError;
-    const totalRevenue = transactions.reduce((acc, trx) => acc + (trx.amount || 0), 0);
+    (quotaLogs || []).forEach((log) => {
+      const units = log.units_spent || 0;
+      if (units > 0) {
+        totalQuotaUsed += units;
+        if (new Date(log.created_at) >= todayStart) {
+          todayQuotaUsed += units;
+        }
+      }
+    });
 
-    // 5. 5 Newest Registered Users
-    const { data: newestUsers, error: newUsersError } = await supabaseAdmin
-      .from('user_profiles')
-      .select('email, tier, created_at, subscription_quota, trial_quota')
-      .order('created_at', { ascending: false })
-      .limit(5);
+    // ── 4. Kreator Baru Bergabung & Tren ──
+    const newestUsers = [...userList]
+      .sort((a, b) => new Date(b.created_at || 0) - new Date(a.created_at || 0))
+      .slice(0, 5);
 
-    if (newUsersError) throw newUsersError;
-
-    // 6. Trend: Registration over last 30 days
-    const thirtyDaysAgo = new Date();
-    thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
-    
-    // Group users by date
     const registrationTrend = {};
     for (let i = 0; i < 30; i++) {
       const dateStr = new Date(Date.now() - i * 24 * 60 * 60 * 1000).toISOString().split('T')[0];
       registrationTrend[dateStr] = 0;
     }
 
-    users.forEach((u) => {
+    userList.forEach((u) => {
       const dateStr = u.created_at ? new Date(u.created_at).toISOString().split('T')[0] : null;
       if (dateStr && registrationTrend[dateStr] !== undefined) {
         registrationTrend[dateStr]++;
@@ -104,12 +164,22 @@ export async function GET(request) {
       success: true,
       stats: {
         totalUsers,
+        activeUsers,
+        suspendedUsers,
         tierCounts,
+        activePaidSubscribers,
+        expiredPaidSubscribers,
         totalComments: totalComments || 0,
         totalQuotaUsed,
         todayQuotaUsed,
-        totalRevenue,
+        totalRevenue: totalSettledRevenue,
+        activeRevenue,
+        expiredRevenue: totalSettledRevenue - activeRevenue,
+        revenueByTier,
+        trxStatusCounts,
       },
+      allUsers: userList,
+      recentTransactions: trxList.slice(0, 10),
       newestUsers,
       registrationTrend: trendArray,
     });
