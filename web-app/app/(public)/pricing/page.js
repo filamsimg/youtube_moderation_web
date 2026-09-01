@@ -20,6 +20,9 @@ const COST_TABLE = [
   { action: 'Polling Auto-refresh', api: 'List call per siklus', cost: 1 },
 ];
 
+// Client-side In-Memory Cache for Public Pricing Plans
+let cachedPublicPlans = null;
+
 export default function PricingPage() {
   const { data: session } = useSession();
   const { profile, loading: loadingProfile, fetchQuota } = useQuota();
@@ -28,8 +31,8 @@ export default function PricingPage() {
   const [billingCycle, setBillingCycle] = useState('1M'); // '1M' | '3M' | '6M' | '12M'
   const [loadingTx, setLoadingTx] = useState(null);
 
-  const [plans, setPlans] = useState([]);
-  const [loadingPackages, setLoadingPackages] = useState(true);
+  const [plans, setPlans] = useState(cachedPublicPlans || []);
+  const [loadingPackages, setLoadingPackages] = useState(!cachedPublicPlans);
 
   // State Modal Aktivasi Pasca Bayar Enterprise (BYOK)
   const [showEnterpriseModal, setShowEnterpriseModal] = useState(false);
@@ -42,23 +45,37 @@ export default function PricingPage() {
   };
 
   useEffect(() => {
+    let isMounted = true;
     async function loadPackages() {
+      if (!cachedPublicPlans) {
+        setLoadingPackages(true);
+      }
       try {
         const response = await fetch('/api/plans', { cache: 'no-store' });
         const json = await response.json();
         if (json.success) {
-          setPlans(json.plans);
-        } else {
+          cachedPublicPlans = json.plans;
+          if (isMounted) {
+            setPlans(json.plans);
+          }
+        } else if (!cachedPublicPlans && isMounted) {
           toast.error(json.error || 'Gagal memuat paket pricing');
         }
       } catch (error) {
         console.error('Fetch pricing error:', error);
-        toast.error('Koneksi internet bermasalah');
+        if (!cachedPublicPlans && isMounted) {
+          toast.error('Koneksi internet bermasalah');
+        }
       } finally {
-        setLoadingPackages(false);
+        if (isMounted) {
+          setLoadingPackages(false);
+        }
       }
     }
     loadPackages();
+    return () => {
+      isMounted = false;
+    };
   }, [toast]);
 
   const multipliers = {
@@ -239,7 +256,7 @@ export default function PricingPage() {
         <KineticGrid />
       </div>
 
-      <div className="relative z-10 max-w-5xl mx-auto space-y-10 animate-fade-in-up">
+      <div className="relative z-10 max-w-5xl mx-auto space-y-10">
         {/* ── Page Header ──────────────────────────────────────── */}
         <div className="text-center space-y-3 pt-2">
           <div className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-indigo-500/10 border border-indigo-500/30 text-indigo-600 dark:text-indigo-400 text-xs font-semibold mb-2 shadow-sm">
@@ -304,7 +321,7 @@ export default function PricingPage() {
             </div>
 
             {/* Google One style hemat notice */}
-            <p className="text-xs font-semibold text-emerald-600 dark:text-emerald-400 min-h-[18px] animate-fade-in text-center">
+            <p className="text-xs font-semibold text-emerald-600 dark:text-emerald-400 min-h-[18px] text-center">
               {billingCycle === '1M' ? (
                 'Pilih paket jangka panjang untuk hemat hingga 20%!'
               ) : billingCycle === '3M' ? (
@@ -318,10 +335,24 @@ export default function PricingPage() {
           </div>
         </div>
 
-        {loadingPackages ? (
-          <div className="flex flex-col items-center justify-center py-20 space-y-4">
-            <div className="w-10 h-10 border-4 border-indigo-500/30 border-t-indigo-600 rounded-full animate-spin" />
-            <p className="text-xs text-secondary">Memuat paket pricing...</p>
+        {loadingPackages && plans.length === 0 ? (
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            {[1, 2, 3].map((i) => (
+              <div key={i} className="bento-card p-6 space-y-5 animate-pulse border border-[var(--border-default)]">
+                <div className="space-y-2">
+                  <div className="h-4 w-20 bg-slate-200 dark:bg-slate-800 rounded-md" />
+                  <div className="h-7 w-36 bg-slate-200 dark:bg-slate-800 rounded-md" />
+                  <div className="h-3 w-48 bg-slate-200 dark:bg-slate-800 rounded-md" />
+                </div>
+                <div className="h-px bg-slate-200 dark:bg-slate-800 my-4" />
+                <div className="space-y-2.5">
+                  <div className="h-3.5 w-full bg-slate-200 dark:bg-slate-800 rounded-md" />
+                  <div className="h-3.5 w-5/6 bg-slate-200 dark:bg-slate-800 rounded-md" />
+                  <div className="h-3.5 w-4/6 bg-slate-200 dark:bg-slate-800 rounded-md" />
+                </div>
+                <div className="h-10 w-full bg-slate-200 dark:bg-slate-800 rounded-xl mt-6" />
+              </div>
+            ))}
           </div>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">

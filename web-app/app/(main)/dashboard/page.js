@@ -47,6 +47,9 @@ const CustomBarTooltip = ({ active, payload, label }) => {
   return null;
 };
 
+// Client-side In-Memory Cache for Creator Dashboard
+let cachedCreatorHistory = null;
+
 export default function DashboardPage() {
   const { data: session } = useSession();
   const router = useRouter();
@@ -59,15 +62,17 @@ export default function DashboardPage() {
   const fetchVideosRef = useRef(fetchVideos);
   useEffect(() => { fetchVideosRef.current = fetchVideos; }, [fetchVideos]);
 
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(!cachedCreatorHistory);
   const [error, setError] = useState(null);
-  const [history, setHistory] = useState([]);
+  const [history, setHistory] = useState(cachedCreatorHistory || []);
   const [chartVideoFilter, setChartVideoFilter] = useState('all');
 
-  const loadHistoryAndVideos = useCallback(async () => {
+  const loadHistoryAndVideos = useCallback(async (isSilent = false) => {
     if (!channelInfo?.id) return;
     try {
-      setLoading(true);
+      if (!isSilent && !cachedCreatorHistory) {
+        setLoading(true);
+      }
       // Gunakan ref agar tidak perlu fetchVideos sebagai dependency
       await fetchVideosRef.current(channelInfo.id);
 
@@ -82,11 +87,14 @@ export default function DashboardPage() {
           sentimentScore: item.sentiment_score,
           timestamp: item.created_at,
         }));
+        cachedCreatorHistory = mapped;
         setHistory(mapped);
       }
     } catch (err) {
       console.error('Gagal memuat data dashboard:', err);
-      setError(err.message || 'Terjadi kesalahan saat memuat data');
+      if (!cachedCreatorHistory) {
+        setError(err.message || 'Terjadi kesalahan saat memuat data');
+      }
     } finally {
       setLoading(false);
     }
@@ -102,7 +110,7 @@ export default function DashboardPage() {
 
   useEffect(() => {
     if (channelInfo && session?.accessToken) {
-      loadHistoryAndVideos();
+      loadHistoryAndVideos(!!cachedCreatorHistory);
     }
   }, [channelInfo, session?.accessToken, loadHistoryAndVideos]);
 
@@ -166,12 +174,12 @@ export default function DashboardPage() {
   // Axis tick style (wajib override di dark mode)
   const axisTick = { fontSize: 10, fill: '#475569' };
 
-  if (loading) {
+  if (loading && history.length === 0) {
     return <CreatorDashboardSkeleton />;
   }
 
   return (
-    <div className="animate-fade-in-up space-y-5 pb-10">
+    <div className="space-y-5 pb-10">
 
       {/* ── Page Header ─────────────────────────────────────── */}
       <div>

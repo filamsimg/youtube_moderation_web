@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useSession } from 'next-auth/react';
 import { useQuota } from '@/contexts/QuotaContext';
 import { useYouTube } from '@/contexts/YouTubeContext';
@@ -10,45 +10,54 @@ import { Tv, CheckCircle2, User, CreditCard, Shield, RefreshCw, X, Play, Ban, Cl
 import Script from 'next/script';
 import TrialBanner from '@/components/TrialBanner';
 
+// Client-side In-Memory Cache for Transaction History
+let cachedTransactions = null;
+
 export default function ProfilePage() {
   const { data: session } = useSession();
   const { profile, loading: loadingQuota, fetchQuota } = useQuota();
   const { channels, activeChannel, loadingChannel, updateSelectedChannelId } = useYouTube();
   const toast = useToast();
 
-  const [transactions, setTransactions] = useState([]);
-  const [loadingHistory, setLoadingHistory] = useState(true);
+  const [transactions, setTransactions] = useState(cachedTransactions || []);
+  const [loadingHistory, setLoadingHistory] = useState(!cachedTransactions);
   const [actionLoading, setActionLoading] = useState(null); // Track loading per orderId
 
   // States untuk Pagination Riwayat Transaksi
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 5;
 
+  const loadTransactionHistory = useCallback(async (isSilent = false) => {
+    try {
+      if (!isSilent && !cachedTransactions) {
+        setLoadingHistory(true);
+      }
+      const res = await fetch('/api/payment/history');
+      const data = await res.json();
+      
+      if (!res.ok) throw new Error(data.error || 'Gagal memuat riwayat');
+      cachedTransactions = data || [];
+      setTransactions(data || []);
+    } catch (err) {
+      console.error('Fetch transaction history error:', err);
+      if (!cachedTransactions) {
+        toast.error('Gagal mengambil data transaksi pembayaran');
+      }
+    } finally {
+      setLoadingHistory(false);
+    }
+  }, [toast]);
+
   useEffect(() => {
     if (session?.user?.email) {
-      loadTransactionHistory();
+      loadTransactionHistory(!!cachedTransactions);
     }
-  }, [session?.user?.email]);
+  }, [session?.user?.email, loadTransactionHistory]);
 
   // Reset halaman pagination ke 1 jika data transaksi diubah/segarkan
   useEffect(() => {
     setCurrentPage(1);
   }, [transactions]);
-
-  const loadTransactionHistory = async () => {
-    try {
-      setLoadingHistory(true);
-      const res = await fetch('/api/payment/history');
-      const data = await res.json();
-      
-      if (!res.ok) throw new Error(data.error || 'Gagal memuat riwayat');
-      setTransactions(data || []);
-    } catch (err) {
-      console.error('Gagal mengambil riwayat transaksi:', err);
-    } finally {
-      setLoadingHistory(false);
-    }
-  };
 
   // ── Resume Payment: Buka kembali popup Snap dengan token yang sudah ada ──
   const handleResumePayment = async (tx) => {
@@ -423,52 +432,52 @@ export default function ProfilePage() {
 
             {/* Quota Indicators */}
             {profile && (
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-4 border-t border-[var(--border-default)]">
-                <div className="space-y-1.5">
-                  <p className="text-xs text-muted uppercase tracking-wider">Kuota Total</p>
-                  <p className="text-xl font-black text-primary">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 pt-4 border-t border-[var(--border-default)]">
+                <div className="space-y-2">
+                  <p className="text-xs font-bold uppercase tracking-wider text-muted">Kuota Total</p>
+                  <p className="text-2xl font-black text-primary">
                     {profile.quota_balance.toLocaleString('id-ID')} <span className="text-xs font-normal text-secondary">unit</span>
                   </p>
-                  <p className="text-[10px] text-muted">
+                  <p className="text-xs text-muted">
                     Batas maksimum: {profile.quota_limit.toLocaleString('id-ID')} unit kuota
                   </p>
                   
                   {/* Breakdown Kuota Terpisah */}
-                  <div className="pt-2 border-t border-[var(--border-default)]/30 space-y-1.5">
-                    <p className="text-[9px] text-muted uppercase tracking-wider font-bold">Rincian Kuota</p>
+                  <div className="pt-3 border-t border-[var(--border-default)]/30 space-y-2">
+                    <p className="text-xs font-bold uppercase tracking-wider text-muted">Rincian Kuota</p>
                     
                     {/* Kuota Langganan */}
-                    <div className="flex items-center justify-between text-[10px]">
-                      <span className="text-muted flex items-center gap-1.5">
+                    <div className="flex items-center justify-between text-xs">
+                      <span className="text-secondary font-medium flex items-center gap-2">
                         <span className="w-2 h-2 rounded-full bg-indigo-500 inline-block flex-shrink-0" />
-                        <span>Langganan <span className="text-[8px] opacity-60">(hangus saat expire)</span></span>
+                        <span>Langganan <span className="text-xs text-muted">(hangus saat expire)</span></span>
                       </span>
-                      <span className="text-indigo-400 font-bold">{(profile.subscription_quota || 0).toLocaleString('id-ID')}</span>
+                      <span className="text-indigo-400 font-bold text-xs">{(profile.subscription_quota || 0).toLocaleString('id-ID')}</span>
                     </div>
                     
-                    {/* Kuota Trial */}
-                    <div className="flex items-center justify-between text-[10px]">
-                      <span className="text-muted flex items-center gap-1.5">
-                        <span className="w-2 h-2 rounded-full bg-slate-400 inline-block flex-shrink-0" />
-                        <span>Trial <span className="text-[8px] opacity-60">(sekali pakai)</span></span>
+                    {/* Kuota Trial / Dasar */}
+                    <div className="flex items-center justify-between text-xs">
+                      <span className="text-secondary font-medium flex items-center gap-2">
+                        <span className="w-2 h-2 rounded-full bg-emerald-500 inline-block flex-shrink-0" />
+                        <span>Kuota Dasar / Free <span className="text-xs text-emerald-600 dark:text-emerald-400 font-medium">(Permanen)</span></span>
                       </span>
-                      <span className="text-slate-400 font-bold">{(profile.trial_quota || 0).toLocaleString('id-ID')}</span>
+                      <span className="text-emerald-500 font-bold text-xs">{(profile.trial_quota || 0).toLocaleString('id-ID')}</span>
                     </div>
                   </div>
 
                   {/* Masa Aktif Kuota */}
                   {expiryDetails && (
-                    <div className="pt-2 border-t border-[var(--border-default)]/30 space-y-1">
-                      <div className="flex items-center gap-1.5 text-[10px] text-muted">
-                        <svg className="w-3.5 h-3.5 text-indigo-400" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
+                    <div className="pt-2.5 border-t border-[var(--border-default)]/30 space-y-1.5">
+                      <div className="flex items-center gap-2 text-xs text-secondary">
+                        <svg className="w-4 h-4 text-indigo-400 flex-shrink-0" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
                           <path strokeLinecap="round" strokeLinejoin="round" d="M6.75 3v2.25M17.25 3v2.25M3 18.75V7.5a2.25 2.25 0 012.25-2.25h13.5A2.25 2.25 0 0121 7.5v11.25m-18 0A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75m-18 0v-7.5A2.25 2.25 0 015.25 9h13.5A2.25 2.25 0 0121 11.25v7.5m-9-6h.008v.008H12v-.008zM12 15h.008v.008H12V15zm0 2.25h.008v.008H12v-.008zM9.75 15h.008v.008H9.75V15zm0 2.25h.008v.008H9.75v-.008zM7.5 15h.008v.008H7.5V15zm0 2.25h.008v.008H7.5v-.008zm6.75-4.5h.008v.008h-.008v-.008zm0 2.25h.008v.008h-.008V15zm0 2.25h.008v.008h-.008v-.008zm2.25-4.5h.008v.008H16.5v-.008zm0 2.25h.008v.008H16.5V15z" />
                         </svg>
-                        <span>Masa Aktif: <span className={`font-semibold ${expiryDetails.className}`}>{expiryDetails.text}</span></span>
+                        <span>Masa Aktif: <span className={`font-semibold text-xs ${expiryDetails.className}`}>{expiryDetails.text}</span></span>
                       </div>
                       
                       {/* Warning Banner jika akan kedaluwarsa */}
                       {expiryDetails.isWarning && (
-                        <div className="p-2 rounded-lg bg-rose-500/10 border border-rose-500/20 text-[9px] text-rose-400 font-medium">
+                        <div className="p-2.5 rounded-xl bg-rose-500/10 border border-rose-500/20 text-xs text-rose-400 font-medium">
                           {expiryDetails.message}
                         </div>
                       )}
@@ -476,9 +485,9 @@ export default function ProfilePage() {
                   )}
                 </div>
                 
-                <div className="flex items-center gap-3">
+                <div className="flex items-center gap-4 sm:justify-center">
                   {/* Lingkaran SVG Neon untuk visual progres kuota */}
-                  <div className="relative w-14 h-14 flex-shrink-0">
+                  <div className="relative w-16 h-16 flex-shrink-0">
                     <svg className="w-full h-full transform -rotate-95" viewBox="0 0 36 36">
                       {/* Background circle */}
                       <circle cx="18" cy="18" r="15.915" fill="none" className="stroke-slate-500/10" strokeWidth="2.8" />
@@ -492,13 +501,13 @@ export default function ProfilePage() {
                         strokeLinecap="round"
                       />
                     </svg>
-                    <span className="absolute inset-0 flex items-center justify-center text-[10px] font-bold text-primary">
+                    <span className="absolute inset-0 flex items-center justify-center text-xs font-bold text-primary">
                       {Math.min(pct, 100)}%
                     </span>
                   </div>
-                  <div className="text-xs text-secondary leading-tight">
-                    <p className="font-semibold">Kapasitas API</p>
-                    <p className="text-[10px] text-muted">Meningkat pesat jika melakukan upgrade ke tier PRO.</p>
+                  <div className="text-xs text-secondary leading-normal space-y-0.5">
+                    <p className="font-bold text-primary text-sm">Kapasitas API</p>
+                    <p className="text-xs text-muted">Meningkat pesat jika melakukan upgrade ke tier PRO.</p>
                   </div>
                 </div>
               </div>
@@ -529,10 +538,19 @@ export default function ProfilePage() {
           </button>
         </div>
 
-        {loadingHistory ? (
-          <div className="bento-card p-12 flex flex-col items-center justify-center">
-            <div className="w-8 h-8 border-2 border-indigo-500 border-t-transparent rounded-full animate-spin mb-3" />
-            <p className="text-xs text-muted">Mengambil data transaksi dari Supabase...</p>
+        {loadingHistory && transactions.length === 0 ? (
+          <div className="bento-card overflow-hidden border border-[var(--border-default)]">
+            <div className="p-6 space-y-4 animate-pulse">
+              {[1, 2, 3].map((i) => (
+                <div key={i} className="flex items-center justify-between gap-4 py-2 border-b border-[var(--border-default)]/40 last:border-0">
+                  <div className="h-4 w-28 bg-slate-200 dark:bg-slate-800 rounded-md" />
+                  <div className="h-4 w-36 bg-slate-200 dark:bg-slate-800 rounded-md" />
+                  <div className="h-4 w-24 bg-slate-200 dark:bg-slate-800 rounded-md" />
+                  <div className="h-5 w-28 bg-slate-200 dark:bg-slate-800 rounded-full" />
+                  <div className="h-6 w-16 bg-slate-200 dark:bg-slate-800 rounded-md" />
+                </div>
+              ))}
+            </div>
           </div>
         ) : transactions.length === 0 ? (
           <div className="bento-card p-16 text-center" style={{ borderColor: 'var(--border-default)' }}>
@@ -551,7 +569,7 @@ export default function ProfilePage() {
                 <thead>
                   <tr className="border-b" style={{ borderColor: 'var(--border-default)', background: 'rgba(255, 255, 255, 0.01)' }}>
                     {['Tanggal', 'Order ID', 'Tipe', 'Item / Paket', 'Nominal', 'Kredit', 'Status', 'Aksi'].map((h) => (
-                      <th key={h} className="px-4 py-4 font-bold uppercase tracking-wider text-[10px] text-secondary whitespace-nowrap">
+                      <th key={h} className="px-4 py-4 font-bold uppercase tracking-wider text-xs text-secondary whitespace-nowrap">
                         {h}
                       </th>
                     ))}

@@ -191,8 +191,8 @@ export default function PreferensiPage() {
         style={{ background: 'var(--border-default)' }}
       />
       <div className="flex justify-between mt-1">
-        <span className="text-[11px] font-medium text-slate-600 dark:text-slate-400">Sensitif (Rendah)</span>
-        <span className="text-[11px] font-medium text-slate-600 dark:text-slate-400">Selektif (Tinggi)</span>
+        <span className="text-xs font-medium text-slate-600 dark:text-slate-400">Sensitif (Rendah)</span>
+        <span className="text-xs font-medium text-slate-600 dark:text-slate-400">Selektif (Tinggi)</span>
       </div>
     </div>
   );
@@ -218,7 +218,7 @@ export default function PreferensiPage() {
           <path strokeLinecap="round" strokeLinejoin="round" d="M19.5 8.25l-7.5 7.5-7.5-7.5" />
         </svg>
       </div>
-      {desc && <p className="text-[11px] font-medium text-slate-600 dark:text-slate-400 mt-1">{desc}</p>}
+      {desc && <p className="text-xs font-medium text-slate-600 dark:text-slate-400 mt-1">{desc}</p>}
     </div>
   );
 
@@ -256,7 +256,7 @@ export default function PreferensiPage() {
   const iconStyle = { color: 'var(--text-muted)' };
 
   return (
-    <div className="animate-fade-in-up w-full space-y-5 lg:space-y-6 pb-10">
+    <div className="w-full space-y-5 lg:space-y-6 pb-10">
 
       {/* ── Header ────────────────────────────────────────────── */}
       <div>
@@ -321,7 +321,7 @@ export default function PreferensiPage() {
         <div className="flex items-center justify-between py-3 border-b" style={{ borderColor: 'var(--border-default)' }}>
           <div>
             <p className="text-sm font-medium" style={{ color: 'var(--text-secondary)' }}>Notifikasi Komentar Baru</p>
-            <p className="text-[11px] mt-0.5" style={{ color: 'var(--text-muted)' }}>
+            <p className="text-xs mt-0.5" style={{ color: 'var(--text-muted)' }}>
               Terima pemberitahuan browser saat ada komentar baru yang masuk
             </p>
           </div>
@@ -335,7 +335,7 @@ export default function PreferensiPage() {
               Pilih Mode Penyaringan Otomatis
             </label>
             {isFeatureDisabled('auto_moderation') && (
-              <Link href="/pricing" className="text-[10px] font-bold text-amber-500 bg-amber-500/10 px-2 py-0.5 rounded border border-amber-500/20 hover:bg-amber-500/20 transition-colors">
+              <Link href="/pricing" className="text-xs font-bold text-amber-500 bg-amber-500/10 px-2.5 py-1 rounded-lg border border-amber-500/20 hover:bg-amber-500/20 transition-colors">
                 Upgrade untuk Aktifkan Otomasi →
               </Link>
             )}
@@ -402,13 +402,13 @@ export default function PreferensiPage() {
                         <span className="w-2.5 h-2.5 rounded-full bg-indigo-600 dark:bg-indigo-400 animate-pulse" />
                       )}
                     </div>
-                    <span className="text-[10px] font-bold px-2 py-0.5 rounded bg-slate-200 text-slate-800 border border-slate-300 dark:bg-slate-800 dark:text-slate-200 dark:border-slate-700 inline-block mb-2">
+                    <span className="text-xs font-semibold px-2 py-0.5 rounded bg-slate-200 text-slate-800 border border-slate-300 dark:bg-slate-800 dark:text-slate-200 dark:border-slate-700 inline-block mb-2">
                       {mode.badge}
                     </span>
                     <p className="text-xs font-medium text-slate-700 dark:text-slate-300 leading-relaxed">{mode.desc}</p>
                   </div>
 
-                  <div className="mt-4 pt-3 border-t border-[var(--border-default)]/60 flex items-center justify-between text-[11px] font-bold text-slate-800 dark:text-slate-200">
+                  <div className="mt-4 pt-3 border-t border-[var(--border-default)]/60 flex items-center justify-between text-xs font-bold text-slate-800 dark:text-slate-200">
                     <span>{isSelected ? 'Mode Aktif Saat Ini' : 'Klik untuk Pilih'}</span>
                   </div>
                 </button>
@@ -440,7 +440,7 @@ export default function PreferensiPage() {
               <div className="flex items-center justify-between border-b pb-3" style={{ borderColor: 'var(--border-default)' }}>
                 <div>
                   <h3 className="text-xs font-bold text-primary uppercase tracking-wider">Kustom Ambang Batas Otomatis (Persentase AI)</h3>
-                  <p className="text-[11px] text-muted mt-0.5">Penyesuaian manual nilai ambang batas probabilitas model ML</p>
+                  <p className="text-xs text-muted mt-0.5">Penyesuaian manual nilai ambang batas probabilitas model ML</p>
                 </div>
               </div>
 
@@ -449,7 +449,7 @@ export default function PreferensiPage() {
                 <div className="flex items-center justify-between">
                   <div>
                     <p className="text-xs font-semibold text-secondary">Penahanan Otomatis ke Folder Tinjauan</p>
-                    <p className="text-[11px] text-muted">Amankan komentar ke folder tinjauan jika kecurigaan AI mencapai batas ini</p>
+                    <p className="text-xs text-muted">Amankan komentar ke folder tinjauan jika kecurigaan AI mencapai batas ini</p>
                   </div>
                   <Toggle checked={isFeatureDisabled('auto_moderation') ? false : autoTahan} onChange={setAutoTahan} disabled={isFeatureDisabled('auto_moderation')} />
                 </div>
@@ -477,7 +477,7 @@ export default function PreferensiPage() {
                 <div className="flex items-center justify-between">
                   <div>
                     <p className="text-xs font-semibold text-secondary">Penghapusan Otomatis Permanen</p>
-                    <p className="text-[11px] text-muted">Langsung hapus dari YouTube jika tingkat keyakinan AI sangat tinggi</p>
+                    <p className="text-xs text-muted">Langsung hapus dari YouTube jika tingkat keyakinan AI sangat tinggi</p>
                   </div>
                   <Toggle checked={isFeatureDisabled('auto_moderation') ? false : autoHapus} onChange={setAutoHapus} disabled={isFeatureDisabled('auto_moderation')} />
                 </div>
@@ -508,7 +508,7 @@ export default function PreferensiPage() {
                     <span className="text-xs font-semibold text-indigo-600 dark:text-indigo-400">Hold: {thresholdHold}% | Reject: {thresholdReject}%</span>
                   </div>
 
-                  <div className="relative h-6 w-full rounded-lg overflow-hidden flex border border-slate-300 dark:border-slate-700/50 text-[10px] font-bold select-none">
+                  <div className="relative h-6 w-full rounded-lg overflow-hidden flex border border-slate-300 dark:border-slate-700/50 text-xs font-bold select-none">
                     <div
                       style={{ width: `${autoTahan ? thresholdHold : autoHapus ? thresholdReject : 100}%` }}
                       className="bg-emerald-500/20 text-emerald-800 dark:text-emerald-300 flex items-center justify-center border-r border-emerald-500/30 transition-all duration-300"
@@ -573,10 +573,10 @@ export default function PreferensiPage() {
               <p className="text-sm font-medium flex items-center gap-1.5" style={{ color: 'var(--text-secondary)' }}>
                 Pembersihan Massal Sekaligus
                 {isFeatureDisabled('bulk_moderation') && (
-                  <Link href="/pricing" className="text-[9px] font-bold text-amber-500 bg-amber-500/10 px-1.5 py-0.5 rounded border border-amber-500/20 hover:bg-amber-500/20 transition-colors cursor-pointer">PRO / ENT Upgrade →</Link>
+                  <Link href="/pricing" className="text-xs font-bold text-amber-500 bg-amber-500/10 px-2 py-0.5 rounded border border-amber-500/20 hover:bg-amber-500/20 transition-colors cursor-pointer">PRO / ENT Upgrade →</Link>
                 )}
               </p>
-              <p className="text-[11px] mt-0.5" style={{ color: 'var(--text-muted)' }}>
+              <p className="text-xs mt-0.5" style={{ color: 'var(--text-muted)' }}>
                 Kirim instruksi penghapusan untuk banyak komentar sekaligus agar sangat menghemat jatah kuota YouTube.
               </p>
             </div>
@@ -597,11 +597,11 @@ export default function PreferensiPage() {
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
-              <p className="text-[10px] font-semibold uppercase" style={{ color: 'var(--color-info-text)' }}>Ambil Data (List)</p>
+              <p className="text-xs font-semibold uppercase" style={{ color: 'var(--color-info-text)' }}>Ambil Data (List)</p>
               <p className="text-xs mt-0.5" style={{ color: 'var(--color-info-text)', opacity: 0.8 }}>1 Unit per request</p>
             </div>
             <div>
-              <p className="text-[10px] font-semibold uppercase" style={{ color: 'var(--color-info-text)' }}>Moderasi (Moderate)</p>
+              <p className="text-xs font-semibold uppercase" style={{ color: 'var(--color-info-text)' }}>Moderasi (Moderate)</p>
               <p className="text-xs mt-0.5" style={{ color: 'var(--color-info-text)', opacity: 0.8 }}>50 Unit per request</p>
             </div>
           </div>
@@ -621,7 +621,7 @@ export default function PreferensiPage() {
               <h2 className="text-sm font-semibold flex items-center gap-2" style={{ color: 'var(--text-primary)' }}>
                 Kunci Akses Mandiri (BYOK)
                 {!byokStatus.isEnterprise && (
-                  <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-amber-100 text-amber-800 border border-amber-300 dark:bg-amber-950/60 dark:text-amber-300 dark:border-amber-700">
+                  <span className="text-xs font-semibold px-2 py-0.5 rounded-full bg-amber-100 text-amber-800 border border-amber-300 dark:bg-amber-950/60 dark:text-amber-300 dark:border-amber-700">
                     Khusus Enterprise
                   </span>
                 )}
@@ -649,7 +649,7 @@ export default function PreferensiPage() {
             <div className="flex items-center gap-3">
               <div>
                 <p className="text-xs font-semibold text-slate-800 dark:text-slate-200">Fitur Terkunci untuk Paket Enterprise</p>
-                <p className="text-[11px] text-slate-600 dark:text-slate-400 mt-0.5">Tingkatkan ke Paket Enterprise untuk mengaktifkan pembersihan otomatis bebas limit menggunakan API Key pribadi.</p>
+                <p className="text-xs text-slate-600 dark:text-slate-400 mt-0.5">Tingkatkan ke Paket Enterprise untuk mengaktifkan pembersihan otomatis bebas limit menggunakan API Key pribadi.</p>
               </div>
             </div>
             <Link
@@ -669,9 +669,9 @@ export default function PreferensiPage() {
                   <div>
                     <p className="text-xs font-bold text-emerald-800 dark:text-emerald-300 flex items-center gap-2">
                       API Key Pribadi Aktif
-                      <code className="px-2 py-0.5 bg-emerald-100 text-emerald-900 border border-emerald-300/80 dark:bg-emerald-900/60 dark:text-emerald-200 dark:border-transparent rounded text-[11px] font-semibold">{byokStatus.maskedKey}</code>
+                      <code className="px-2 py-0.5 bg-emerald-100 text-emerald-900 border border-emerald-300/80 dark:bg-emerald-900/60 dark:text-emerald-200 dark:border-transparent rounded text-xs font-mono font-semibold">{byokStatus.maskedKey}</code>
                     </p>
-                    <p className="text-[11px] text-slate-600 dark:text-slate-400 mt-0.5">Pemotongan kuota server di-bypass. Seluruh request YouTube API akun Anda kini menggunakan kuota proyek GCP pribadi Anda (Bebas Limit Server).</p>
+                    <p className="text-xs text-slate-600 dark:text-slate-400 mt-0.5">Pemotongan kuota server di-bypass. Seluruh request YouTube API akun Anda kini menggunakan kuota proyek GCP pribadi Anda (Bebas Limit Server).</p>
                   </div>
                 </div>
                 <button

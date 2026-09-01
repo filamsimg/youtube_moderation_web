@@ -208,10 +208,10 @@ export default function QuotaIndicator({ compact = false }) {
             {trialQuota > 0 && (
               <div className="flex items-center justify-between text-[9px] sm:text-[10px]">
                 <span className="text-muted flex items-center gap-1">
-                  <span className="w-1.5 h-1.5 rounded-full bg-slate-400 inline-block" />
-                  Trial
+                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 inline-block" />
+                  Dasar / Free <span className="text-[8px] text-emerald-600 dark:text-emerald-400 font-medium">(Permanen)</span>
                 </span>
-                <span className="text-slate-400 font-semibold">{trialQuota.toLocaleString('id-ID')}</span>
+                <span className="text-emerald-600 dark:text-emerald-400 font-semibold">{trialQuota.toLocaleString('id-ID')}</span>
               </div>
             )}
           </div>

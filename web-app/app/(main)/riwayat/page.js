@@ -12,14 +12,17 @@ import EmptyState from '@/components/ui/EmptyState';
 import { TableSkeleton } from '@/components/ui/Skeleton';
 import { formatDateTime } from '@/lib/utils';
 
+// Client-side In-Memory Cache for User History
+let cachedUserRiwayat = null;
+
 export default function RiwayatPage() {
   const { data: session } = useSession();
   const toast = useToast();
   const { isFeatureDisabled } = useQuota();
   const [searchQuery, setSearchQuery] = useState('');
   const [filterAction, setFilterAction] = useState('semua');
-  const [activities, setActivities] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const [activities, setActivities] = useState(cachedUserRiwayat || []);
+  const [loading, setLoading] = useState(!cachedUserRiwayat);
 
   // Pagination states
   const [currentPage, setCurrentPage] = useState(1);
@@ -30,9 +33,11 @@ export default function RiwayatPage() {
     setCurrentPage(1);
   }, [searchQuery, filterAction]);
 
-  const loadHistory = useCallback(async () => {
+  const loadHistory = useCallback(async (isSilent = false) => {
     if (!session?.user?.email) return;
-    setLoading(true);
+    if (!isSilent && !cachedUserRiwayat) {
+      setLoading(true);
+    }
     const data = await historyService.getHistory(session.user.email);
     const mapped = data.map(item => ({
       ...item,
@@ -43,13 +48,17 @@ export default function RiwayatPage() {
       sentimentScore: item.sentiment_score,
       timestamp:   item.created_at,
     }));
+    cachedUserRiwayat = mapped;
     setActivities(mapped);
     setLoading(false);
   }, [session?.user?.email]);
 
   useEffect(() => {
-    if (session?.user?.email) loadHistory();
-    else setLoading(false);
+    if (session?.user?.email) {
+      loadHistory(!!cachedUserRiwayat);
+    } else {
+      setLoading(false);
+    }
   }, [session?.user?.email, loadHistory]);
 
   const handleExportCSV = () => {
@@ -124,7 +133,7 @@ export default function RiwayatPage() {
   const totalDitahan = activities.filter(a => a.action === 'heldForReview').length;
 
   return (
-    <div className="animate-fade-in-up space-y-5 pb-10">
+    <div className="space-y-5 pb-10">
 
       {/* ── Header ──────────────────────────────────────────── */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
@@ -169,30 +178,32 @@ export default function RiwayatPage() {
             <svg className="w-5 h-5 text-amber-400" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" d="M3.75 3v11.25A2.25 2.25 0 006 16.5h2.25M3.75 3h-1.5m1.5 0h16.5m0 0h1.5m-1.5 0v11.25A2.25 2.25 0 0118 16.5h-2.25m-7.5 0h7.5m-7.5 0l-1 3m8.5-3l1 3m0 0l.5 1.5m-.5-1.5h-9.5m0 0l-.5 1.5" />
             </svg>
-            <p className="text-xs font-semibold" style={{ color: 'var(--text-secondary)' }}>Statistik Riwayat</p>
+            <span className="text-xs font-semibold uppercase tracking-wider" style={{ color: 'var(--text-secondary)' }}>
+              Ringkasan Tindakan
+            </span>
           </div>
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 text-center">
-            <div className="p-3 rounded-xl" style={{ background: 'var(--color-success-bg)', border: '1px solid var(--color-success-border)' }}>
-              <p className="text-lg font-bold" style={{ color: 'var(--color-success-text)' }}>{totalAman}</p>
-              <p className="text-[10px] mt-0.5" style={{ color: 'var(--color-success-text)' }}>Aman</p>
+          <div className="grid grid-cols-3 gap-3 text-center">
+            <div className="p-3 rounded-xl bg-emerald-500/10 border border-emerald-500/20">
+              <p className="text-xl font-bold text-emerald-400">{totalAman}</p>
+              <p className="text-xs text-emerald-600 dark:text-emerald-400/80 mt-0.5 font-medium">Dipublikasikan</p>
             </div>
-            <div className="p-3 rounded-xl" style={{ background: 'var(--color-warning-bg)', border: '1px solid var(--color-warning-border)' }}>
-              <p className="text-lg font-bold" style={{ color: 'var(--color-warning-text)' }}>{totalDitahan}</p>
-              <p className="text-[10px] mt-0.5" style={{ color: 'var(--color-warning-text)' }}>Ditahan</p>
+            <div className="p-3 rounded-xl bg-rose-500/10 border border-rose-500/20">
+              <p className="text-xl font-bold text-rose-400">{totalDitolak}</p>
+              <p className="text-xs text-rose-600 dark:text-rose-400/80 mt-0.5 font-medium">Dihapus / Ditolak</p>
             </div>
-            <div className="p-3 rounded-xl" style={{ background: 'var(--color-danger-bg)', border: '1px solid var(--color-danger-border)' }}>
-              <p className="text-lg font-bold" style={{ color: 'var(--color-danger-text)' }}>{totalDitolak}</p>
-              <p className="text-[10px] mt-0.5" style={{ color: 'var(--color-danger-text)' }}>Ditolak</p>
+            <div className="p-3 rounded-xl bg-amber-500/10 border border-amber-500/20">
+              <p className="text-xl font-bold text-amber-400">{totalDitahan}</p>
+              <p className="text-xs text-amber-600 dark:text-amber-400/80 mt-0.5 font-medium">Ditahan Review</p>
             </div>
           </div>
         </div>
       )}
 
-      {/* ── Search + Filters ──────────────────────────────────── */}
-      <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2">
-        <div className="flex-1 relative">
+      {/* ── Search & Filter ──────────────────────────────────── */}
+      <div className="flex flex-col sm:flex-row gap-3">
+        <div className="relative flex-1">
           <svg
-            className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2"
+            className="w-4 h-4 absolute left-3.5 top-1/2 -translate-y-1/2"
             style={{ color: 'var(--text-muted)' }}
             fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor"
           >
@@ -200,7 +211,7 @@ export default function RiwayatPage() {
           </svg>
           <input
             type="text"
-            placeholder="Cari komentar, pengguna..."
+            placeholder="Cari komentar, judul video, atau pengguna..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             className="input-dark w-full"
@@ -235,7 +246,7 @@ export default function RiwayatPage() {
       </div>
 
       {/* ── List / Loading / Empty ────────────────────────────── */}
-      {loading ? (
+      {loading && activities.length === 0 ? (
         <TableSkeleton rows={6} cols={4} />
       ) : filtered.length === 0 ? (
         <EmptyState
