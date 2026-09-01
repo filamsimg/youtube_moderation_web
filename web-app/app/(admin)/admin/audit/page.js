@@ -119,69 +119,82 @@ export default function AdminAuditPage() {
               </tr>
             </thead>
             <tbody className="divide-y divide-[var(--border-default)]">
-              {logs.map((log) => (
-                <React.Fragment key={log.id}>
-                  <tr className="hover:bg-muted/5 transition-colors">
-                    <td className="p-4 font-bold text-primary">{log.admin_email}</td>
-                    <td className="p-4">
-                      <StatusBadge type="audit_action" value={log.action} label={translateAction(log.action)} />
-                    </td>
-                    <td className="p-4 text-secondary font-medium">{log.target_email || '-'}</td>
-                    <td className="p-4 text-muted">{log.ip_address || '127.0.0.1'}</td>
-                    <td className="p-4 text-muted">
-                      {formatDateTime(log.created_at)}
-                    </td>
-                    <td className="p-4 text-center">
-                      <button
-                        onClick={() => toggleExpandLog(log.id)}
-                        className="p-1 rounded hover:bg-muted text-muted hover:text-rose-500 transition-colors cursor-pointer"
-                        title="Lihat Perubahan"
-                      >
-                        {expandedLogId === log.id ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
-                      </button>
-                    </td>
+              {loading ? (
+                Array.from({ length: 6 }).map((_, idx) => (
+                  <tr key={idx} className="animate-pulse">
+                    <td className="p-4"><div className="h-4 w-32 bg-slate-200 dark:bg-slate-800 rounded-md" /></td>
+                    <td className="p-4"><div className="h-5 w-24 bg-slate-200 dark:bg-slate-800 rounded-full" /></td>
+                    <td className="p-4"><div className="h-4 w-28 bg-slate-200 dark:bg-slate-800 rounded-md" /></td>
+                    <td className="p-4"><div className="h-4 w-20 bg-slate-200 dark:bg-slate-800 rounded-md" /></td>
+                    <td className="p-4"><div className="h-4 w-24 bg-slate-200 dark:bg-slate-800 rounded-md" /></td>
+                    <td className="p-4 text-center"><div className="h-6 w-6 bg-slate-200 dark:bg-slate-800 rounded-md mx-auto" /></td>
                   </tr>
-                  
-                  {/* Expanded Detail Panel */}
-                  {expandedLogId === log.id && (
-                    <tr className="bg-muted/10">
-                      <td colSpan="6" className="p-4">
-                        <div className="p-4 rounded-xl border border-[var(--border-default)] bg-card text-xs space-y-3 shadow-inner">
-                          <h4 className="font-bold text-primary border-b pb-1.5 border-[var(--border-default)]">
-                            Detail Perubahan Konfigurasi {log.details?.package_id ? `(Package ID: ${log.details.package_id})` : ''}
-                          </h4>
-                          
-                          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                            {/* Before State */}
-                            <div className="space-y-1">
-                              <p className="font-semibold text-rose-600 dark:text-rose-400">Sebelumnya (Sebelum Perubahan):</p>
-                              <pre className="p-2.5 rounded-lg bg-page text-[10px] text-muted overflow-auto max-h-[150px]">
-                                {log.details?.changes?.before 
-                                  ? JSON.stringify(log.details.changes.before, null, 2) 
-                                  : log.details?.before 
-                                    ? JSON.stringify(log.details.before, null, 2) 
-                                    : 'Tidak ada data'}
-                              </pre>
-                            </div>
-
-                            {/* After State */}
-                            <div className="space-y-1">
-                              <p className="font-semibold text-emerald-600 dark:text-emerald-400">Sesudahnya (Setelah Perubahan):</p>
-                              <pre className="p-2.5 rounded-lg bg-page text-[10px] text-secondary overflow-auto max-h-[150px]">
-                                {log.details?.changes?.after 
-                                  ? JSON.stringify(log.details.changes.after, null, 2) 
-                                  : log.details?.after 
-                                    ? JSON.stringify(log.details.after, null, 2) 
-                                    : 'Tidak ada data'}
-                              </pre>
-                            </div>
-                          </div>
-                        </div>
+                ))
+              ) : (
+                logs.map((log) => (
+                  <React.Fragment key={log.id}>
+                    <tr className="hover:bg-muted/5 transition-colors">
+                      <td className="p-4 font-bold text-primary">{log.admin_email}</td>
+                      <td className="p-4">
+                        <StatusBadge type="audit_action" value={log.action} label={translateAction(log.action)} />
+                      </td>
+                      <td className="p-4 text-secondary font-medium">{log.target_email || '-'}</td>
+                      <td className="p-4 text-muted">{log.ip_address || '127.0.0.1'}</td>
+                      <td className="p-4 text-muted">
+                        {formatDateTime(log.created_at)}
+                      </td>
+                      <td className="p-4 text-center">
+                        <button
+                          onClick={() => toggleExpandLog(log.id)}
+                          className="p-1 rounded hover:bg-muted text-muted hover:text-rose-500 transition-colors cursor-pointer"
+                          title="Lihat Perubahan"
+                        >
+                          {expandedLogId === log.id ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                        </button>
                       </td>
                     </tr>
-                  )}
-                </React.Fragment>
-              ))}
+                  
+                    {/* Expanded Detail Panel */}
+                    {expandedLogId === log.id && (
+                      <tr className="bg-muted/10">
+                        <td colSpan="6" className="p-4">
+                          <div className="p-4 rounded-xl border border-[var(--border-default)] bg-card text-xs space-y-3 shadow-inner">
+                            <h4 className="font-bold text-primary border-b pb-1.5 border-[var(--border-default)]">
+                              Detail Perubahan Konfigurasi {log.details?.package_id ? `(Package ID: ${log.details.package_id})` : ''}
+                            </h4>
+                            
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                              {/* Before State */}
+                              <div className="space-y-1">
+                                <p className="font-semibold text-rose-600 dark:text-rose-400">Sebelumnya (Sebelum Perubahan):</p>
+                                <pre className="p-2.5 rounded-lg bg-page text-[10px] text-muted overflow-auto max-h-[150px]">
+                                  {log.details?.changes?.before 
+                                    ? JSON.stringify(log.details.changes.before, null, 2) 
+                                    : log.details?.before 
+                                      ? JSON.stringify(log.details.before, null, 2) 
+                                      : 'Tidak ada data'}
+                                </pre>
+                              </div>
+
+                              {/* After State */}
+                              <div className="space-y-1">
+                                <p className="font-semibold text-emerald-600 dark:text-emerald-400">Sesudahnya (Setelah Perubahan):</p>
+                                <pre className="p-2.5 rounded-lg bg-page text-[10px] text-secondary overflow-auto max-h-[150px]">
+                                  {log.details?.changes?.after 
+                                    ? JSON.stringify(log.details.changes.after, null, 2) 
+                                    : log.details?.after 
+                                      ? JSON.stringify(log.details.after, null, 2) 
+                                      : 'Tidak ada data'}
+                                </pre>
+                              </div>
+                            </div>
+                          </div>
+                        </td>
+                      </tr>
+                    )}
+                  </React.Fragment>
+                ))
+              )}
               {logs.length === 0 && !loading && (
                 <tr>
                   <td colSpan="6">

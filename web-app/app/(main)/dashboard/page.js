@@ -14,7 +14,7 @@ import { historyService } from '@/services/historyService';
 import { useYouTube } from '@/contexts/YouTubeContext';
 import { useTheme } from '@/components/ThemeProvider';
 import StatCard from '@/components/ui/StatCard';
-import LoadingState from '@/components/ui/LoadingState';
+import { CreatorDashboardSkeleton } from '@/components/ui/Skeleton';
 import TrialBanner from '@/components/TrialBanner';
 
 // ── Dark Tooltip untuk Pie Chart ─────────────────────────────
@@ -167,7 +167,7 @@ export default function DashboardPage() {
   const axisTick = { fontSize: 10, fill: '#475569' };
 
   if (loading) {
-    return <LoadingState variant="logo" message="Sinkronisasi data dashboard..." className="h-64" />;
+    return <CreatorDashboardSkeleton />;
   }
 
   return (

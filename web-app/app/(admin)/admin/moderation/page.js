@@ -117,58 +117,75 @@ export default function AdminModerationPage() {
               </tr>
             </thead>
             <tbody className="divide-y divide-[var(--border-default)]">
-              {history.map((log) => (
-                <tr key={log.id} className="hover:bg-muted/10 transition-colors">
-                  <td className="p-4 font-semibold text-secondary truncate max-w-[150px]" title={log.user_email}>
-                    {log.user_email}
-                  </td>
-                  <td className="p-4 space-y-1">
-                    <p className="font-bold text-primary">{log.author}</p>
-                    <p className="text-secondary whitespace-normal break-all line-clamp-3 leading-relaxed" title={log.comment_text}>
-                      {log.comment_text}
-                    </p>
-                  </td>
-                  <td className="p-4 text-muted truncate max-w-[150px]" title={log.video_title}>
-                    {log.video_title || '-'}
-                  </td>
-                  <td className="p-4">
-                    <div className="space-y-1">
-                      <span className={`px-2 py-0.5 rounded-full font-bold text-[9px] uppercase ${
-                        log.ai_label === 'Spam' ? 'bg-rose-500/10 text-rose-600 dark:text-rose-400 border border-rose-500/20 animate-pulse' : 'bg-emerald-50 text-emerald-600 dark:bg-emerald-500/10 dark:text-emerald-300'
-                      }`}>
-                        {log.ai_label === 'Spam' ? 'Spam Judol' : 'Normal'}
-                      </span>
-                      <p className="text-[10px] text-muted">
-                        {(log.ai_confidence * 100).toFixed(1)}% yakin
+              {loading ? (
+                Array.from({ length: 6 }).map((_, idx) => (
+                  <tr key={idx} className="animate-pulse">
+                    <td className="p-4"><div className="h-4 w-32 bg-slate-200 dark:bg-slate-800 rounded-md" /></td>
+                    <td className="p-4 space-y-1">
+                      <div className="h-4 w-28 bg-slate-200 dark:bg-slate-800 rounded-md" />
+                      <div className="h-3 w-48 bg-slate-200 dark:bg-slate-800 rounded-md" />
+                    </td>
+                    <td className="p-4"><div className="h-4 w-28 bg-slate-200 dark:bg-slate-800 rounded-md" /></td>
+                    <td className="p-4"><div className="h-5 w-20 bg-slate-200 dark:bg-slate-800 rounded-full" /></td>
+                    <td className="p-4"><div className="h-4 w-12 bg-slate-200 dark:bg-slate-800 rounded-md" /></td>
+                    <td className="p-4"><div className="h-5 w-20 bg-slate-200 dark:bg-slate-800 rounded-full" /></td>
+                    <td className="p-4"><div className="h-4 w-24 bg-slate-200 dark:bg-slate-800 rounded-md" /></td>
+                  </tr>
+                ))
+              ) : (
+                history.map((log) => (
+                  <tr key={log.id} className="hover:bg-muted/10 transition-colors">
+                    <td className="p-4 font-semibold text-secondary truncate max-w-[150px]" title={log.user_email}>
+                      {log.user_email}
+                    </td>
+                    <td className="p-4 space-y-1">
+                      <p className="font-bold text-primary">{log.author}</p>
+                      <p className="text-secondary whitespace-normal break-all line-clamp-3 leading-relaxed" title={log.comment_text}>
+                        {log.comment_text}
                       </p>
-                    </div>
-                  </td>
-                  <td className="p-4">
-                    {log.sentiment ? (
-                      <span className={`px-1.5 py-0.5 rounded text-[9px] font-medium ${
-                        log.sentiment === 'Positif' ? 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400' :
-                        log.sentiment === 'Negatif' ? 'bg-rose-500/10 text-rose-600 dark:text-rose-400' :
-                        'bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-400'
+                    </td>
+                    <td className="p-4 text-muted truncate max-w-[150px]" title={log.video_title}>
+                      {log.video_title || '-'}
+                    </td>
+                    <td className="p-4">
+                      <div className="space-y-1">
+                        <span className={`px-2 py-0.5 rounded-full font-bold text-[9px] uppercase ${
+                          log.ai_label === 'Spam' ? 'bg-rose-500/10 text-rose-600 dark:text-rose-400 border border-rose-500/20 animate-pulse' : 'bg-emerald-50 text-emerald-600 dark:bg-emerald-500/10 dark:text-emerald-300'
+                        }`}>
+                          {log.ai_label === 'Spam' ? 'Spam Judol' : 'Normal'}
+                        </span>
+                        <p className="text-[10px] text-muted">
+                          {(log.ai_confidence * 100).toFixed(1)}% yakin
+                        </p>
+                      </div>
+                    </td>
+                    <td className="p-4">
+                      {log.sentiment ? (
+                        <span className={`px-1.5 py-0.5 rounded text-[9px] font-medium ${
+                          log.sentiment === 'Positif' ? 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400' :
+                          log.sentiment === 'Negatif' ? 'bg-rose-500/10 text-rose-600 dark:text-rose-400' :
+                          'bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-400'
+                        }`}>
+                          {log.sentiment}
+                        </span>
+                      ) : '-'}
+                    </td>
+                    <td className="p-4">
+                      <span className={`px-2 py-0.5 rounded-full font-bold text-[9px] uppercase ${
+                        log.action === 'published' ? 'bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300' :
+                        log.action === 'heldForReview' ? 'bg-amber-100 text-amber-800 dark:bg-amber-950 dark:text-amber-300' :
+                        'bg-rose-100 text-rose-800 dark:bg-rose-950 dark:text-rose-300'
                       }`}>
-                        {log.sentiment}
+                        {log.action === 'published' ? 'Published' :
+                         log.action === 'heldForReview' ? 'Held Review' : 'Deleted/Rejected'}
                       </span>
-                    ) : '-'}
-                  </td>
-                  <td className="p-4">
-                    <span className={`px-2 py-0.5 rounded-full font-bold text-[9px] uppercase ${
-                      log.action === 'published' ? 'bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300' :
-                      log.action === 'heldForReview' ? 'bg-amber-100 text-amber-800 dark:bg-amber-950 dark:text-amber-300' :
-                      'bg-rose-100 text-rose-800 dark:bg-rose-950 dark:text-rose-300'
-                    }`}>
-                      {log.action === 'published' ? 'Published' :
-                       log.action === 'heldForReview' ? 'Held Review' : 'Deleted/Rejected'}
-                    </span>
-                  </td>
-                  <td className="p-4 text-muted whitespace-nowrap">
-                    {log.created_at ? new Date(log.created_at).toLocaleString('id-ID', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' }) : '-'}
-                  </td>
-                </tr>
-              ))}
+                    </td>
+                    <td className="p-4 text-muted whitespace-nowrap">
+                      {log.created_at ? new Date(log.created_at).toLocaleString('id-ID', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' }) : '-'}
+                    </td>
+                  </tr>
+                ))
+              )}
               {history.length === 0 && !loading && (
                 <tr>
                   <td colSpan="7" className="p-8 text-center text-muted text-xs">

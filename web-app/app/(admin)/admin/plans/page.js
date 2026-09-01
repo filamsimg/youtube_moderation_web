@@ -268,92 +268,84 @@ export default function AdminPlansPage() {
 
       {/* Main Table Content */}
       <div className="bg-card border border-[var(--border-default)] rounded-2xl shadow-sm overflow-hidden">
-        {loading ? (
-          <div className="flex flex-col items-center justify-center py-16 space-y-4">
-            <div className="w-10 h-10 border-4 border-rose-500/30 border-t-rose-600 rounded-full animate-spin" />
-            <p className="text-xs text-muted">Mengambil database paket pricing...</p>
-          </div>
-        ) : filteredPackages.length === 0 ? (
-          <div className="text-center py-16 text-muted text-xs space-y-2">
-            <AlertCircle className="w-8 h-8 text-slate-400 mx-auto" />
-            <p>Belum ada data paket langganan di database.</p>
-          </div>
-        ) : (
-          <div className="overflow-x-auto">
-            <table className="w-full text-left border-collapse text-xs">
-              <thead>
-                <tr className="border-b bg-slate-500/5" style={{ borderColor: 'var(--border-default)' }}>
-                  <th className="p-4 font-bold text-secondary uppercase tracking-wider text-[10px]">ID Paket / Key</th>
-                  <th className="p-4 font-bold text-secondary uppercase tracking-wider text-[10px]">Nama</th>
-                  <th className="p-4 font-bold text-secondary uppercase tracking-wider text-[10px]">Tier</th>
-                  <th className="p-4 font-bold text-secondary uppercase tracking-wider text-[10px]">Harga</th>
-                  <th className="p-4 font-bold text-secondary uppercase tracking-wider text-[10px]">Jatah Kuota</th>
-                  <th className="p-4 font-bold text-secondary uppercase tracking-wider text-[10px]">Durasi</th>
-                  <th className="p-4 font-bold text-secondary uppercase tracking-wider text-[10px]">Badge</th>
-                  <th className="p-4 font-bold text-secondary uppercase tracking-wider text-[10px] text-center">Status</th>
-                  <th className="p-4 font-bold text-secondary uppercase tracking-wider text-[10px] text-right">Aksi</th>
+        <div className="overflow-x-auto">
+          <table className="w-full text-left border-collapse text-xs">
+            <thead>
+              <tr className="border-b bg-slate-500/5" style={{ borderColor: 'var(--border-default)' }}>
+                <th className="p-4 font-bold text-secondary uppercase tracking-wider text-[10px]">ID Paket / Key</th>
+                <th className="p-4 font-bold text-secondary uppercase tracking-wider text-[10px]">Nama</th>
+                <th className="p-4 font-bold text-secondary uppercase tracking-wider text-[10px]">Tier</th>
+                <th className="p-4 font-bold text-secondary uppercase tracking-wider text-[10px]">Harga</th>
+                <th className="p-4 font-bold text-secondary uppercase tracking-wider text-[10px]">Jatah Kuota</th>
+                <th className="p-4 font-bold text-secondary uppercase tracking-wider text-[10px]">Durasi</th>
+                <th className="p-4 font-bold text-secondary uppercase tracking-wider text-[10px]">Badge</th>
+                <th className="p-4 font-bold text-secondary uppercase tracking-wider text-[10px] text-center">Status</th>
+                <th className="p-4 font-bold text-secondary uppercase tracking-wider text-[10px] text-right">Aksi</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-[var(--border-default)]/60">
+              {loading ? (
+                Array.from({ length: 4 }).map((_, idx) => (
+                  <tr key={idx} className="animate-pulse">
+                    <td className="p-4"><div className="h-4 w-28 bg-slate-200 dark:bg-slate-800 rounded-md" /></td>
+                    <td className="p-4"><div className="h-4 w-32 bg-slate-200 dark:bg-slate-800 rounded-md" /></td>
+                    <td className="p-4"><div className="h-4 w-16 bg-slate-200 dark:bg-slate-800 rounded-md" /></td>
+                    <td className="p-4"><div className="h-4 w-20 bg-slate-200 dark:bg-slate-800 rounded-md" /></td>
+                    <td className="p-4"><div className="h-4 w-24 bg-slate-200 dark:bg-slate-800 rounded-md" /></td>
+                    <td className="p-4"><div className="h-4 w-16 bg-slate-200 dark:bg-slate-800 rounded-md" /></td>
+                    <td className="p-4"><div className="h-4 w-16 bg-slate-200 dark:bg-slate-800 rounded-full" /></td>
+                    <td className="p-4 text-center"><div className="h-5 w-14 bg-slate-200 dark:bg-slate-800 rounded-full mx-auto" /></td>
+                    <td className="p-4 text-right"><div className="h-6 w-16 bg-slate-200 dark:bg-slate-800 rounded-md ml-auto" /></td>
+                  </tr>
+                ))
+              ) : filteredPackages.length === 0 ? (
+                <tr>
+                  <td colSpan="9" className="text-center py-16 text-muted text-xs">
+                    <AlertCircle className="w-8 h-8 text-slate-400 mx-auto mb-2" />
+                    Belum ada data paket langganan di database.
+                  </td>
                 </tr>
-              </thead>
-              <tbody className="divide-y divide-[var(--border-default)]/60">
-                {filteredPackages.map((pkg) => (
+              ) : (
+                filteredPackages.map((pkg) => (
                   <tr key={pkg.id} className="hover:bg-card-hover/20 transition-colors">
                     <td className="p-4 font-semibold text-primary">{pkg.id}</td>
-                    <td className="p-4 font-semibold text-primary">{pkg.name}</td>
+                    <td className="p-4 font-bold text-primary">{pkg.name}</td>
                     <td className="p-4">
-                      <span className={`px-2.5 py-0.5 rounded-full font-bold text-[9px] ${
+                      <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${
                         pkg.tier === 'FREE' ? 'bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-300' :
-                        pkg.tier === 'PRO' ? 'bg-indigo-50 text-indigo-600 dark:bg-indigo-500/10 dark:text-indigo-300 border border-indigo-500/10' :
-                        'bg-purple-50 text-purple-600 dark:bg-purple-500/10 dark:text-purple-300 border border-purple-500/10'
+                        pkg.tier === 'PRO' ? 'bg-indigo-50 text-indigo-600 dark:bg-indigo-500/10 dark:text-indigo-300' :
+                        'bg-emerald-50 text-emerald-600 dark:bg-emerald-500/10 dark:text-emerald-300'
                       }`}>
                         {pkg.tier}
                       </span>
                     </td>
-                    <td className="p-4 text-primary font-bold">
-                      {pkg.price === 0 ? 'Gratis' : formatIDR(pkg.price)}
-                      {pkg.original_price && (
-                        <div className="text-[10px] text-dimmed line-through font-normal">
-                           {formatIDR(pkg.original_price)}
-                        </div>
-                      )}
-                    </td>
-                    <td className="p-4 text-secondary font-medium">
-                      {pkg.tier === 'ENTERPRISE' ? (
-                        <div className="flex flex-col">
-                          <span className="text-primary font-bold">
-                            {pkg.quota_units.toLocaleString('id-ID')} unit
-                          </span>
-                          <span className="text-[10px] text-emerald-600 dark:text-emerald-400 font-semibold">
-                            + BYOK Opsional
-                          </span>
-                        </div>
-                      ) : (
-                        `${pkg.quota_units.toLocaleString('id-ID')} unit`
-                      )}
-                    </td>
-                    <td className="p-4 text-secondary font-medium">
-                      {pkg.duration_days} Hari
-                    </td>
-                    <td className="p-4 text-secondary font-medium">
+                    <td className="p-4 font-semibold text-primary">{formatIDR(pkg.price)}</td>
+                    <td className="p-4 text-secondary">{pkg.quota_units.toLocaleString('id-ID')} unit</td>
+                    <td className="p-4 text-muted">{pkg.duration_days} hari</td>
+                    <td className="p-4">
                       {pkg.badge ? (
-                        <span className="px-2 py-0.5 rounded-md bg-slate-100 dark:bg-slate-800 font-semibold border border-slate-200 dark:border-slate-700 text-[10px]">
+                        <span className="text-[9px] font-bold px-2 py-0.5 rounded-full bg-rose-500/10 text-rose-600 dark:text-rose-400 border border-rose-500/20">
                           {pkg.badge}
                         </span>
-                      ) : '-'}
+                      ) : (
+                        <span className="text-muted text-[10px]">-</span>
+                      )}
                     </td>
                     <td className="p-4 text-center">
-                      <span className={`inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-bold ${
+                      <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-semibold ${
                         pkg.is_active
-                          ? 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20'
-                          : 'bg-rose-500/10 text-rose-600 dark:text-rose-400 border border-rose-500/20'
+                          ? 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400'
+                          : 'bg-slate-100 text-slate-500 dark:bg-slate-800 dark:text-slate-400'
                       }`}>
+                        <span className={`w-1.5 h-1.5 rounded-full ${pkg.is_active ? 'bg-emerald-500' : 'bg-slate-400'}`} />
                         {pkg.is_active ? 'Aktif' : 'Nonaktif'}
                       </span>
                     </td>
                     <td className="p-4 text-right">
-                      <div className="inline-flex gap-2">
+                      <div className="flex items-center justify-end gap-1.5">
                         <button
                           onClick={() => handleOpenEdit(pkg)}
-                          className="p-1.5 rounded-lg border border-[var(--border-default)] hover:bg-slate-100 dark:hover:bg-slate-800 text-secondary hover:text-primary transition-all cursor-pointer"
+                          className="p-1.5 rounded-lg border border-[var(--border-default)] hover:bg-rose-500/5 hover:border-rose-500/30 text-rose-500 transition-colors"
                           title="Edit Paket"
                         >
                           <Edit2 className="w-3.5 h-3.5" />
@@ -361,7 +353,7 @@ export default function AdminPlansPage() {
                         {isSuperAdmin && (
                           <button
                             onClick={() => handleOpenDelete(pkg)}
-                            className="p-1.5 rounded-lg border border-rose-500/20 hover:bg-rose-500/10 text-rose-600 dark:text-rose-400 transition-all cursor-pointer"
+                            className="p-1.5 rounded-lg border border-[var(--border-default)] hover:bg-rose-500/10 text-rose-600 transition-colors"
                             title="Hapus Paket"
                           >
                             <Trash2 className="w-3.5 h-3.5" />
@@ -370,11 +362,11 @@ export default function AdminPlansPage() {
                       </div>
                     </td>
                   </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        )}
+                ))
+              )}
+            </tbody>
+          </table>
+        </div>
       </div>
 
       {/* === MODAL TAMBAH/EDIT PAKET === */}

@@ -263,69 +263,83 @@ export default function AdminUsersPage() {
               </tr>
             </thead>
             <tbody className="divide-y divide-[var(--border-default)]">
-              {users.map((user) => (
-                <tr key={user.email} className={`hover:bg-muted/10 transition-colors ${!user.is_active ? 'opacity-60 bg-rose-500/5' : ''}`}>
-                  <td className="p-4 font-bold text-primary">{user.email}</td>
-                  <td className="p-4">
-                    <StatusBadge type="role" value={user.role} />
-                  </td>
-                  <td className="p-4">
-                    <StatusBadge type="tier" value={user.tier} />
-                  </td>
-                  <td className="p-4 text-secondary font-medium">
-                    {user.has_byok ? (
-                      <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-lg bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 font-semibold border border-emerald-500/20 text-[10px]">
-                        BYOK Mandiri (GCP)
-                      </span>
-                    ) : (
-                      `${user.subscription_quota.toLocaleString()} / ${user.trial_quota.toLocaleString()} u`
-                    )}
-                  </td>
-                  <td className="p-4 text-muted">
-                    {user.quota_expiry ? new Date(user.quota_expiry).toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' }) : 'Tidak Ada'}
-                  </td>
-                  <td className="p-4">
-                    {user.is_active ? (
-                      <span className="flex items-center gap-1 text-emerald-600 dark:text-emerald-400 font-bold text-[10px]">
-                        <CheckCircle className="w-3.5 h-3.5" />
-                        AKTIF
-                      </span>
-                    ) : (
-                      <span className="flex items-center gap-1 text-rose-600 dark:text-rose-400 font-bold text-[10px]">
-                        <ShieldAlert className="w-3.5 h-3.5 animate-pulse" />
-                        SUSPENDED
-                      </span>
-                    )}
-                  </td>
-                  <td className="p-4">
-                    <div className="flex items-center justify-center gap-2">
-                      {/* Button Edit */}
-                      <button
-                        onClick={() => openEditModal(user)}
-                        disabled={user.role === 'superadmin' && currentAdminRole !== 'superadmin'}
-                        className="p-1.5 rounded-lg border border-[var(--border-default)] hover:bg-rose-500/5 hover:border-rose-500/30 text-rose-500 transition-colors disabled:opacity-30 disabled:pointer-events-none cursor-pointer"
-                        title="Edit Profil/Kuota"
-                      >
-                        <Edit3 className="w-3.5 h-3.5" />
-                      </button>
+              {loading ? (
+                Array.from({ length: 6 }).map((_, idx) => (
+                  <tr key={idx} className="animate-pulse">
+                    <td className="p-4"><div className="h-4 w-36 bg-slate-200 dark:bg-slate-800 rounded-md" /></td>
+                    <td className="p-4"><div className="h-4 w-16 bg-slate-200 dark:bg-slate-800 rounded-md" /></td>
+                    <td className="p-4"><div className="h-4 w-14 bg-slate-200 dark:bg-slate-800 rounded-md" /></td>
+                    <td className="p-4"><div className="h-4 w-28 bg-slate-200 dark:bg-slate-800 rounded-md" /></td>
+                    <td className="p-4"><div className="h-4 w-20 bg-slate-200 dark:bg-slate-800 rounded-md" /></td>
+                    <td className="p-4"><div className="h-4 w-16 bg-slate-200 dark:bg-slate-800 rounded-full" /></td>
+                    <td className="p-4 text-center"><div className="h-6 w-16 bg-slate-200 dark:bg-slate-800 rounded-md mx-auto" /></td>
+                  </tr>
+                ))
+              ) : (
+                users.map((user) => (
+                  <tr key={user.email} className={`hover:bg-muted/10 transition-colors ${!user.is_active ? 'opacity-60 bg-rose-500/5' : ''}`}>
+                    <td className="p-4 font-bold text-primary">{user.email}</td>
+                    <td className="p-4">
+                      <StatusBadge type="role" value={user.role} />
+                    </td>
+                    <td className="p-4">
+                      <StatusBadge type="tier" value={user.tier} />
+                    </td>
+                    <td className="p-4 text-secondary font-medium">
+                      {user.has_byok ? (
+                        <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-lg bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 font-semibold border border-emerald-500/20 text-[10px]">
+                          BYOK Mandiri (GCP)
+                        </span>
+                      ) : (
+                        `${user.subscription_quota.toLocaleString()} / ${user.trial_quota.toLocaleString()} u`
+                      )}
+                    </td>
+                    <td className="p-4 text-muted">
+                      {user.quota_expiry ? new Date(user.quota_expiry).toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' }) : 'Tidak Ada'}
+                    </td>
+                    <td className="p-4">
+                      {user.is_active ? (
+                        <span className="flex items-center gap-1 text-emerald-600 dark:text-emerald-400 font-bold text-[10px]">
+                          <CheckCircle className="w-3.5 h-3.5" />
+                          AKTIF
+                        </span>
+                      ) : (
+                        <span className="flex items-center gap-1 text-rose-600 dark:text-rose-400 font-bold text-[10px]">
+                          <ShieldAlert className="w-3.5 h-3.5 animate-pulse" />
+                          SUSPENDED
+                        </span>
+                      )}
+                    </td>
+                    <td className="p-4">
+                      <div className="flex items-center justify-center gap-2">
+                        {/* Button Edit */}
+                        <button
+                          onClick={() => openEditModal(user)}
+                          disabled={user.role === 'superadmin' && currentAdminRole !== 'superadmin'}
+                          className="p-1.5 rounded-lg border border-[var(--border-default)] hover:bg-rose-500/5 hover:border-rose-500/30 text-rose-500 transition-colors disabled:opacity-30 disabled:pointer-events-none cursor-pointer"
+                          title="Edit Profil/Kuota"
+                        >
+                          <Edit3 className="w-3.5 h-3.5" />
+                        </button>
 
-                      {/* Button Suspend/Unsuspend */}
-                      <button
-                        onClick={() => setSuspendingUser(user)}
-                        disabled={user.role === 'superadmin' && currentAdminRole !== 'superadmin'}
-                        className={`p-1.5 rounded-lg border border-[var(--border-default)] transition-colors cursor-pointer disabled:opacity-30 disabled:pointer-events-none ${
-                          user.is_active
-                            ? 'hover:bg-rose-500/10 hover:border-rose-500/40 text-rose-600'
-                            : 'hover:bg-emerald-500/10 hover:border-emerald-500/40 text-emerald-600'
-                        }`}
-                        title={user.is_active ? 'Suspend Akun' : 'Aktifkan Akun'}
-                      >
-                        {user.is_active ? <ShieldAlert className="w-3.5 h-3.5" /> : <CheckCircle className="w-3.5 h-3.5" />}
-                      </button>
-                    </div>
-                  </td>
-                </tr>
-              ))}
+                        {/* Button Suspend/Unsuspend */}
+                        <button
+                          onClick={() => setSuspendingUser(user)}
+                          disabled={user.role === 'superadmin' && currentAdminRole !== 'superadmin'}
+                          className={`p-1.5 rounded-lg border border-[var(--border-default)] transition-colors cursor-pointer disabled:opacity-30 disabled:pointer-events-none ${
+                            user.is_active
+                              ? 'hover:bg-rose-500/10 hover:border-rose-500/40 text-rose-600'
+                              : 'hover:bg-emerald-500/10 hover:border-emerald-500/40 text-emerald-600'
+                          }`}
+                          title={user.is_active ? 'Suspend Akun' : 'Aktifkan Akun'}
+                        >
+                          {user.is_active ? <ShieldAlert className="w-3.5 h-3.5" /> : <CheckCircle className="w-3.5 h-3.5" />}
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                ))
+              )}
               {users.length === 0 && !loading && (
                 <tr>
                   <td colSpan="7" className="p-8 text-center text-muted text-xs">

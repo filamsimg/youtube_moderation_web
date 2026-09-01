@@ -48,46 +48,9 @@ export default function AdminLayout({ children }) {
     }
   }, [status, session, router]);
 
-  if (status === 'loading') {
-    return (
-      <div className="flex min-h-screen items-center justify-center transition-colors duration-300" style={{ background: 'var(--bg-page)' }}>
-        <div className="absolute w-[300px] h-[300px] rounded-full bg-rose-500/10 dark:bg-rose-500/5 blur-[80px]" />
-        <div className="relative flex flex-col items-center max-w-xs text-center space-y-6">
-          <div className="relative">
-            <div className="absolute inset-0 rounded-full bg-rose-500/25 blur-xl animate-pulse" />
-            <div className="relative w-16 h-16 rounded-2xl bg-rose-600 dark:bg-rose-500 flex items-center justify-center text-white font-bold text-2xl shadow-xl animate-bounce">
-              A
-            </div>
-          </div>
-
-          <div className="space-y-1 z-10">
-            <h2 className="text-sm font-bold tracking-widest text-rose-600 dark:text-rose-400">
-              ATHENA SHIELD
-            </h2>
-            <p className="text-[10px] uppercase font-bold tracking-widest text-slate-500">
-              Panel Kendali Administratif
-            </p>
-          </div>
-
-          <div className="w-40 h-1 rounded-full overflow-hidden relative" style={{ background: 'var(--border-default)' }}>
-            <div className="absolute top-0 bottom-0 left-0 bg-rose-600 dark:bg-rose-500 rounded-full w-1/3 animate-[loading_1.5s_infinite_ease-in-out]" />
-          </div>
-        </div>
-
-        <style jsx global>{`
-          @keyframes loading {
-            0% { left: -30%; width: 30%; }
-            50% { width: 40%; }
-            100% { left: 100%; width: 30%; }
-          }
-        `}</style>
-      </div>
-    );
-  }
-
-  // Double security check: render nothing if not admin/superadmin
+  // If unauthenticated or unauthorized role after verification
   const role = session?.user?.role || 'user';
-  if (status === 'unauthenticated' || (role !== 'admin' && role !== 'superadmin')) {
+  if (status === 'unauthenticated' || (status === 'authenticated' && role !== 'admin' && role !== 'superadmin')) {
     return null;
   }
 
@@ -109,7 +72,7 @@ export default function AdminLayout({ children }) {
               <div className="w-9 h-9 lg:hidden" />
               <div className="hidden lg:flex items-center gap-2 px-3 py-1 rounded-full text-xs font-semibold bg-rose-500/10 text-rose-600 dark:bg-rose-500/20 dark:text-rose-300 border border-rose-500/20">
                 <span className="w-1.5 h-1.5 rounded-full bg-rose-500 animate-pulse" />
-                Mode Administrator ({session.user.role.toUpperCase()})
+                Mode Administrator ({session?.user?.role ? session.user.role.toUpperCase() : 'ADMIN'})
               </div>
             </div>
 
@@ -130,7 +93,7 @@ export default function AdminLayout({ children }) {
                 <p className="text-xs font-medium" style={{ color: 'var(--text-secondary)' }}>
                   {session?.user?.name || 'Administrator'}
                 </p>
-                <p className="text-[10px] text-rose-500 capitalize">{session.user.role}</p>
+                <p className="text-[10px] text-rose-500 capitalize">{session?.user?.role || 'Admin'}</p>
               </div>
 
               {/* Avatar Dropdown Wrapper */}

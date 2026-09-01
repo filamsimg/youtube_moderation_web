@@ -9,7 +9,7 @@ import { useQuota } from '@/contexts/QuotaContext';
 import Link from 'next/link';
 import StatusBadge from '@/components/ui/StatusBadge';
 import EmptyState from '@/components/ui/EmptyState';
-import LoadingState from '@/components/ui/LoadingState';
+import { TableSkeleton } from '@/components/ui/Skeleton';
 import { formatDateTime } from '@/lib/utils';
 
 export default function RiwayatPage() {
@@ -236,9 +236,7 @@ export default function RiwayatPage() {
 
       {/* ── List / Loading / Empty ────────────────────────────── */}
       {loading ? (
-        <div className="bento-card">
-          <LoadingState variant="logo" message="Sinkronisasi data database..." />
-        </div>
+        <TableSkeleton rows={6} cols={4} />
       ) : filtered.length === 0 ? (
         <EmptyState
           icon={
