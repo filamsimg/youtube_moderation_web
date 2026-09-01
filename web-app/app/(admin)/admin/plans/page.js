@@ -13,12 +13,15 @@ import {
 import PlanFormModal from './PlanFormModal';
 import { formatIDR, isUnlimitedQuota } from '@/lib/utils';
 
+// Client-side In-Memory Cache for Plans
+let cachedPlans = null;
+
 export default function AdminPlansPage() {
   const { data: session } = useSession();
   const toast = useToast();
   
-  const [packages, setPackages] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const [packages, setPackages] = useState(cachedPlans || []);
+  const [loading, setLoading] = useState(!cachedPlans);
   const activeTab = 'subscription';
   
   // Modal states
@@ -75,26 +78,31 @@ export default function AdminPlansPage() {
   const currentAdminRole = session?.user?.role || 'user';
   const isSuperAdmin = currentAdminRole === 'superadmin';
 
-  const fetchPackages = useCallback(async () => {
-    setLoading(true);
+  const fetchPackages = useCallback(async (isSilent = false) => {
+    if (!isSilent && !cachedPlans) {
+      setLoading(true);
+    }
     try {
       const res = await fetch('/api/admin/plans');
       const data = await res.json();
       if (data.success) {
+        cachedPlans = data.packages;
         setPackages(data.packages);
-      } else {
+      } else if (!cachedPlans) {
         toast.error(data.error || 'Gagal mengambil data paket');
       }
     } catch (e) {
       console.error(e);
-      toast.error('Koneksi internet bermasalah');
+      if (!cachedPlans) {
+        toast.error('Koneksi internet bermasalah');
+      }
     } finally {
       setLoading(false);
     }
   }, [toast]);
 
   useEffect(() => {
-    fetchPackages();
+    fetchPackages(!!cachedPlans);
   }, [fetchPackages]);
 
   // Handle opening creation modal

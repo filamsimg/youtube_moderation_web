@@ -11,34 +11,48 @@ import StatCard from '@/components/ui/StatCard';
 import { AdminOverviewSkeleton } from '@/components/ui/Skeleton';
 import { formatIDR } from '@/lib/utils';
 
+// Client-side In-Memory Cache (SWR Pattern)
+let cachedAdminStats = null;
+
 export default function AdminOverviewPage() {
-  const [data, setData] = useState(null);
-  const [loading, setLoading] = useState(true);
+  const [data, setData] = useState(cachedAdminStats);
+  const [loading, setLoading] = useState(!cachedAdminStats);
   const [selectedModal, setSelectedModal] = useState(null); // 'users' | 'revenue' | null
   const [userFilter, setUserFilter] = useState('all'); // 'all' | 'active' | 'suspended' | 'paid'
   const toast = useToast();
 
   useEffect(() => {
+    let isMounted = true;
     async function fetchStats() {
       try {
         const response = await fetch('/api/admin/stats');
         const json = await response.json();
         if (json.success) {
-          setData(json);
-        } else {
+          cachedAdminStats = json;
+          if (isMounted) {
+            setData(json);
+          }
+        } else if (!cachedAdminStats && isMounted) {
           toast.error(json.error || 'Gagal memuat statistik admin');
         }
       } catch (error) {
         console.error('Fetch stats error:', error);
-        toast.error('Koneksi internet bermasalah');
+        if (!cachedAdminStats && isMounted) {
+          toast.error('Koneksi internet bermasalah');
+        }
       } finally {
-        setLoading(false);
+        if (isMounted) {
+          setLoading(false);
+        }
       }
     }
     fetchStats();
+    return () => {
+      isMounted = false;
+    };
   }, [toast]);
 
-  if (loading) {
+  if (loading && !data) {
     return <AdminOverviewSkeleton />;
   }
 
