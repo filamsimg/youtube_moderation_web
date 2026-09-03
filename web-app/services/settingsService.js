@@ -1,38 +1,36 @@
-import { supabase } from '@/lib/supabase';
-
 export const settingsService = {
-  async getSettings(email) {
-    if (!email) return null;
-    const { data, error } = await supabase
-      .from('user_settings')
-      .select('*')
-      .eq('user_email', email)
-      .single();
-    
-    if (error && error.code !== 'PGRST116') { // PGRST116 is "no rows found"
-      console.error('Error fetching settings:', error);
+  async getSettings() {
+    try {
+      const res = await fetch('/api/user/settings', {
+        method: 'GET',
+        headers: { 'Content-Type': 'application/json' },
+      });
+      if (!res.ok) return null;
+      const json = await res.json();
+      return json?.settings || null;
+    } catch (err) {
+      console.error('Error fetching settings from API:', err);
+      return null;
     }
-    return data;
   },
 
   async saveSettings(email, settings) {
-    if (!email) return null;
-    const { data, error } = await supabase
-      .from('user_settings')
-      .upsert({
-        user_email: email,
-        auto_hapus: settings.autoHapus,
-        auto_tahan: settings.autoTahan,
-        threshold_reject: settings.thresholdReject,
-        threshold_hold: settings.thresholdHold,
-        polling_interval: settings.pollingInterval,
-        batch_moderation: settings.batchModeration
+    try {
+      const res = await fetch('/api/user/settings', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(settings),
       });
-    
-    if (error) {
-      console.error('Error saving settings:', error);
-      throw error;
+      if (!res.ok) {
+        const errJson = await res.json().catch(() => ({}));
+        throw new Error(errJson?.error || 'Gagal menyimpan pengaturan');
+      }
+      const json = await res.json();
+      return json?.settings || null;
+    } catch (err) {
+      console.error('Error saving settings to API:', err);
+      throw err;
     }
-    return data;
-  }
+  },
 };
+
