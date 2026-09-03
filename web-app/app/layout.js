@@ -5,7 +5,11 @@ import { ThemeProvider } from "@/components/ThemeProvider";
 
 import { GlobalProviders } from "@/contexts/GlobalProviders";
 
-const inter = Inter({ subsets: ["latin"] });
+const inter = Inter({ 
+  subsets: ["latin"],
+  weight: ["300", "400", "500", "600", "700", "800"],
+  display: "swap",
+});
 
 export const metadata = {
   title: "Athena Shield",
