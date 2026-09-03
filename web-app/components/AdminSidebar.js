@@ -14,7 +14,8 @@ import {
   Settings,
   HelpCircle,
   LogOut,
-  CreditCard
+  CreditCard,
+  ReceiptText
 } from 'lucide-react';
 
 export default function AdminSidebar() {
@@ -62,6 +63,11 @@ export default function AdminSidebar() {
       name: 'Manajemen Pengguna',
       href: '/admin/users',
       icon: <Users className="w-5 h-5 flex-shrink-0" />,
+    },
+    {
+      name: 'Manajemen Transaksi',
+      href: '/admin/transactions',
+      icon: <ReceiptText className="w-5 h-5 flex-shrink-0" />,
     },
     {
       name: 'Moderasi Global',

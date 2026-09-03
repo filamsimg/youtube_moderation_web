@@ -1,6 +1,7 @@
 'use client';
 
 import { CreditCard } from 'lucide-react';
+import Link from 'next/link';
 import { formatIDR } from '@/lib/utils';
 
 export default function RecentTransactionsTable({ 
@@ -17,9 +18,9 @@ export default function RecentTransactionsTable({
           </h2>
           <p className="text-xs text-muted mt-0.5">Status tagihan Midtrans Sandbox terkini</p>
         </div>
-        <span className="text-xs font-semibold px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-500">
-          {stats.trxStatusCounts?.settlement || 0} Settlement
-        </span>
+        <Link href="/admin/transactions" className="text-xs text-emerald-600 dark:text-emerald-400 font-bold hover:underline">
+          Semua Transaksi →
+        </Link>
       </div>
 
       <div className="divide-y divide-[var(--border-default)] overflow-y-auto max-h-[280px]">

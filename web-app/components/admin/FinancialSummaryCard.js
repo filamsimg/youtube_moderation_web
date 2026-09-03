@@ -1,6 +1,6 @@
 'use client';
 
-import { DollarSign, CheckCircle2, AlertCircle, XCircle, Sparkles } from 'lucide-react';
+import { DollarSign, CheckCircle2, AlertCircle, XCircle, TrendingUp } from 'lucide-react';
 import Link from 'next/link';
 import { formatIDR } from '@/lib/utils';
 
@@ -21,8 +21,8 @@ export default function FinancialSummaryCard({ stats = {} }) {
           </h2>
           <p className="text-xs text-muted mt-0.5">Efektivitas alur checkout pembayaran sandbox</p>
         </div>
-        <Link href="/admin/plans" className="text-xs text-emerald-600 dark:text-emerald-400 font-bold hover:underline">
-          Manajemen Paket →
+        <Link href="/admin/transactions" className="text-xs text-emerald-600 dark:text-emerald-400 font-bold hover:underline">
+          Manajemen Transaksi →
         </Link>
       </div>
 
@@ -62,7 +62,7 @@ export default function FinancialSummaryCard({ stats = {} }) {
       <div className="space-y-2 p-3 rounded-xl bg-[var(--bg-card-hover)] border border-[var(--border-default)]">
         <div className="flex items-center justify-between text-xs">
           <span className="font-semibold text-secondary flex items-center gap-1">
-            <Sparkles className="w-3 h-3 text-emerald-500" />
+            <TrendingUp className="w-3 h-3 text-emerald-500" />
             Tingkat Sukses Pembayaran
           </span>
           <strong className="text-emerald-500 font-bold">{conversionRate}% Sukses</strong>
