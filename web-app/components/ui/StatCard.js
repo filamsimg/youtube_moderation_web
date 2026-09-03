@@ -37,7 +37,7 @@ export default function StatCard({ label, value, sub, icon, color = 'indigo', de
           </div>
         </div>
         <p className="text-xl font-extrabold tracking-tight text-primary">{value}</p>
-        {sub && <p className="text-[11px] text-muted mt-1">{sub}</p>}
+        {sub && <div className="text-[11px] text-muted mt-1">{sub}</div>}
       </div>
     </div>
   );
