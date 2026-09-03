@@ -129,6 +129,7 @@ export default function Sidebar() {
               alt="Athena Shield"
               width={36}
               height={36}
+              priority
               className="relative w-9 h-9 object-contain drop-shadow-lg"
             />
           </div>

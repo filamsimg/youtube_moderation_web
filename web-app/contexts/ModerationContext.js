@@ -304,11 +304,6 @@ export function ModerationProvider({ children }) {
 
         // Pisahkan: komentar yang sudah ada di cache vs yang perlu dianalisis AI
         const commentsNeedingInference = allNewComments.filter(c => !cachedPredictions[c.id]);
-        const cacheHitCount = allNewComments.length - commentsNeedingInference.length;
-
-        if (cacheHitCount > 0) {
-          console.log(`[AI Cache] ${cacheHitCount} komentar dimuat dari cache, ${commentsNeedingInference.length} perlu dianalisis AI baru.`);
-        }
 
         let freshPredictions = {};
         if (commentsNeedingInference.length > 0) {

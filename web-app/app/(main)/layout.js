@@ -58,6 +58,7 @@ export default function MainLayout({ children }) {
               alt="Athena Shield Logo"
               width={64}
               height={64}
+              priority
               className="w-16 h-16 object-contain drop-shadow-2xl"
             />
           </div>
@@ -69,7 +70,7 @@ export default function MainLayout({ children }) {
               ATHENA SHIELD
             </h2>
             <p className="text-[10px] uppercase font-bold tracking-widest text-indigo-600 dark:text-indigo-400">
-              Perisai Moderasi AI YouTube
+              Moderasi Komentar Judol
             </p>
           </div>
 
