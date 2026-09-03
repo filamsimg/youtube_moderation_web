@@ -62,6 +62,9 @@ export default function DashboardPage() {
   const fetchVideosRef = useRef(fetchVideos);
   useEffect(() => { fetchVideosRef.current = fetchVideos; }, [fetchVideos]);
 
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => { setMounted(true); }, []);
+
   const [loading, setLoading] = useState(!cachedCreatorHistory);
   const [error, setError] = useState(null);
   const [history, setHistory] = useState(cachedCreatorHistory || []);
@@ -335,9 +338,9 @@ export default function DashboardPage() {
             </div>
           </div>
 
-          <div className="h-[200px] lg:h-[240px] w-full">
-            {filteredHistory.length > 0 ? (
-              <ResponsiveContainer width="100%" height="100%">
+          <div className="h-[220px] w-full">
+            {mounted && filteredHistory.length > 0 ? (
+              <ResponsiveContainer width="100%" height={220} debounce={50}>
                 <PieChart>
                   <Pie
                     data={contentData}
@@ -394,9 +397,9 @@ export default function DashboardPage() {
         <div className="bento-card p-5 lg:p-6">
           <h2 className="text-sm font-semibold text-primary mb-1">Total Tindakan Penyaringan</h2>
           <p className="text-xs text-secondary mb-4 lg:mb-5">Jumlah komentar yang telah ditindaklanjuti</p>
-          <div className="h-[200px] lg:h-[240px] w-full">
-            {history.length > 0 ? (
-              <ResponsiveContainer width="100%" height="100%">
+          <div className="h-[220px] w-full">
+            {mounted && history.length > 0 ? (
+              <ResponsiveContainer width="100%" height={220} debounce={50}>
                 <BarChart data={actionData} barSize={36}>
                   <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#1e293b" />
                   <XAxis dataKey="name" axisLine={false} tickLine={false} tick={axisTick} />
@@ -419,7 +422,7 @@ export default function DashboardPage() {
       </div>
 
       {/* ── Per Video Chart ──────────────────────────────────── */}
-      {perVideoData.length > 0 && (
+      {mounted && perVideoData.length > 0 && (
         <div className="bento-card p-5 lg:p-6">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-5">
             <div>
@@ -437,8 +440,8 @@ export default function DashboardPage() {
               </div>
             </div>
           </div>
-          <div className="h-[260px] lg:h-[300px] w-full">
-            <ResponsiveContainer width="100%" height="100%">
+          <div className="h-[280px] w-full">
+            <ResponsiveContainer width="100%" height={280} debounce={50}>
               <BarChart data={perVideoData} barSize={16} barGap={4}>
                 <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#1e293b" />
                 <XAxis
@@ -494,9 +497,9 @@ export default function DashboardPage() {
             </div>
           </div>
 
-          <div className="flex-1 h-[250px] lg:h-[300px] w-full">
-            {filteredHistory.some(h => h.sentiment) ? (
-              <ResponsiveContainer width="100%" height="100%">
+          <div className="flex-1 h-[280px] w-full">
+            {mounted && filteredHistory.some(h => h.sentiment) ? (
+              <ResponsiveContainer width="100%" height={280} debounce={50}>
                 <PieChart>
                   <Pie
                     data={sentimentData.filter(d => d.value > 0)}
