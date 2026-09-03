@@ -2,7 +2,10 @@
 
 import React, { useState, useEffect, useCallback } from 'react';
 import { useToast } from '@/contexts/ToastContext';
-import { Search, ShieldAlert, ArrowRight, Eye, EyeOff, Calendar } from 'lucide-react';
+import { 
+  Search, ShieldAlert, ArrowRight, Eye, EyeOff, Calendar, 
+  Activity, RefreshCw
+} from 'lucide-react';
 import StatusBadge from '@/components/ui/StatusBadge';
 import EmptyState from '@/components/ui/EmptyState';
 import PaginationControls from '@/components/PaginationControls';
@@ -85,13 +88,27 @@ export default function AdminAuditPage() {
 
   return (
     <div className="space-y-6 pb-8">
-      {/* Title */}
-      <div>
-        <h1 className="text-xl font-bold tracking-tight text-primary flex items-center gap-2">
-          <ShieldAlert className="w-6 h-6 text-rose-500" />
-          Log Audit Tindakan Admin
-        </h1>
-        <p className="text-xs text-muted mt-1">Rekam jejak seluruh aktivitas administratif dan perubahan pengaturan penting yang dilakukan oleh Admin atau Superadmin.</p>
+      {/* ── Page Header ── */}
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+        <div>
+          <h1 className="text-xl font-bold tracking-tight text-primary flex items-center gap-2">
+            <Activity className="w-6 h-6 text-purple-500" />
+            Log Audit Admin
+          </h1>
+          <p className="text-xs text-muted mt-1">
+            Rekam jejak seluruh aktivitas administratif, mutasi data pengguna, dan tindakan keamanan Athena Shield secara terpusat.
+          </p>
+        </div>
+
+        <button
+          onClick={() => fetchAuditLogs(false)}
+          disabled={loading}
+          className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold rounded-xl border border-[var(--border-default)] bg-card text-secondary hover:text-primary hover:bg-[var(--bg-card-hover)] transition-all cursor-pointer shadow-sm disabled:opacity-50 self-start sm:self-auto"
+          title="Muat Ulang Data"
+        >
+          <RefreshCw className={`w-3.5 h-3.5 ${loading ? 'animate-spin' : ''}`} />
+          Refresh
+        </button>
       </div>
 
       {/* Search Bar */}

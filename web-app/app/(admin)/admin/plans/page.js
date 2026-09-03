@@ -8,7 +8,8 @@ import {
   Edit2, 
   Trash2, 
   CreditCard, 
-  AlertCircle 
+  AlertCircle,
+  RefreshCw
 } from 'lucide-react';
 import PlanFormModal from './PlanFormModal';
 import { formatIDR, isUnlimitedQuota } from '@/lib/utils';
@@ -243,13 +244,15 @@ export default function AdminPlansPage() {
     return new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(num);
   };
 
+  const activeCount = packages.filter(p => p.is_active).length;
+
   return (
     <div className="space-y-6 pb-8">
-      {/* Header & Title */}
+      {/* ── Page Header ── */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
           <h1 className="text-xl font-bold tracking-tight text-primary flex items-center gap-2">
-            <CreditCard className="w-6 h-6 text-rose-500" />
+            <CreditCard className="w-6 h-6 text-blue-500" />
             Manajemen Paket dan Harga
           </h1>
           <p className="text-xs text-muted mt-1">
@@ -257,22 +260,33 @@ export default function AdminPlansPage() {
           </p>
         </div>
 
-        {isSuperAdmin ? (
+        <div className="flex items-center gap-2">
           <button
-            onClick={handleOpenCreate}
-            className="inline-flex items-center gap-1.5 px-4 py-2 bg-gradient-to-r from-rose-600 to-orange-600 text-white rounded-xl text-xs font-bold shadow-md hover:shadow-lg transition-all cursor-pointer hover:-translate-y-0.5 active:scale-95"
+            onClick={() => fetchPackages(false)}
+            disabled={loading}
+            className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold rounded-xl border border-[var(--border-default)] bg-card text-secondary hover:text-primary hover:bg-[var(--bg-card-hover)] transition-all cursor-pointer shadow-sm disabled:opacity-50"
+            title="Muat Ulang Data"
           >
-            <Plus className="w-4 h-4" />
-            Tambah Paket Baru
+            <RefreshCw className={`w-3.5 h-3.5 ${loading ? 'animate-spin' : ''}`} />
+            Refresh
           </button>
-        ) : (
-          <div className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-slate-100 dark:bg-slate-800 text-muted text-[11px] font-medium border border-dashed border-slate-200 dark:border-slate-700">
-            <AlertCircle className="w-4 h-4 text-slate-400" />
-            Admin Read-Only Mode
-          </div>
-        )}
-      </div>
 
+          {isSuperAdmin ? (
+            <button
+              onClick={handleOpenCreate}
+              className="inline-flex items-center gap-1.5 px-3.5 py-1.5 bg-blue-600 hover:bg-blue-500 text-white rounded-xl text-xs font-bold shadow-md shadow-blue-500/20 transition-all cursor-pointer hover:-translate-y-0.5 active:scale-95"
+            >
+              <Plus className="w-4 h-4" />
+              Tambah Paket
+            </button>
+          ) : (
+            <div className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-slate-100 dark:bg-slate-800 text-muted text-[11px] font-medium border border-dashed border-slate-200 dark:border-slate-700">
+              <AlertCircle className="w-4 h-4 text-slate-400" />
+              Read-Only
+            </div>
+          )}
+        </div>
+      </div>
 
       {/* Main Table Content */}
       <div className="bg-card border border-[var(--border-default)] rounded-2xl shadow-sm overflow-hidden">

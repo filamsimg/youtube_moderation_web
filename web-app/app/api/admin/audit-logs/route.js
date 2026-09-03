@@ -34,9 +34,37 @@ export async function GET(request) {
 
     if (error) throw error;
 
+    // Ambil rekapitulasi cepat jenis aksi audit
+    const { data: allLogsMeta } = await supabaseAdmin
+      .from('admin_audit_logs')
+      .select('action, admin_email');
+
+    let mutationCount = 0;
+    let suspendCount = 0;
+    const uniqueAdmins = new Set();
+
+    (allLogsMeta || []).forEach(log => {
+      const act = (log.action || '').toLowerCase();
+      if (act.includes('tier') || act.includes('role') || act.includes('quota') || act.includes('update')) {
+        mutationCount++;
+      }
+      if (act.includes('suspend') || act.includes('block') || act.includes('deactivate')) {
+        suspendCount++;
+      }
+      if (log.admin_email) {
+        uniqueAdmins.add(log.admin_email);
+      }
+    });
+
     return NextResponse.json({
       success: true,
       logs,
+      stats: {
+        totalLogs: (allLogsMeta || []).length,
+        mutationCount,
+        suspendCount,
+        adminCount: uniqueAdmins.size,
+      },
       pagination: {
         page,
         limit,

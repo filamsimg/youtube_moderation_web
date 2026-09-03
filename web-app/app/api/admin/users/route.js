@@ -47,6 +47,26 @@ export async function GET(request) {
       .order('created_at', { ascending: false })
       .range(from, to);
 
+    if (error) throw error;
+
+    // Ambil metrik ringkasan keseluruhan user
+    const { data: allUsersMeta } = await supabaseAdmin
+      .from('user_profiles')
+      .select('tier, role, is_active');
+
+    let activeCount = 0;
+    let suspendedCount = 0;
+    let adminCount = 0;
+    const tierCounts = { FREE: 0, PRO: 0, ENTERPRISE: 0 };
+
+    (allUsersMeta || []).forEach(u => {
+      if (u.is_active) activeCount++;
+      else suspendedCount++;
+      if (u.role === 'admin') adminCount++;
+      const t = (u.tier || 'FREE').toUpperCase();
+      if (tierCounts[t] !== undefined) tierCounts[t]++;
+    });
+
     const formattedUsers = (users || []).map(u => ({
       ...u,
       has_byok: Boolean(u.youtube_api_key),
@@ -56,6 +76,13 @@ export async function GET(request) {
     return NextResponse.json({
       success: true,
       users: formattedUsers,
+      stats: {
+        totalUsers: (allUsersMeta || []).length,
+        activeUsers: activeCount,
+        suspendedUsers: suspendedCount,
+        adminUsers: adminCount,
+        tierCounts,
+      },
       pagination: {
         page,
         limit,

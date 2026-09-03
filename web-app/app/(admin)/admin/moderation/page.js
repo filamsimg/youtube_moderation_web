@@ -2,14 +2,24 @@
 
 import React, { useState, useEffect, useCallback } from 'react';
 import { useToast } from '@/contexts/ToastContext';
-import { Search, Filter, ShieldAlert, CheckCircle, Clock } from 'lucide-react';
+import { 
+  Search, Filter, ShieldAlert, CheckCircle2, Clock, 
+  ShieldCheck, Activity, RefreshCw, FileText
+} from 'lucide-react';
 import PaginationControls from '@/components/PaginationControls';
+import StatCard from '@/components/ui/StatCard';
 
 // Client-side In-Memory Cache for Moderation Logs
 let cachedModerationState = null;
 
 export default function AdminModerationPage() {
   const [history, setHistory] = useState(cachedModerationState?.history || []);
+  const [stats, setStats] = useState(cachedModerationState?.stats || {
+    totalComments: 0,
+    spamCount: 0,
+    normalCount: 0,
+    heldCount: 0,
+  });
   const [loading, setLoading] = useState(!cachedModerationState);
   const [pagination, setPagination] = useState(cachedModerationState?.pagination || { page: 1, totalPages: 1, limit: 10 });
   const [searchVal, setSearchVal] = useState('');
@@ -37,9 +47,10 @@ export default function AdminModerationPage() {
 
       if (json.success) {
         setHistory(json.history);
+        if (json.stats) setStats(json.stats);
         setPagination(json.pagination);
         if (isDefaultQuery) {
-          cachedModerationState = { history: json.history, pagination: json.pagination };
+          cachedModerationState = { history: json.history, stats: json.stats, pagination: json.pagination };
         }
       } else if (!cachedModerationState) {
         toast.error(json.error || 'Gagal memuat log moderasi global');
@@ -67,10 +78,59 @@ export default function AdminModerationPage() {
 
   return (
     <div className="space-y-6 pb-8">
-      {/* Title */}
-      <div>
-        <h1 className="text-xl font-bold tracking-tight text-primary">Log Moderasi Global</h1>
-        <p className="text-xs text-muted mt-1">Pantau seluruh riwayat komentar YouTube milik pengguna yang telah dipindai dan diklasifikasikan oleh sistem kecerdasan buatan.</p>
+      {/* ── Page Header ── */}
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+        <div>
+          <h1 className="text-xl font-bold tracking-tight text-primary flex items-center gap-2">
+            <ShieldCheck className="w-6 h-6 text-amber-500" />
+            Moderasi Global
+          </h1>
+          <p className="text-xs text-muted mt-1">
+            Pantau seluruh riwayat analisis komentar, deteksi promosi judi online, dan audit trail aksi moderasi secara terpusat.
+          </p>
+        </div>
+
+        <button
+          onClick={() => fetchHistory(false)}
+          disabled={loading}
+          className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold rounded-xl border border-[var(--border-default)] bg-card text-secondary hover:text-primary hover:bg-[var(--bg-card-hover)] transition-all cursor-pointer shadow-sm disabled:opacity-50 self-start sm:self-auto"
+          title="Muat Ulang Data"
+        >
+          <RefreshCw className={`w-3.5 h-3.5 ${loading ? 'animate-spin' : ''}`} />
+          Refresh
+        </button>
+      </div>
+
+      {/* ── 4 Bento Stat Cards ── */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        <StatCard
+          label="Total Komentar Dipindai"
+          value={stats.totalComments}
+          sub="Tercatat di seluruh kreator"
+          color="indigo"
+          icon={<FileText className="w-5 h-5" />}
+        />
+        <StatCard
+          label="Terindikasi Judol"
+          value={stats.spamCount}
+          sub="Terdeteksi pola promosi judi"
+          color="rose"
+          icon={<ShieldAlert className="w-5 h-5" />}
+        />
+        <StatCard
+          label="Komentar Bersih (Aman)"
+          value={stats.normalCount}
+          sub="Lolos verifikasi sistem"
+          color="emerald"
+          icon={<CheckCircle2 className="w-5 h-5" />}
+        />
+        <StatCard
+          label="Aksi Ditahan / Dihapus"
+          value={stats.heldCount}
+          sub="Tindakan proteksi dieksekusi"
+          color="blue"
+          icon={<Activity className="w-5 h-5" />}
+        />
       </div>
 
       {/* Filter and Search Bar */}

@@ -42,9 +42,36 @@ export async function GET(request) {
 
     if (error) throw error;
 
+    // Ambil rekapitulasi cepat label moderasi
+    const { data: allLabels } = await supabaseAdmin
+      .from('moderation_history')
+      .select('ai_label, action');
+
+    let spamCount = 0;
+    let normalCount = 0;
+    let heldCount = 0;
+
+    (allLabels || []).forEach(item => {
+      const l = (item.ai_label || '').toLowerCase();
+      if (l.includes('spam') || l.includes('judol') || l.includes('promosi') || l.includes('judi')) {
+        spamCount++;
+      } else {
+        normalCount++;
+      }
+      if (item.action === 'heldForReview' || item.action === 'rejected') {
+        heldCount++;
+      }
+    });
+
     return NextResponse.json({
       success: true,
       history,
+      stats: {
+        totalComments: (allLabels || []).length,
+        spamCount,
+        normalCount,
+        heldCount,
+      },
       pagination: {
         page,
         limit,

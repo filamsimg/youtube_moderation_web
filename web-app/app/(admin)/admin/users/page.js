@@ -3,10 +3,14 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useToast } from '@/contexts/ToastContext';
 import { useSession } from 'next-auth/react';
-import { Search, Filter, Edit3, ShieldAlert, CheckCircle, UserPlus, X, HelpCircle } from 'lucide-react';
+import { 
+  Search, Filter, Edit3, ShieldAlert, CheckCircle, UserPlus, X, HelpCircle,
+  Users, UserCheck, UserX, ShieldCheck, RefreshCw
+} from 'lucide-react';
 import ConfirmModal from '@/components/ui/ConfirmModal';
 import StatusBadge from '@/components/ui/StatusBadge';
 import PaginationControls from '@/components/PaginationControls';
+import StatCard from '@/components/ui/StatCard';
 
 // Client-side In-Memory Cache for Users
 let cachedUsersState = null;
@@ -24,6 +28,13 @@ export default function AdminUsersPage() {
   }, [session?.user?.email]);
 
   const [users, setUsers] = useState(cachedUsersState?.users || []);
+  const [stats, setStats] = useState(cachedUsersState?.stats || {
+    totalUsers: 0,
+    activeUsers: 0,
+    suspendedUsers: 0,
+    adminUsers: 0,
+    tierCounts: { FREE: 0, PRO: 0, ENTERPRISE: 0 },
+  });
   const [loading, setLoading] = useState(!cachedUsersState);
   const [pagination, setPagination] = useState(cachedUsersState?.pagination || { page: 1, totalPages: 1, limit: 10 });
   const [searchVal, setSearchVal] = useState('');
@@ -69,17 +80,18 @@ export default function AdminUsersPage() {
       
       if (json.success) {
         setUsers(json.users);
+        if (json.stats) setStats(json.stats);
         setPagination(json.pagination);
         if (isDefaultQuery) {
-          cachedUsersState = { users: json.users, pagination: json.pagination };
+          cachedUsersState = { users: json.users, stats: json.stats, pagination: json.pagination };
         }
       } else if (!cachedUsersState) {
-        toast.error(json.error || 'Gagal memuat pengguna');
+        toast.error(json.error || 'Gagal memuat data pengguna');
       }
     } catch (e) {
-      console.error('Fetch users error:', e);
+      console.error(e);
       if (!cachedUsersState) {
-        toast.error('Gagal menghubungi API server');
+        toast.error('Kesalahan koneksi API');
       }
     } finally {
       setLoading(false);
@@ -198,10 +210,59 @@ export default function AdminUsersPage() {
 
   return (
     <div className="space-y-6 pb-8">
-      {/* Title */}
-      <div>
-        <h1 className="text-xl font-bold tracking-tight text-primary">Manajemen Pengguna</h1>
-        <p className="text-xs text-muted mt-1">Cari, pantau kuota, perbarui tier langganan, dan kelola peran/status user Athena Shield.</p>
+      {/* ── Page Header ── */}
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+        <div>
+          <h1 className="text-xl font-bold tracking-tight text-primary flex items-center gap-2">
+            <Users className="w-6 h-6 text-indigo-500" />
+            Manajemen Pengguna
+          </h1>
+          <p className="text-xs text-muted mt-1">
+            Cari, pantau kuota, perbarui tier langganan, dan kelola peran serta status akun kreator Athena Shield.
+          </p>
+        </div>
+
+        <button
+          onClick={() => fetchUsers(false)}
+          disabled={loading}
+          className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold rounded-xl border border-[var(--border-default)] bg-card text-secondary hover:text-primary hover:bg-[var(--bg-card-hover)] transition-all cursor-pointer shadow-sm disabled:opacity-50 self-start sm:self-auto"
+          title="Muat Ulang Data"
+        >
+          <RefreshCw className={`w-3.5 h-3.5 ${loading ? 'animate-spin' : ''}`} />
+          Refresh
+        </button>
+      </div>
+
+      {/* ── 4 Bento Stat Cards ── */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        <StatCard
+          label="Total Pengguna"
+          value={stats.totalUsers}
+          sub={`Free: ${stats.tierCounts?.FREE || 0} • Pro: ${stats.tierCounts?.PRO || 0} • Ent: ${stats.tierCounts?.ENTERPRISE || 0}`}
+          color="indigo"
+          icon={<Users className="w-5 h-5" />}
+        />
+        <StatCard
+          label="Akun Aktif"
+          value={stats.activeUsers}
+          sub="Siap melakukan moderasi"
+          color="emerald"
+          icon={<UserCheck className="w-5 h-5" />}
+        />
+        <StatCard
+          label="Ditangguhkan (Suspend)"
+          value={stats.suspendedUsers}
+          sub="Akun dibekukan sementara"
+          color="rose"
+          icon={<UserX className="w-5 h-5" />}
+        />
+        <StatCard
+          label="Administrator"
+          value={stats.adminUsers}
+          sub="Memiliki hak akses sistem"
+          color="amber"
+          icon={<ShieldCheck className="w-5 h-5" />}
+        />
       </div>
 
       {/* Filter and Search Bar */}
