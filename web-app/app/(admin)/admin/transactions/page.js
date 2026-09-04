@@ -4,9 +4,8 @@ import { useState, useEffect, useMemo, useRef } from 'react';
 import { useToast } from '@/contexts/ToastContext';
 import { 
   ReceiptText, Search, RefreshCw, Download, CheckCircle2, AlertCircle, 
-  XCircle, Clock, Eye, X, Copy, Check, User
+  XCircle, Clock, Eye, X, Copy, Check
 } from 'lucide-react';
-import Link from 'next/link';
 import { formatIDR } from '@/lib/utils';
 import { TableSkeleton } from '@/components/ui/Skeleton';
 import StatCard from '@/components/ui/StatCard';
@@ -429,15 +428,6 @@ export default function AdminTransactionsPage() {
                               <XCircle className="w-3.5 h-3.5" />
                             </button>
                           )}
-
-                          {/* Tautan ke Manajemen User */}
-                          <Link
-                            href="/admin/users"
-                            className="p-1.5 rounded-lg border border-[var(--border-default)] bg-card text-indigo-600 hover:bg-indigo-500/10 transition-all"
-                            title="Buka Manajemen Akun User"
-                          >
-                            <User className="w-3.5 h-3.5" />
-                          </Link>
                         </div>
                       </td>
                     </tr>
