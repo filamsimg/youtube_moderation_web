@@ -18,6 +18,8 @@ export async function GET(request) {
   const label = searchParams.get('label') || ''; // 'Spam' | 'Normal'
   const action = searchParams.get('action') || ''; // 'published' | 'heldForReview' | 'rejected'
 
+  const isExport = searchParams.get('export') === 'true';
+
   try {
     let query = supabaseAdmin
       .from('moderation_history')
@@ -33,12 +35,23 @@ export async function GET(request) {
       query = query.eq('action', action);
     }
 
-    const from = (page - 1) * limit;
-    const to = from + limit - 1;
+    let history;
+    let count;
+    let error;
 
-    const { data: history, count, error } = await query
-      .order('created_at', { ascending: false })
-      .range(from, to);
+    if (isExport) {
+      const res = await query.order('created_at', { ascending: false }).limit(5000);
+      history = res.data;
+      count = res.count;
+      error = res.error;
+    } else {
+      const from = (page - 1) * limit;
+      const to = from + limit - 1;
+      const res = await query.order('created_at', { ascending: false }).range(from, to);
+      history = res.data;
+      count = res.count;
+      error = res.error;
+    }
 
     if (error) throw error;
 

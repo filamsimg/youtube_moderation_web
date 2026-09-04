@@ -4,7 +4,7 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { useToast } from '@/contexts/ToastContext';
 import { 
   Search, Filter, ShieldAlert, CheckCircle2, Clock, 
-  ShieldCheck, Activity, RefreshCw, FileText
+  ShieldCheck, Activity, RefreshCw, FileText, Download
 } from 'lucide-react';
 import PaginationControls from '@/components/PaginationControls';
 import StatCard from '@/components/ui/StatCard';
@@ -21,6 +21,7 @@ export default function AdminModerationPage() {
     heldCount: 0,
   });
   const [loading, setLoading] = useState(!cachedModerationState);
+  const [exporting, setExporting] = useState(false);
   const [pagination, setPagination] = useState(cachedModerationState?.pagination || { page: 1, totalPages: 1, limit: 10 });
   const [searchVal, setSearchVal] = useState('');
   const [searchQuery, setSearchQuery] = useState('');
@@ -76,6 +77,80 @@ export default function AdminModerationPage() {
     setSearchQuery(searchVal);
   };
 
+  const handleExportCSV = async () => {
+    try {
+      setExporting(true);
+      const params = new URLSearchParams({
+        export: 'true',
+        search: searchQuery,
+        label: filters.label,
+        action: filters.action,
+      });
+
+      const response = await fetch(`/api/admin/moderation?${params.toString()}`);
+      const json = await response.json();
+
+      if (!json.success || !json.history || json.history.length === 0) {
+        toast.error('Tidak ada data moderasi yang dapat diekspor');
+        return;
+      }
+
+      // Format CSV
+      const headers = [
+        'Waktu Moderasi',
+        'Kreator (User Email)',
+        'Penulis Komentar',
+        'Isi Komentar',
+        'Judul Video',
+        'Label AI',
+        'Skor Keyakinan (%)',
+        'Sentimen',
+        'Tindakan YouTube'
+      ];
+
+      const getActionText = (act) => {
+        if (act === 'published') return 'Dipublikasikan (Published)';
+        if (act === 'heldForReview') return 'Ditahan (Held For Review)';
+        if (act === 'rejected') return 'Ditolak/Dihapus (Rejected)';
+        return act || '-';
+      };
+
+      const rows = json.history.map((log) => [
+        `"${log.created_at ? new Date(log.created_at).toLocaleString('id-ID').replace(/"/g, '""') : '-'}"`,
+        `"${(log.user_email || '').replace(/"/g, '""')}"`,
+        `"${(log.author || '').replace(/"/g, '""')}"`,
+        `"${(log.comment_text || '').replace(/"/g, '""')}"`,
+        `"${(log.video_title || '').replace(/"/g, '""')}"`,
+        `"${log.ai_label === 'Spam' ? 'Spam Judol' : 'Normal'}"`,
+        `"${((log.ai_confidence || 0) * 100).toFixed(1)}%"`,
+        `"${log.sentiment || '-'}"`,
+        `"${getActionText(log.action)}"`
+      ]);
+
+      const csvContent = [
+        headers.join(','),
+        ...rows.map((r) => r.join(','))
+      ].join('\n');
+
+      const blob = new Blob([new Uint8Array([0xEF, 0xBB, 0xBF]), csvContent], { type: 'text/csv;charset=utf-8;' });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.setAttribute('href', url);
+      link.setAttribute('download', `moderasi_global_athena_${new Date().toISOString().split('T')[0]}.csv`);
+      link.style.visibility = 'hidden';
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+
+      toast.success(`Berhasil mengekspor ${json.history.length} baris riwayat moderasi (.CSV)!`);
+    } catch (err) {
+      console.error('Export CSV error:', err);
+      toast.error('Gagal mengekspor berkas CSV');
+    } finally {
+      setExporting(false);
+    }
+  };
+
   return (
     <div className="space-y-6 pb-8">
       {/* ── Page Header ── */}
@@ -90,15 +165,27 @@ export default function AdminModerationPage() {
           </p>
         </div>
 
-        <button
-          onClick={() => fetchHistory(false)}
-          disabled={loading}
-          className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold rounded-xl border border-[var(--border-default)] bg-card text-secondary hover:text-primary hover:bg-[var(--bg-card-hover)] transition-all cursor-pointer shadow-sm disabled:opacity-50 self-start sm:self-auto"
-          title="Muat Ulang Data"
-        >
-          <RefreshCw className={`w-3.5 h-3.5 ${loading ? 'animate-spin' : ''}`} />
-          Refresh
-        </button>
+        <div className="flex items-center gap-2 self-start sm:self-auto">
+          <button
+            onClick={handleExportCSV}
+            disabled={exporting || loading}
+            className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold rounded-xl border border-[var(--border-default)] bg-card text-secondary hover:text-primary hover:bg-[var(--bg-card-hover)] transition-all cursor-pointer shadow-sm disabled:opacity-50"
+            title="Ekspor Seluruh Log Moderasi ke Berkas CSV"
+          >
+            <Download className={`w-3.5 h-3.5 ${exporting ? 'animate-bounce text-indigo-500' : ''}`} />
+            {exporting ? 'Mengekspor...' : 'Export CSV'}
+          </button>
+
+          <button
+            onClick={() => fetchHistory(false)}
+            disabled={loading}
+            className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold rounded-xl border border-[var(--border-default)] bg-card text-secondary hover:text-primary hover:bg-[var(--bg-card-hover)] transition-all cursor-pointer shadow-sm disabled:opacity-50"
+            title="Muat Ulang Data"
+          >
+            <RefreshCw className={`w-3.5 h-3.5 ${loading ? 'animate-spin' : ''}`} />
+            Refresh
+          </button>
+        </div>
       </div>
 
       {/* ── 4 Bento Stat Cards ── */}
