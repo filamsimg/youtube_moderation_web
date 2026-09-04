@@ -22,7 +22,7 @@ export const metadata = {
     siteName: "Athena Shield",
     images: [
       {
-        url: "/Dashboard.webp",
+        url: "/Dashboard.png",
         width: 1200,
         height: 630,
         alt: "Athena Shield Dashboard & Landing Preview",
@@ -35,7 +35,7 @@ export const metadata = {
     card: "summary_large_image",
     title: "Athena Shield - Moderasi Komentar YouTube Berbasis AI",
     description: "Deteksi komentar judi online dan spam di YouTube secara otomatis dan real-time.",
-    images: ["/Dashboard.webp"],
+    images: ["/Dashboard.png"],
   },
 };
 
