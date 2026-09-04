@@ -12,8 +12,31 @@ const inter = Inter({
 });
 
 export const metadata = {
-  title: "Athena Shield",
-  description: "AI-powered YouTube comment moderation using IndoBERT",
+  metadataBase: new URL("https://athenashield.my.id"),
+  title: "Athena Shield - Moderasi Komentar YouTube Berbasis AI",
+  description: "Platform moderasi komentar YouTube otomatis mendeteksi promosi judi online & spam menggunakan IndoBERT.",
+  openGraph: {
+    title: "Athena Shield - Moderasi Komentar YouTube Berbasis AI",
+    description: "Deteksi komentar judi online dan spam di YouTube secara otomatis dan real-time menggunakan IndoBERT.",
+    url: "https://athenashield.my.id",
+    siteName: "Athena Shield",
+    images: [
+      {
+        url: "/Dashboard.webp",
+        width: 1200,
+        height: 630,
+        alt: "Athena Shield Dashboard & Landing Preview",
+      },
+    ],
+    locale: "id_ID",
+    type: "website",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Athena Shield - Moderasi Komentar YouTube Berbasis AI",
+    description: "Deteksi komentar judi online dan spam di YouTube secara otomatis dan real-time.",
+    images: ["/Dashboard.webp"],
+  },
 };
 
 export default function RootLayout({ children }) {
