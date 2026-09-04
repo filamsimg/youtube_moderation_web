@@ -18,7 +18,7 @@ export default function PublicLayout({ children }) {
     <div className="min-h-screen flex flex-col bg-page">
       {/* ── Public Navbar ─────────────────────────────────────── */}
       <header className="sticky top-0 z-50 bg-header backdrop-blur-md border-b" style={{ borderColor: 'var(--border-default)' }}>
-        <div className="max-w-6xl mx-auto px-4 sm:px-6 h-14 flex items-center justify-between">
+        <div className="max-w-6xl mx-auto px-4 sm:px-6 h-20 flex items-center justify-between">
           {/* Logo */}
           <Link href="/" className="flex items-center gap-2 group">
             <Image src="/logo.webp" alt="Athena Shield" width={28} height={28} className="w-7 h-7 object-contain" />
@@ -29,14 +29,14 @@ export default function PublicLayout({ children }) {
           <nav className="hidden sm:flex items-center gap-1">
             <Link
               href="/"
-              className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-colors ${pathname === '/' ? 'bg-card-hover text-primary' : 'text-secondary hover:text-primary hover:bg-card-hover'
+              className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-colors ${pathname === '/' ? 'bg-card-hover text-primary' : 'text-secondary hover:text-primary hover:bg-card-hover'
                 }`}
             >
               Beranda
             </Link>
             <Link
               href="/pricing"
-              className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-colors ${pathname === '/pricing' ? 'bg-card-hover text-primary' : 'text-secondary hover:text-primary hover:bg-card-hover'
+              className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-colors ${pathname === '/pricing' ? 'bg-card-hover text-primary' : 'text-secondary hover:text-primary hover:bg-card-hover'
                 }`}
             >
               Harga
@@ -48,28 +48,20 @@ export default function PublicLayout({ children }) {
             {session ? (
               <Link
                 href="/dashboard"
-                className="px-3 py-1.5 bg-amber-600 hover:bg-amber-700 text-white text-xs font-semibold rounded-lg transition-colors flex items-center gap-1.5"
+                className="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 dark:bg-indigo-600 dark:hover:bg-indigo-500 text-white text-xs sm:text-sm font-bold rounded-xl transition-all flex items-center gap-1.5 shadow-sm hover:-translate-y-0.5 active:scale-95 cursor-pointer"
               >
-                Dashboard
-                <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" strokeWidth={2.5} stroke="currentColor">
+                <span>Buka Dashboard</span>
+                <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" strokeWidth={2.5} stroke="currentColor">
                   <path strokeLinecap="round" strokeLinejoin="round" d="M8.25 4.5l7.5 7.5-7.5 7.5" />
                 </svg>
               </Link>
             ) : (
-              <>
-                <Link
-                  href="/login"
-                  className="px-3 py-1.5 text-xs font-medium text-secondary hover:text-primary transition-colors"
-                >
-                  Masuk
-                </Link>
-                <Link
-                  href="/login"
-                  className="px-3 py-1.5 bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-semibold rounded-lg transition-colors"
-                >
-                  Mulai Gratis
-                </Link>
-              </>
+              <Link
+                href="/login"
+                className="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 dark:bg-indigo-600 dark:hover:bg-indigo-500 text-white text-sm sm:text-sm font-bold rounded-xl transition-all shadow-sm hover:-translate-y-0.5 active:scale-95 flex items-center gap-1.5 cursor-pointer"
+              >
+                <span>Mulai Gratis</span>
+              </Link>
             )}
           </div>
         </div>
