@@ -518,7 +518,7 @@ export default function ProfilePage() {
       </div>
 
       {/* ── Bento Grid: Bagian Bawah (Riwayat Transaksi Pembayaran) ── */}
-      <div className="space-y-4 pt-2">
+      <div id="billing" className="space-y-4 pt-2 scroll-mt-6">
         <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-2">
           <div>
             <h2 className="text-md md:text-lg font-bold text-primary flex items-center gap-2">

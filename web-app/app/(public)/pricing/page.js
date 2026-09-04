@@ -6,6 +6,7 @@ import { useQuota } from '@/contexts/QuotaContext';
 import { useToast } from '@/contexts/ToastContext';
 import Link from 'next/link';
 import Script from 'next/script';
+import { CreditCard } from 'lucide-react';
 import KineticGrid from '@/components/KineticGrid';
 import ByokGuideModal from '@/components/ByokGuideModal';
 
@@ -542,6 +543,30 @@ export default function PricingPage() {
                 </div>
               );
             })}
+          </div>
+        )}
+
+        {/* ── Helper Banner Riwayat Tagihan & Invoice (Opsi 4) ── */}
+        {session?.user && (
+          <div className="flex flex-col sm:flex-row items-center justify-between gap-4 p-5 sm:p-6 rounded-3xl border border-[var(--border-default)] bg-card/60 backdrop-blur-md shadow-sm">
+            <div className="flex items-center gap-3.5 text-left">
+              <div className="p-3 rounded-2xl bg-indigo-500/10 border border-indigo-500/20 text-indigo-600 dark:text-indigo-400 shrink-0">
+                <CreditCard className="w-5 h-5" />
+              </div>
+              <div>
+                <h3 className="text-sm font-bold text-primary">Sudah Memiliki Tagihan atau Pembayaran?</h3>
+                <p className="text-xs text-secondary mt-0.5">
+                  Lanjutkan pembayaran tertunda atau unduh bukti transaksi resmi di Riwayat Transaksi Anda.
+                </p>
+              </div>
+            </div>
+            <Link
+              href="/profile#billing"
+              className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-700 dark:bg-indigo-600 dark:hover:bg-indigo-500 text-white text-xs font-bold shadow-xs hover:-translate-y-0.5 active:scale-98 transition-all select-none whitespace-nowrap shrink-0 cursor-pointer"
+            >
+              <span>Buka Riwayat Tagihan</span>
+              <span className="font-extrabold">→</span>
+            </Link>
           </div>
         )}
 
