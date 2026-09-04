@@ -173,11 +173,11 @@ export default function AdminSidebar() {
               <LogOut className="w-5 h-5 rotate-180" />
             </span>
             <span className={`transition-all duration-300 overflow-hidden whitespace-nowrap ${isCollapsed ? 'opacity-0 w-0' : 'opacity-100 w-auto ml-1'}`}>
-              Kembali Ke User Panel
+              Kembali ke Panel Kreator
             </span>
             {isCollapsed && (
               <div className="absolute left-16 invisible opacity-0 group-hover:visible group-hover:opacity-100 transition-all duration-200 z-50 bg-slate-900 dark:bg-slate-800 text-slate-100 text-xs rounded-lg py-1.5 px-3 shadow-xl whitespace-nowrap border border-slate-700/50 pointer-events-none">
-                Kembali Ke User Panel
+                Kembali ke Panel Kreator
               </div>
             )}
           </Link>
