@@ -15,6 +15,15 @@ export const metadata = {
   metadataBase: new URL("https://athenashield.my.id"),
   title: "Athena Shield - Moderasi Komentar YouTube Berbasis AI",
   description: "Platform moderasi komentar YouTube otomatis mendeteksi promosi judi online & spam menggunakan IndoBERT.",
+  icons: {
+    icon: [
+      { url: "/icon.png", type: "image/png" },
+      { url: "/logo.webp", type: "image/webp" },
+      { url: "/favicon.ico" },
+    ],
+    shortcut: "/icon.png",
+    apple: "/icon.png",
+  },
   openGraph: {
     title: "Athena Shield - Moderasi Komentar YouTube Berbasis AI",
     description: "Deteksi komentar judi online dan spam di YouTube secara otomatis dan real-time menggunakan IndoBERT.",
@@ -45,6 +54,9 @@ export default function RootLayout({ children }) {
     // ditambahkan client-side (berbeda dari HTML awal server)
     <html lang="id" suppressHydrationWarning>
       <head>
+        <link rel="icon" href="/icon.png?v=3" type="image/png" sizes="64x64" />
+        <link rel="shortcut icon" href="/icon.png?v=3" type="image/png" />
+        <link rel="apple-touch-icon" href="/icon.png?v=3" />
         <script
           dangerouslySetInnerHTML={{
             __html: `
