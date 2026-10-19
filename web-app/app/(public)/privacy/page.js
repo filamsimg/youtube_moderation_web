@@ -188,7 +188,7 @@ const SECTIONS = [
             ),
             color: 'emerald',
             title: 'Enkripsi & Keamanan Database',
-            desc: 'Semua data akun, token, dan riwayat tindakan disimpan dalam database Supabase yang terenkripsi dengan mekanisme Row-Level Security (RLS) — setiap pengguna hanya dapat mengakses datanya sendiri.',
+            desc: 'Semua data akun, token, dan riwayat tindakan disimpan secara aman dan terenkripsi dalam infrastruktur serverless cloud database PostgreSQL (Neon).',
           },
           {
             icon: (
@@ -252,12 +252,12 @@ const SECTIONS = [
             linkText: 'Kebijakan Privasi Google',
           },
           {
-            color: 'violet',
-            name: 'Supabase',
-            role: 'Penyimpanan Database',
-            desc: 'Infrastruktur database kami. Data disimpan di server Supabase dengan enkripsi dan RLS.',
-            link: 'https://supabase.com/privacy',
-            linkText: 'Kebijakan Privasi Supabase',
+            color: 'emerald',
+            name: 'Neon Serverless PostgreSQL',
+            role: 'Penyimpanan Database Cloud',
+            desc: 'Infrastruktur database cloud terenkripsi kami untuk menyimpan profil pengguna, transaksi, dan log moderasi.',
+            link: 'https://neon.tech/privacy-policy',
+            linkText: 'Kebijakan Privasi Neon',
           },
           {
             color: 'rose',
@@ -329,7 +329,7 @@ const SECTIONS = [
           <p className="text-xs text-emerald-700/80 dark:text-emerald-300/70 leading-relaxed">
             Data Anda tidak akan pernah digunakan untuk kepentingan penargetan iklan, riset komersial pihak
             ketiga, pemasaran, atau tujuan lain apa pun di luar fungsi inti moderasi komentar yang Anda
-            aktifkan secara sadar. Integrasi dengan layanan pihak ketiga (Google, Supabase, Midtrans)
+            aktifkan secara sadar. Integrasi dengan layanan pihak ketiga (Google, Neon, Midtrans)
             hanya digunakan untuk operasional yang Anda otorisasi dan tunduk pada kebijakan privasi masing-masing.
           </p>
         </div>
