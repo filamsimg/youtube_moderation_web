@@ -123,8 +123,7 @@ HF_ACCESS_TOKEN=
 │   ├── components/               # Komponen Antarmuka & Visualisasi Data (Charts)
 │   ├── contexts/                 # React Contexts (YouTubeContext, QuotaContext, ThemeContext)
 │   ├── database/
-│   │   ├── neon_schema.sql       # Skema DDL & Stored Procedure PostgreSQL Neon (Utama)
-│   │   └── full_schema.sql       # Arsip skema DDL Supabase
+│   │   └── neon_schema.sql       # Skema DDL & Stored Procedure PostgreSQL Neon (8 Tabel Lengkap)
 │   ├── lib/
 │   │   ├── db.js                 # Neon Serverless Database Client & Query Builder
 │   │   ├── auth.js               # Konfigurasi NextAuth Google & Refresh Token
