@@ -1,73 +1,140 @@
-# YouTube Moderation Web App - Moderasi Konten Judol 
+# Athena Shield - Platform Moderasi Komentar YouTube Berbasis AI
 
-Aplikasi Web Fullstack untuk moderasi komentar YouTube secara Proaktif menggunakan AI (IndoBERTweet dan Sentiment Analysis). Proyek ini dirancang untuk mendeteksi dan menindak komentar judi online secara real-time, serta menganalisis kualitas emosi komunitas di kanal YouTube.
+Aplikasi Web Fullstack untuk moderasi komentar YouTube secara proaktif menggunakan model AI (IndoBERTweet dan Analisis Sentimen). Dirancang untuk mendeteksi, menahan, dan membersihkan komentar promosi judi online secara otomatis serta memantau kualitas interaksi komunitas pada kanal YouTube secara *real-time*.
+
+---
 
 ## Fitur Utama
 
-- **Proactive AI Moderation**: Sistem melakukan tindakan otomatis (Reject/Hold) pada komentar spam berdasarkan hasil analisis IndoBERTweet.
-- **Sentiment Analysis Integration**: Menganalisis emosi penonton (Positif, Negatif, Netral) pada komentar normal untuk memantau kesehatan komunitas.
-- **Supabase Cloud Database**: Integrasi database cloud untuk penyimpanan riwayat moderasi dan pengaturan pengguna yang persisten dan terisolasi antar akun.
-- **Dynamic AI Thresholds**: Pengaturan ambang batas kepercayaan (confidence score) yang dapat disesuaikan untuk aksi otomatis.
-- **Advanced Dashboard Analytics**:
-  - **Konten Distribution**: Visualisasi distribusi Normal vs Spam.
-  - **Aktivitas Moderasi**: Ringkasan akumulasi tindakan yang telah dilakukan.
-  - **Kualitas Komunitas**: Donut chart untuk distribusi sentimen penonton.
-- **Google OAuth Integration**: Login aman menggunakan akun Google dengan izin akses YouTube Data API v3.
-- **Modern UI/UX**: Antarmuka dashboard yang responsif, minimalis, dan premium.
+- **Proactive AI Moderation**: Deteksi otomatis komentar promosi judi online/spam menggunakan model IndoBERTweet terlatih dengan opsi tindakan otomatis (*Auto-Tahan* dan *Auto-Hapus*).
+- **Sentiment Analysis Integration**: Menganalisis sentimen komentar penonton (Positif, Negatif, Netral) untuk memantau respons dan kesehatan komunitas.
+- **Neon Serverless PostgreSQL**: Penyimpanan cloud berbasis PostgreSQL serverless (Neon) berkecepatan tinggi dengan koneksi pooling untuk data profil pengguna, kuota, riwayat moderasi, preferensi, dan transaksi.
+- **AI Prediction Cache**: Caching hasil inferensi AI per ID komentar YouTube (`comment_predictions`) untuk mencegah re-analisis berulang dan menghemat latensi.
+- **Dynamic AI Thresholds & Presets**: Slider ambang batas keyakinan (*confidence score*) serta pilihan preset moderasi (*Santai*, *Seimbang*, *Ketat*).
+- **Multi-Tier & Feature Gate**:
+  - **FREE**: Akses moderasi dasar dengan jatah kuota trial awal.
+  - **PRO**: Kuota bulanan besar, moderasi massal (*Bulk Moderation*), polling otomatis, dan ekspor CSV berformat UTF-8 BOM.
+  - **ENTERPRISE**: Kuota volume tinggi dan opsi **BYOK (Bring Your Own Key)** menggunakan kunci API Google Cloud pribadi tanpa memotong kuota server.
+- **Midtrans Payment Gateway**: Integrasi pembayaran otomatis (Snap Popup) untuk paket langganan Pro dan Enterprise.
+- **Google OAuth (SSO) & YouTube Data API v3**: Otentikasi sesi aman menggunakan NextAuth.js dengan izin kelola komentar (`youtube.force-ssl`).
+- **Admin & Superadmin Panel**: Dasbor audit komprehensif untuk pengawasan pengguna, riwayat transaksi, rekam jejak moderasi global, serta manajemen dinamis paket langganan.
+
+---
 
 ## Stack Teknologi
 
-- **Frontend**: Next.js 14 (App Router), Tailwind CSS
-- **Database**: Supabase (PostgreSQL)
-- **Visualisasi**: Recharts
-- **Authentication**: NextAuth.js (Google Provider)
-- **AI Backend**: Flask (Python) + Transformers (IndoBERTweet & Sentiment Model)
+- **Frontend & Server**: Next.js 14 (App Router), React 18, Tailwind CSS, Lucide Icons, Recharts
+- **Database**: Neon Serverless PostgreSQL (`@neondatabase/serverless`)
+- **Autentikasi**: NextAuth.js (Google Provider OAuth 2.0)
+- **Payment Gateway**: Midtrans Snap API (Client & Server SDK)
+- **AI Backend / Inference**: Hugging Face Spaces / Flask API (IndoBERTweet + Sentiment Analysis)
+
+---
 
 ## Prasyarat
 
 - Node.js 18.x atau lebih baru
-- Akun Supabase (untuk database)
-- Google Cloud Console Project (YouTube Data API v3 enabled)
-- Model API server yang berjalan di port 5000
+- Proyek & Akun [Neon](https://neon.tech) (Database PostgreSQL Serverless)
+- Google Cloud Console Project (Aktifkan YouTube Data API v3 & OAuth 2.0)
+- Akun Merchant [Midtrans](https://midtrans.com) (Sandbox / Production)
+
+---
 
 ## Konfigurasi Environment
 
-Buat file `.env` di root direktori `web-app/` dan tambahkan variabel berikut:
+Salin file `.env.example` menjadi `.env` di dalam folder `web-app/`:
 
-```env
-GOOGLE_CLIENT_ID=your_google_client_id
-GOOGLE_CLIENT_SECRET=your_google_client_secret
-NEXTAUTH_URL=http://localhost:3000
-NEXTAUTH_SECRET=your_nextauth_secret
-MODEL_API_BASE=http://127.0.0.1:5000
-
-NEXT_PUBLIC_SUPABASE_URL=your_supabase_url
-NEXT_PUBLIC_SUPABASE_ANON_KEY=your_supabase_anon_key
+```bash
+cd web-app
+cp .env.example .env
 ```
 
-## Cara Menjalankan
+Isi variabel environment berikut:
 
-1. Instal dependensi:
+```env
+# GOOGLE OAUTH & YOUTUBE API
+GOOGLE_CLIENT_ID=your_google_client_id
+GOOGLE_CLIENT_SECRET=your_google_client_secret
+
+# NEXTAUTH
+NEXTAUTH_SECRET=rahasia-moderasi-judol
+NEXTAUTH_URL=http://localhost:3000
+
+# NEON SERVERLESS POSTGRESQL (https://neon.tech)
+DATABASE_URL="postgresql://neondb_owner:YOUR_PASSWORD@ep-sample-pooler.ap-southeast-1.aws.neon.tech/Athena%20Shield?sslmode=require"
+
+# MIDTRANS CONFIGURATION
+MIDTRANS_CLIENT_KEY=your_midtrans_client_key
+MIDTRANS_SERVER_KEY=your_midtrans_server_key
+MIDTRANS_IS_PRODUCTION=false
+
+# ADMIN ROLES
+ADMIN_EMAILS=admin@gmail.com,superadmin@gmail.com
+
+# AI MODEL BACKEND / HUGGING FACE
+MODEL_API_BASE=http://localhost:5000
+HF_SPACE_ID=filamss/athena_shield_model
+HF_ACCESS_TOKEN=
+```
+
+---
+
+## Setup Database di Neon
+
+1. Buka dashboard proyek Anda di [Neon](https://neon.tech).
+2. Buat database baru bernama `Athena Shield` (atau gunakan database bawaan `neondb`).
+3. Buka menu **SQL Editor** di sidebar kiri dashboard Neon.
+4. Buka file `web-app/database/neon_schema.sql`, salin seluruh kodenya, tempel ke SQL Editor Neon, lalu klik **Run**.
+5. Salin connection string dari tombol **Connect** Neon ke variabel `DATABASE_URL` pada `.env`.
+
+---
+
+## Cara Menjalankan Aplikasi
+
+1. Masuk ke direktori web app:
+   ```bash
+   cd web-app
+   ```
+
+2. Instal dependensi:
    ```bash
    npm install
    ```
 
-2. Jalankan server pengembangan:
+3. Jalankan server pengembangan (Development):
    ```bash
    npm run dev
    ```
 
-3. Akses aplikasi:
-   Buka [http://localhost:3000](http://localhost:3000) di browser Anda.
-
-## Struktur Proyek
-
-- `app/`: Routing dan halaman utama aplikasi.
-- `components/`: Komponen UI reusable dan visualisasi chart.
-- `services/`: Logika integrasi API (YouTube, Supabase, AI API).
-- `lib/`: Konfigurasi klien Supabase dan utilitas lainnya.
-- `public/`: Aset statis aplikasi.
+4. Akses antarmuka aplikasi:
+   Buka peramban di [http://localhost:3000](http://localhost:3000).
 
 ---
-**Status Proyek**: Final Integration - Supabase & Sentiment Analysis.
-*Dibuat untuk keperluan Skripsi - Moderasi Konten YouTube v1.*
+
+## Struktur Direktori Proyek
+
+```text
+├── web-app/
+│   ├── app/                      # Next.js App Router (Halaman & API Routes)
+│   │   ├── (admin)/admin/        # Halaman Admin Panel & Manajemen
+│   │   ├── (main)/               # Dasbor Kreator, Moderasi, dan Pengaturan
+│   │   ├── (public)/             # Halaman Landing, Pricing, dan Kebijakan Privasi
+│   │   └── api/                  # RESTful API Endpoints (Quota, Payments, Moderasi, Admin)
+│   ├── components/               # Komponen Antarmuka & Visualisasi Data (Charts)
+│   ├── contexts/                 # React Contexts (YouTubeContext, QuotaContext, ThemeContext)
+│   ├── database/
+│   │   ├── neon_schema.sql       # Skema DDL & Stored Procedure PostgreSQL Neon (Utama)
+│   │   └── full_schema.sql       # Arsip skema DDL Supabase
+│   ├── lib/
+│   │   ├── db.js                 # Neon Serverless Database Client & Query Builder
+│   │   ├── auth.js               # Konfigurasi NextAuth Google & Refresh Token
+│   │   └── adminAuth.js          # Middleware Otorisasi Hak Akses Admin
+│   ├── services/                 # Logika Layanan (YouTube API, Kuota)
+│   └── public/                   # Aset Gambar, Ikon, dan Media
+└── model_judol_indobertweet/     # Model & Skrip Analisis AI IndoBERTweet
+```
+
+---
+
+**Status Proyek**: Produksi & Skripsi — Integrasi Penuh Next.js 14, Neon PostgreSQL, dan AI IndoBERTweet.  
+*Dikembangkan oleh Filamsi Mabda Ghifary.*
