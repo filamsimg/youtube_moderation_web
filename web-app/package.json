@@ -10,6 +10,7 @@
   },
   "dependencies": {
     "@gradio/client": "^2.3.1",
+    "@neondatabase/serverless": "^1.2.0",
     "@supabase/supabase-js": "^2.105.1",
     "axios": "^1.14.0",
     "clsx": "^2.1.1",

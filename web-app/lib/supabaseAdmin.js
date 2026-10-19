@@ -1,17 +1,9 @@
-import { createClient } from '@supabase/supabase-js';
+import { db, sql } from './db';
 
 /**
- * Supabase client dengan Service Role Key.
- * HANYA digunakan di server-side (API Route).
- * JANGAN impor file ini di komponen client-side.
+ * Database Admin Client (Neon Serverless PostgreSQL).
+ * Menyediakan antarmuka backward-compatible yang selaras dengan seluruh API routes Athena Shield.
  */
-export const supabaseAdmin = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL,
-  process.env.SUPABASE_SERVICE_ROLE_KEY,
-  {
-    auth: {
-      autoRefreshToken: false,
-      persistSession: false,
-    },
-  }
-);
+export const supabaseAdmin = db;
+export { db, sql };
+export default db;
